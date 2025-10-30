@@ -1,0 +1,70 @@
+<div class="min-h-screen bg-[#EAECEF]">
+  <app-banner />
+  <app-info-table />
+  <app-category-list />
+
+  <!-- Ofertas -->
+  <app-product-section
+    id="ofertas"
+    title="Ofertas"
+    [products]="ofertasProducts()"
+  />
+
+  <!-- Cervezas -->
+  <app-product-section
+    id="cervezas"
+    title="Cervezas"
+    [products]="cervezasProducts()"
+  />
+
+  <!-- Listos para Tomar -->
+  <app-product-section
+    id="listos-para-tomar"
+    title="Listos para Tomar"
+    [products]="listosParaTomarProducts()"
+  />
+
+  <!-- Whisky -->
+  <app-product-section
+    id="whisky"
+    title="Whisky"
+    [products]="whiskyProducts()"
+  />
+
+  <!-- Bebidas sin Alcohol -->
+  <app-product-section
+    id="bebidas-sin-alcohol"
+    title="Bebidas sin Alcohol"
+    [products]="bebidasSinAlcoholProducts()"
+  />
+
+  <!-- Vinos -->
+  <app-product-section
+    id="vinos"
+    title="Vinos"
+    [products]="vinosProducts()"
+  />
+
+  <!-- Cigarrillos y Vapes -->
+  <app-product-section
+    id="cigarrillos-vapes"
+    title="Cigarrillos y Vaporizadores"
+    [products]="cigarrillosVapesProducts()"
+  />
+
+  <!-- Aperitivos -->
+  <app-product-section
+    id="aperitivos"
+    title="Licores y Aperitivos"
+    [products]="aperitivosProducts()"
+  />
+
+  <!-- Otros Licores -->
+  <app-product-section
+    id="otros-licores"
+    title="Otros Licores"
+    [products]="otrosLicoresProducts()"
+  />
+
+  <app-floating-cart-button />
+</div>

@@ -1,0 +1,22 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in"
+     (click)="onBackdropClick()">
+
+  <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl animate-scale-in"
+       (click)="onModalClick($event)">
+
+    <!-- Close Button -->
+    @if (showCloseButton) {
+      <button
+        (click)="onClose()"
+        class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+        type="button">
+        <span class="text-gray-600 text-xl leading-none">×</span>
+      </button>
+    }
+
+    <!-- Content Slot -->
+    <div class="p-6">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

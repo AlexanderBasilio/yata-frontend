@@ -1,0 +1,44 @@
+<section class="relative w-full">
+  <!-- Banner con imagen de fondo -->
+  <div
+    class="banner-image relative w-full h-auto bg-cover bg-center flex flex-col items-center justify-center py-4 px-5"
+    [style.background-image]="'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(' + bannerImage() + ')'"
+
+  >
+    <!-- Logo de la tienda -->
+    <div class="mb-3">
+      <img
+        [src]="storeLogo()"
+        [alt]="'Logo ' + storeName()"
+        class="w-20 h-20 rounded-full object-cover border-2 border-white shadow-lg"
+      >
+    </div>
+
+    <!-- Flechas de navegación -->
+    <!-- <div class="absolute top-1/2 left-0 right-0 flex justify-between px-5 -translate-y-1/2 pointer-events-none">
+      <button
+        class="w-8 h-8 rounded-full bg-white/20 text-white text-lg flex items-center justify-center pointer-events-auto hover:bg-white/30 transition-all active:scale-95"
+        (click)="onPreviousBanner()"
+        aria-label="Banner anterior"
+      >
+        ←
+      </button>
+      <button
+        class="w-8 h-8 rounded-full bg-white/20 text-white text-lg flex items-center justify-center pointer-events-auto hover:bg-white/30 transition-all active:scale-95"
+        (click)="onNextBanner()"
+        aria-label="Siguiente banner"
+      >
+        →
+      </button>
+    </div> -->
+
+    <!-- Título de la tienda -->
+    <div class="mb-5">
+      <h1 class="store-title text-white text-3xl font-bold tracking-wide">
+        {{ storeName() }}
+      </h1>
+    </div>
+  </div>
+
+
+</section>

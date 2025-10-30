@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  margin-bottom: 50px; // Espacio para la search bar flotante
+}
+
+.banner-image {
+  // Animación suave al cambiar imagen
+  transition: background-image 0.3s ease-in-out;
+}
+
+.store-title {
+  font-family: 'League Spartan', sans-serif;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+// Responsive para pantallas pequeñas
+@media (max-width: 350px) {
+  .search-bar-container {
+    left: 16px;
+    right: 16px;
+  }
+}

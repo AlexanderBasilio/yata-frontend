@@ -1,0 +1,337 @@
+<div class="min-h-screen bg-[#EAECEF]">
+  <!-- Header -->
+  <header class="bg-white shadow-sm sticky top-0 z-20">
+    <div class="max-w-md mx-auto px-4 py-4 flex items-center gap-4">
+      <button (click)="goBack()" class="text-2xl text-gray-600">←</button>
+      <h1 class="text-xl font-bold text-gray-800">Completar Compra</h1>
+    </div>
+  </header>
+
+  <div class="max-w-md mx-auto pb-32">
+    <!-- Sección Mapa -->
+    <section class="bg-white mb-4">
+  <div class="p-4">
+    <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+      <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+      </svg>
+      Ubicación de entrega
+    </h2>
+
+    <!-- Buscador de dirección -->
+    <div class="relative mb-3">
+      <input
+        type="text"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        placeholder="Buscar dirección en Huancayo..."
+        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-[#0F456E] focus:outline-none"
+      >
+
+      <!-- Resultados de búsqueda -->
+      @if (showSearchResults()) {
+        <div class="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto z-10">
+          @for (result of searchResults(); track $index) {
+            <div
+              (click)="selectSearchResult(result)"
+              class="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+              <p class="text-sm font-semibold text-gray-800">{{ result.text }}</p>
+              <p class="text-xs text-gray-500">{{ result.place_name }}</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Mapa real -->
+  <div id="map" class="relative h-[50vh] bg-gray-200">
+    @if (isLoadingMap()) {
+      <div class="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
+        <div class="text-center">
+          <div class="w-12 h-12 border-4 border-[#0F456E] border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+          <p class="text-gray-600 text-sm">Cargando mapa...</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="p-4">
+    <p class="text-sm text-gray-600 mb-2">Dirección seleccionada:</p>
+    <p class="font-semibold text-gray-800">
+      {{ selectedLocation()?.address || 'Arrastra el marcador o busca una dirección' }}
+    </p>
+    @if (selectedLocation()) {
+      <p class="text-xs text-gray-500 flex items-center gap-2 mt-1">
+          <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 1 1 0-5 2.5 2.5 0 0 1 0 5z"/>
+          </svg>
+          {{ selectedLocation()!.latitude.toFixed(6) }}, {{ selectedLocation()!.longitude.toFixed(6) }}
+      </p>
+    }
+  </div>
+</section>
+
+    <!-- Método de Pago -->
+    <section class="bg-white rounded-xl mx-4 mb-4 p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/>
+          <path d="M2 10h20"/>
+          <circle cx="8" cy="15" r="2"/>
+          <path d="M16 15h-4"/>
+        </svg>
+        Método de pago
+      </h2>
+
+      <div class="space-y-3">
+        <!-- Monto exacto -->
+        <label class="flex items-center gap-3 cursor-pointer p-3 border-2 rounded-xl transition-colors"
+               [class.border-[#0F456E]]="paymentMethod() === 'exact'"
+               [class.border-gray-200]="paymentMethod() !== 'exact'">
+          <input
+            type="radio"
+            name="payment"
+            value="exact"
+            [checked]="paymentMethod() === 'exact'"
+            (change)="onPaymentMethodChange('exact')"
+            class="w-5 h-5 text-[#0F456E]"
+          >
+          <span class="font-semibold text-gray-800">Efectivo - Monto exacto</span>
+        </label>
+
+        <!-- Pago con billete -->
+        <label class="flex items-start gap-3 cursor-pointer p-3 border-2 rounded-xl transition-colors"
+               [class.border-[#0F456E]]="paymentMethod() === 'cash'"
+               [class.border-gray-200]="paymentMethod() !== 'cash'">
+          <input
+            type="radio"
+            name="payment"
+            value="cash"
+            [checked]="paymentMethod() === 'cash'"
+            (change)="onPaymentMethodChange('cash')"
+            class="w-5 h-5 text-[#0F456E] mt-0.5"
+          >
+          <div class="flex-1">
+            <span class="font-semibold text-gray-800 block mb-2">Efectivo - Pagaré con billete de:</span>
+            <div class="flex items-center gap-2">
+              <span class="text-gray-600">S/</span>
+              <input
+                type="number"
+                [disabled]="paymentMethod() !== 'cash'"
+                [value]="cashAmount() || ''"
+                (input)="onCashAmountInput($event)"
+                placeholder="50.00"
+                step="0.01"
+                min="0"
+                class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0F456E] focus:outline-none disabled:bg-gray-100"
+              >
+            </div>
+            @if (paymentMethod() === 'cash' && changeAmount() > 0) {
+              <p class="text-sm text-green-600 font-semibold mt-2">
+                Vuelto: S/ {{ changeAmount().toFixed(2) }}
+              </p>
+            }
+          </div>
+        </label>
+      </div>
+    </section>
+
+    <!-- Mensaje para el repartidor -->
+    <section class="bg-white rounded-xl mx-4 mb-4 p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          <line x1="9" y1="10" x2="15" y2="10"/>
+          <line x1="9" y1="14" x2="13" y2="14"/>
+        </svg>
+        ¿Algún mensaje para el repartidor?
+      </h2>
+      <textarea
+        [(ngModel)]="deliveryNote"
+        placeholder="Ej: Tocar el timbre 2 veces, dejar en recepción..."
+        rows="3"
+        maxlength="200"
+        class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-[#0F456E] focus:outline-none resize-none"
+      ></textarea>
+      <p class="text-xs text-gray-500 text-right mt-1">{{ deliveryNote().length }}/200</p>
+    </section>
+
+    <!-- Resumen de Pedido -->
+    <section class="bg-white rounded-xl mx-4 mb-4 p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          <polyline points="3.5 6.9 12 12.01 20.5 6.9"/>
+          <line x1="12" y1="22.08" x2="12" y2="12"/>
+        </svg>
+        Resumen de Pedido
+      </h2>
+
+      <!-- Items -->
+      <div class="space-y-2 mb-4 max-h-40 overflow-y-auto">
+        @for (item of cartItems(); track item.productId) {
+          <div class="flex justify-between text-sm">
+            <span class="text-gray-700">{{ item.name }} (x{{ item.quantity }})</span>
+            <span class="font-semibold text-gray-800">S/ {{ (item.price * item.quantity).toFixed(2) }}</span>
+          </div>
+        }
+      </div>
+
+      <div class="border-t border-gray-200 pt-3 space-y-2">
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Subtotal:</span>
+          <span class="font-semibold">S/ {{ orderSummary().subtotal.toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Costo de servicio:</span>
+          <span class="font-semibold">S/ {{ orderSummary().servicecost.toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between text-sm">
+          <span class="text-gray-600">Costo de envío:</span>
+          <span class="font-semibold">S/ {{ orderSummary().shippingCost.toFixed(2) }}</span>
+        </div>
+        <div class="flex justify-between text-lg font-bold text-[#0F456E] pt-2 border-t border-gray-200">
+          <span>Total:</span>
+          <span>S/ {{ orderSummary().total.toFixed(2) }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ✅ NUEVA SECCIÓN: Datos de Contacto -->
+    <section class="bg-white rounded-xl mx-4 mb-4 p-4 shadow-sm">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Datos de Contacto
+      </h2>
+
+      <div class="space-y-4">
+        <!-- Nombre -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Nombre completo <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="customerName"
+            placeholder="Ej: Juan Pérez"
+            maxlength="100"
+            class="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-[#0F456E] focus:outline-none"
+          >
+        </div>
+
+        <!-- Teléfono -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            Número de celular <span class="text-red-500">*</span>
+          </label>
+          <div class="flex gap-2">
+            <input
+              type="text"
+              value="+51"
+              disabled
+              class="w-16 px-3 py-3 border-2 border-gray-300 rounded-xl bg-gray-100 text-center font-semibold"
+            >
+            <input
+              type="tel"
+              [(ngModel)]="customerPhone"
+              (input)="onPhoneInput($event)"
+              placeholder="987654321"
+              maxlength="9"
+              class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-[#0F456E] focus:outline-none"
+            >
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Ingresa 9 dígitos</p>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- Confirmaciones -->
+    <section class="bg-white rounded-xl mx-4 mb-4 p-4 shadow-sm space-y-4">
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          [(ngModel)]="isAdult"
+          class="mt-1 w-5 h-5 text-[#0F456E] border-gray-300 rounded focus:ring-[#0F456E]"
+        >
+        <span class="text-sm text-gray-700">
+          Confirmo que soy mayor de 18 años y acepto que se me solicite DNI al momento de la entrega
+        </span>
+      </label>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <p class="text-xs text-amber-800 font-semibold">
+          ⚠️ Tomar bebidas alcohólicas en exceso es dañino
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer con botón -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+    <div class="max-w-md mx-auto">
+      <button
+        (click)="openConfirmModal()"
+        [disabled]="isSubmitting()"
+        class="w-full bg-[#34C759] text-white py-4 rounded-xl font-bold text-lg hover:bg-[#2da84a] transition-colors active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+        Terminar Compra
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal de Confirmación -->
+  @if (showConfirmModal()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-6 max-w-sm w-full animate-scale-in">
+        <h2 class="text-xl font-bold text-gray-800 mb-3">⚠️ Confirmar Pedido</h2>
+        <p class="text-gray-700 mb-4 text-sm leading-relaxed">
+          ¿Estás seguro de realizar esta compra con los datos ingresados?
+        </p>
+        <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <p class="text-xs text-red-800 font-semibold">
+            • Una vez confirmado, no podrás cancelar el pedido<br>
+            • Si incurres en una falsa compra, tu cuenta podría ser sancionada
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            (click)="cancelOrder()"
+            class="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-300 transition-colors">
+            Cancelar
+          </button>
+          <button
+            (click)="confirmOrder()"
+            [disabled]="isSubmitting()"
+            class="flex-1 bg-[#34C759] text-white py-3 rounded-xl font-semibold hover:bg-[#2da84a] transition-colors disabled:opacity-50">
+            @if (isSubmitting()) {
+              <span>Procesando...</span>
+            } @else {
+              <span>Confirmar</span>
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal de Éxito -->
+  @if (showSuccessModal()) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center animate-scale-in">
+        <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span class="text-4xl">✓</span>
+        </div>
+        <h2 class="text-2xl font-bold text-gray-800 mb-2">¡Pedido Realizado!</h2>
+        <p class="text-gray-600 mb-4">Tu orden ha sido procesada con éxito</p>
+        <div class="text-sm text-gray-500">
+          Redirigiendo al catálogo...
+        </div>
+      </div>
+    </div>
+  }
+</div>

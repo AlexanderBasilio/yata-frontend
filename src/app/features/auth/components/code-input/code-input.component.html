@@ -1,0 +1,25 @@
+<div class="code-input-container">
+  <div class="flex gap-2 justify-center mb-4" (paste)="onPaste($event)">
+    @for (digit of code; track $index) {
+      <input
+        [id]="'code-' + $index"
+        type="text"
+        inputmode="numeric"
+        maxlength="1"
+        [(ngModel)]="code[$index]"
+        (input)="onInput($index, $event)"
+        (keydown)="onKeyDown($index, $event)"
+        class="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
+        [class.border-blue-500]="code[$index]"
+        autocomplete="off">
+    }
+  </div>
+
+  <div class="text-center text-sm text-gray-500">
+    @if (isComplete()) {
+      <span class="text-green-500">✓ Código completo</span>
+    } @else {
+      <span>Ingresa el código de 6 dígitos</span>
+    }
+  </div>
+</div>

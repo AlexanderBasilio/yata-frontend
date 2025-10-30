@@ -1,0 +1,109 @@
+<app-modal
+  [showCloseButton]="currentStep() !== 'success'"
+  [closeOnBackdrop]="false"
+  (close)="onClose()">
+
+  <!-- Step 1: Ingresar teléfono (SIN SMS) -->
+  @if (currentStep() === 'phone') {
+    <div class="text-center">
+      <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-3xl">📱</span>
+      </div>
+
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Ingresa tu celular</h2>
+      <p class="text-gray-600 mb-6">
+        Lo necesitamos para coordinar la entrega
+      </p>
+
+      <app-phone-input></app-phone-input>
+
+      @if (errorMessage()) {
+        <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button
+        (click)="submitPhone()"
+        [disabled]="isLoading()"
+        class="w-full bg-[#4285F4] text-white py-3 rounded-xl font-semibold hover:bg-[#3367D6] transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed">
+        Continuar
+      </button>
+    </div>
+  }
+
+  <!-- Step 2: Términos y condiciones -->
+  @if (currentStep() === 'terms') {
+    <div class="text-center">
+      <button
+        (click)="goBack()"
+        class="absolute top-6 left-6 text-gray-600 hover:text-gray-800">
+        ← Atrás
+      </button>
+
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Términos y condiciones</h2>
+      <p class="text-gray-600 mb-6">Por favor, acepta para continuar</p>
+
+      <div class="max-h-64 overflow-y-auto bg-gray-50 p-4 rounded-xl mb-6 text-left text-sm text-gray-700">
+        <h3 class="font-semibold mb-2">Términos de uso de YaTa</h3>
+        <p class="mb-2">Al utilizar nuestros servicios, aceptas:</p>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>Proporcionar información veraz y actualizada</li>
+          <li>Ser mayor de 18 años para comprar bebidas alcohólicas</li>
+          <li>Cumplir con las leyes locales sobre consumo de alcohol</li>
+          <li>Nuestras políticas de privacidad y protección de datos</li>
+          <li>Los términos de entrega y devolución</li>
+        </ul>
+        <p class="mt-3 text-xs text-gray-500">
+          Para más información, visita nuestra página de términos completos.
+        </p>
+      </div>
+
+      <label class="flex items-start gap-3 mb-6 cursor-pointer">
+        <input
+          type="checkbox"
+          [ngModel]="termsAccepted()"
+          (ngModelChange)="termsAccepted.set($event)"
+          class="mt-1 w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+        <span class="text-sm text-gray-700 text-left">
+          Acepto los términos y condiciones, y confirmo que soy mayor de 18 años
+        </span>
+      </label>
+
+      @if (errorMessage()) {
+        <div class="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+          {{ errorMessage() }}
+        </div>
+      }
+
+      <button
+        (click)="acceptTerms()"
+        [disabled]="!termsAccepted() || isLoading()"
+        class="w-full bg-[#4285F4] text-white py-3 rounded-xl font-semibold hover:bg-[#3367D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (isLoading()) {
+          <span>Procesando...</span>
+        } @else {
+          <span>Aceptar y continuar</span>
+        }
+      </button>
+    </div>
+  }
+
+  <!-- Step 3: Registro exitoso -->
+  @if (currentStep() === 'success') {
+    <div class="text-center py-8">
+      <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <span class="text-4xl">✓</span>
+      </div>
+
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">¡Registro exitoso!</h2>
+      <p class="text-gray-600 mb-4">Bienvenido a YaTa</p>
+
+      <div class="inline-flex items-center gap-2 text-sm text-gray-500">
+        <div class="animate-spin w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full"></div>
+        Redirigiendo al catálogo...
+      </div>
+    </div>
+  }
+
+</app-modal>
