@@ -48,18 +48,18 @@ export class CatalogHomeComponent {
       category: 'RTD',
       stock: 12,
     },
-    {
-      id: '11',
-      name: 'Mikes Lemonade',
-      price: 6.30,
-      oldPrice: 7.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
-      unit: 'unid',
-      description: '(1) FourLoko Blue 355 ml',
-      pack: '1x355ml Lata',
-      category: 'RTD',
-      stock: 6,
-    },
+    // {
+    //   id: '11',
+    //   name: 'Mikes Lemonade',
+    //   price: 6.30,
+    //   oldPrice: 7.00,
+    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
+    //   unit: 'unid',
+    //   description: '(1) FourLoko Blue 355 ml',
+    //   pack: '1x355ml Lata',
+    //   category: 'RTD',
+    //   stock: 6,
+    // },
     {
       id: '35',
       name: 'Ron flor de caña',
@@ -73,17 +73,29 @@ export class CatalogHomeComponent {
       stock: 3,
     },
     {
-      id: '31',
-      name: 'Vodka Russkaya Apple',
-      price: 26.50,
-      oldPrice: 29.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
+      id: '1',
+      name: "6 pack Cusqueña 473ML",
+      price: 37.00,
+      oldPrice: 41.10,
+      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431653/6pack-cusque%C3%B1a-473ml_ljodiz.png',
       unit: 'unid',
-      description: '(1) Vodka Russkaya Apple 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
+      description: "(1) 6 pack Cusqueña 473ML 1 und",
+      pack: '1x1 Unidad - 473ml Lata',
+      category: 'Cervezas',
       stock: 6,
     },
+    // {
+    //   id: '31',
+    //   name: 'Vodka Russkaya Apple',
+    //   price: 26.50,
+    //   oldPrice: 29.40,
+    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
+    //   unit: 'unid',
+    //   description: '(1) Vodka Russkaya Apple 750ml',
+    //   pack: '1x750ml Botella',
+    //   category: 'OtrosLicores',
+    //   stock: 6,
+    // },
     {
       id: '15',
       name: 'Whisky Old Times Black',
@@ -247,20 +259,20 @@ export class CatalogHomeComponent {
       category: 'RTD',
       stock: 6,
     },
+    // {
+    //   id: '11',
+    //   name: 'Mikes Lemonade',
+    //   price: 6.30,
+    //   oldPrice: 7.00,
+    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
+    //   unit: 'unid',
+    //   description: '(1) FourLoko Blue 355 ml',
+    //   pack: '1x355ml Lata',
+    //   category: 'RTD',
+    //   stock: 6,
+    // },
     {
-      id: '11',
-      name: 'Mikes Lemonade',
-      price: 6.30,
-      oldPrice: 7.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
-      unit: 'unid',
-      description: '(1) FourLoko Blue 355 ml',
-      pack: '1x355ml Lata',
-      category: 'RTD',
-      stock: 6,
-    },
-    {
-      id: '11',
+      id: '12',
       name: 'Russkaya Wild SOTB',
       price: 5.50,
       oldPrice: 6.10,
@@ -275,7 +287,7 @@ export class CatalogHomeComponent {
 
   whiskyProducts = signal([
     {
-      id: '12',
+      id: '13',
       name: 'Whisky JOHNNIE WALKER Red Label',
       price: 58.90,
       oldPrice: 64.40,
@@ -287,7 +299,7 @@ export class CatalogHomeComponent {
       stock: 6,
     },
     {
-      id: '13',
+      id: '14',
       name: 'Whisky JOHNNIE WALKER Black Label',
       price: 130.00,
       oldPrice: 144.40,
@@ -299,7 +311,7 @@ export class CatalogHomeComponent {
       stock: 2,
     },
     {
-      id: '14',
+      id: '15',
       name: 'Whisky JOHNNIE WALKER Double Black Label',
       price: 190.00,
       oldPrice: 199.00,
@@ -311,7 +323,7 @@ export class CatalogHomeComponent {
       stock: 1,
     },
     {
-      id: '15',
+      id: '16',
       name: 'Whisky Old Times Black',
       price: 29.50,
       oldPrice: 31.80,
@@ -326,7 +338,7 @@ export class CatalogHomeComponent {
 
   bebidasSinAlcoholProducts = signal([
     {
-      id: '16',
+      id: '17',
       name: 'Coca Cola',
       price: 13.00,
       oldPrice: 14.40,
@@ -338,7 +350,7 @@ export class CatalogHomeComponent {
       stock: 6,
     },
     {
-      id: '17',
+      id: '18',
       name: 'Guarana',
       price: 8.80,
       oldPrice: 9.80,
@@ -350,7 +362,7 @@ export class CatalogHomeComponent {
       stock: 6,
     },
     {
-      id: '18',
+      id: '19',
       name: 'Agua San Mateo',
       price: 2.00,
       oldPrice: 2.20,
@@ -362,7 +374,7 @@ export class CatalogHomeComponent {
       stock: 12,
     },
     {
-      id: '19',
+      id: '20',
       name: 'Agua Cielo',
       price: 1.80,
       oldPrice: 2.00,
@@ -374,7 +386,7 @@ export class CatalogHomeComponent {
       stock: 12,
     },
     {
-      id: '20',
+      id: '21',
       name: 'Evervess',
       price: 8.00,
       oldPrice: 8.90,
@@ -390,7 +402,7 @@ export class CatalogHomeComponent {
 
   vinosProducts = signal([
     {
-      id: '21',
+      id: '22',
       name: 'Vino Queirolo Rosé',
       price: 19.00,
       oldPrice: 21.11,
@@ -402,7 +414,7 @@ export class CatalogHomeComponent {
       stock: 2,
     },
     {
-      id: '22',
+      id: '23',
       name: 'Vino Tabernero',
       price: 22.00,
       oldPrice: 24.40,
@@ -414,7 +426,7 @@ export class CatalogHomeComponent {
       stock: 4,
     },
     {
-      id: '23',
+      id: '24',
       name: 'Vino Viña Vieja Rosé',
       price: 24.00,
       oldPrice: 26.70,
@@ -429,7 +441,7 @@ export class CatalogHomeComponent {
 
   cigarrillosVapesProducts = signal([
     {
-      id: '24',
+      id: '25',
       name: 'Lucky strike Wild(morado)',
       price: 12.50,
       oldPrice: 13.90,
@@ -441,7 +453,7 @@ export class CatalogHomeComponent {
       stock: 3,
     },
     {
-      id: '25',
+      id: '26',
       name: 'Lucky strike Fresh(rojo y verde)',
       price: 12.50,
       oldPrice: 13.90,
@@ -453,7 +465,7 @@ export class CatalogHomeComponent {
       stock: 3,
     },
     {
-      id: '26',
+      id: '27',
       name: 'Lucky strike Crush(amarillo y celeste)',
       price: 12.50,
       oldPrice: 13.90,
@@ -468,7 +480,7 @@ export class CatalogHomeComponent {
 
   aperitivosProducts = signal([
     {
-      id: '27',
+      id: '28',
       name: 'Piqueo Snacks',
       price: 10.00,
       oldPrice: 11.10,
@@ -480,7 +492,7 @@ export class CatalogHomeComponent {
       stock: 10,
     },
     {
-      id: '28',
+      id: '29',
       name: 'Cheetos mega queso bolsa',
       price: 9.00,
       oldPrice: 10.00,
@@ -492,7 +504,7 @@ export class CatalogHomeComponent {
       stock: 10,
     },
     {
-      id: '29',
+      id: '30',
       name: 'Inca chips',
       price: 8.50,
       oldPrice: 9.40,
@@ -507,7 +519,7 @@ export class CatalogHomeComponent {
 
   otrosLicoresProducts = signal([
     {
-      id: '30',
+      id: '31',
       name: 'Jagermeister',
       price: 80.00,
       oldPrice: 88.90,
@@ -518,20 +530,20 @@ export class CatalogHomeComponent {
       category: 'OtrosLicores',
       stock: 2,
     },
+    // {
+    //   id: '32',
+    //   name: 'Vodka Russkaya Apple',
+    //   price: 26.50,
+    //   oldPrice: 29.40,
+    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
+    //   unit: 'unid',
+    //   description: '(1) Vodka Russkaya Apple 750ml',
+    //   pack: '1x750ml Botella',
+    //   category: 'OtrosLicores',
+    //   stock: 6,
+    // },
     {
-      id: '31',
-      name: 'Vodka Russkaya Apple',
-      price: 26.50,
-      oldPrice: 29.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
-      unit: 'unid',
-      description: '(1) Vodka Russkaya Apple 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 6,
-    },
-    {
-      id: '32',
+      id: '33',
       name: 'Jose Cuervo Tequila Blanco',
       price: 77.00,
       oldPrice: 85.50,
@@ -543,7 +555,7 @@ export class CatalogHomeComponent {
       stock: 2,
     },
     {
-      id: '33',
+      id: '34',
       name: 'Pisco Santiago Queirolo Quebranta',
       price: 32.00,
       oldPrice: 35.50,
@@ -555,7 +567,7 @@ export class CatalogHomeComponent {
       stock: 2,
     },
     {
-      id: '34',
+      id: '35',
       name: 'Pisco Santiago Queirolo Acholado',
       price: 32.00,
       oldPrice: 35.50,
@@ -567,7 +579,7 @@ export class CatalogHomeComponent {
       stock: 2,
     },
     {
-      id: '35',
+      id: '36',
       name: 'Ron flor de caña',
       price: 56.00,
       oldPrice: 62.20,
@@ -579,7 +591,7 @@ export class CatalogHomeComponent {
       stock: 3,
     },
     {
-      id: '36',
+      id: '37',
       name: 'Ron Cartavio Black',
       price: 27.00,
       oldPrice: 30.00,
