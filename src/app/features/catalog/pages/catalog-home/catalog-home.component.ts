@@ -150,7 +150,7 @@ export class CatalogHomeComponent {
     {
       id: '2',
       name: "6 pack Pilsen 473ML",
-      price: 36.00,
+      price: 35.00,
       oldPrice: 40.00,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431658/6pack-pilsen-473ml_ggmfz3.png',
       unit: 'unid',
@@ -162,7 +162,7 @@ export class CatalogHomeComponent {
     {
       id: '3',
       name: "6 pack Cusqueña 355ML",
-      price: 29.00,
+      price: 28.50,
       oldPrice: 32.20,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431651/6pack-cusque%C3%B1a-355ml_breggl.png',
       unit: 'unid',
@@ -186,7 +186,7 @@ export class CatalogHomeComponent {
     {
       id: '5',
       name: "6 pack Corona 330ML",
-      price: 35.00,
+      price: 34.50,
       oldPrice: 38.90,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431649/6pack-Corona-330ml_ij7k1s.png',
       unit: 'unid',
@@ -274,8 +274,8 @@ export class CatalogHomeComponent {
     {
       id: '12',
       name: 'Russkaya Wild SOTB',
-      price: 5.50,
-      oldPrice: 6.10,
+      price: 6.00,
+      oldPrice: 7.00,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506175/Russkaya_WILD_sex_on_the_beach_355ml_psa4gt.png',
       unit: 'unid',
       description: '(1) Russkaya Wild SOTB 355 ml',
@@ -289,8 +289,8 @@ export class CatalogHomeComponent {
     {
       id: '13',
       name: 'Whisky JOHNNIE WALKER Red Label',
-      price: 58.90,
-      oldPrice: 64.40,
+      price: 56.00,
+      oldPrice: 62.40,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_JOHNNIE_WALKER_Red_Label_750ml_p4izhh.png',
       unit: 'unid',
       description: '(1) Whisky Johnnie Walker Red Label 750ml',
@@ -301,7 +301,7 @@ export class CatalogHomeComponent {
     {
       id: '14',
       name: 'Whisky JOHNNIE WALKER Black Label',
-      price: 130.00,
+      price: 125.00,
       oldPrice: 144.40,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506188/Whisky_JOHNNIE_WALKER_Black_Label_750ml_yexvh6.jpg',
       unit: 'unid',
@@ -313,7 +313,7 @@ export class CatalogHomeComponent {
     {
       id: '15',
       name: 'Whisky JOHNNIE WALKER Double Black Label',
-      price: 190.00,
+      price: 185.00,
       oldPrice: 199.00,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506188/Whisky_JOHNNIE_WALKER_Double_Black_Label_750ml_lvmb4w.jpg',
       unit: 'unid',
@@ -340,7 +340,7 @@ export class CatalogHomeComponent {
     {
       id: '17',
       name: 'Coca Cola',
-      price: 13.00,
+      price: 12.00,
       oldPrice: 14.40,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761413123/coca-cola-3L_yaysjg.jpg',
       unit: 'unid',
@@ -388,7 +388,7 @@ export class CatalogHomeComponent {
     {
       id: '21',
       name: 'Evervess',
-      price: 8.00,
+      price: 7.50,
       oldPrice: 8.90,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761413125/evervess-1.5L_gt6oma.jpg',
       unit: 'unid',
@@ -404,7 +404,7 @@ export class CatalogHomeComponent {
     {
       id: '22',
       name: 'Vino Queirolo Rosé',
-      price: 19.00,
+      price: 18.00,
       oldPrice: 21.11,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531667/Vino_Santiago_Queirolo_Ros%C3%A9_pibg14.jpg',
       unit: 'unid',
@@ -416,7 +416,7 @@ export class CatalogHomeComponent {
     {
       id: '23',
       name: 'Vino Tabernero',
-      price: 22.00,
+      price: 19.00,
       oldPrice: 24.40,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531668/Vino_Tabernero_Gran_Ros%C3%A9_xqh5en.png',
       unit: 'unid',
@@ -428,7 +428,7 @@ export class CatalogHomeComponent {
     {
       id: '24',
       name: 'Vino Viña Vieja Rosé',
-      price: 24.00,
+      price: 21.00,
       oldPrice: 26.70,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531669/Vi%C3%B1a_Vieja_Gran_Ros%C3%A9_u2yvd5.png',
       unit: 'unid',
