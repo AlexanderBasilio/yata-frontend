@@ -42,9 +42,14 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Ubicación
   selectedLocation = signal<LocationResult | null>(null);
+  confirmedLocation = signal<LocationResult | null>(null); // Nueva: ubicación confirmada
   searchQuery = signal('');
   searchResults = signal<any[]>([]);
   showSearchResults = signal(false);
+
+  // Shipping cost dinámico
+  calculatedShippingCost = signal<number>(0); // Inicializado en 0, se calculará al confirmar
+  showConfirmLocationButton = signal(false); // Nueva: mostrar botón de confirmar
 
   // Método de pago
   paymentMethod = signal<'exact' | 'cash'>('exact');
@@ -67,11 +72,11 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   // Datos del carrito
   cartItems = computed(() => this.cartService.items());
 
-  // Resumen de orden
+  // Resumen de orden - MODIFICADO para usar el shipping cost dinámico
   orderSummary = computed<OrderSummary>(() => {
     const subtotal = this.cartService.total();
     const servicecost = 0.50;
-    const shippingCost = 5.00;
+    const shippingCost = this.calculatedShippingCost(); // Usar el costo calculado
     const total = subtotal + servicecost + shippingCost;
 
     return { subtotal, servicecost, shippingCost, total };
@@ -89,6 +94,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   isLoadingMap = signal(true);
   isSubmitting = signal(false);
   isSearching = signal(false);
+  isCalculatingShipping = signal(false); // Nueva: estado de cálculo de envío
 
   // Datos de pedido temporal (en memoria)
   private tempOrderData: OrderData | null = null;
@@ -142,7 +148,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
         this.onMarkerDrag(e.lngLat.lng, e.lngLat.lat);
       });
 
-      this.onMarkerDrag(huancayoCenter[0], huancayoCenter[1]);
+      // No llamar onMarkerDrag al inicio para no calcular automáticamente
     });
   }
 
@@ -157,6 +163,12 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
     const location = await this.mapboxService.reverseGeocode(lng, lat);
     if (location) {
       this.selectedLocation.set(location);
+      this.showConfirmLocationButton.set(true); // Mostrar botón de confirmar
+      // Resetear la ubicación confirmada si el usuario mueve el marcador
+      if (this.confirmedLocation()) {
+        this.confirmedLocation.set(null);
+        this.calculatedShippingCost.set(0);
+      }
     }
   }
 
@@ -191,6 +203,55 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
     this.searchQuery.set('');
     this.searchResults.set([]);
     this.showSearchResults.set(false);
+    this.showConfirmLocationButton.set(true); // Mostrar botón
+    // Resetear ubicación confirmada
+    if (this.confirmedLocation()) {
+      this.confirmedLocation.set(null);
+      this.calculatedShippingCost.set(0);
+    }
+  }
+
+  // NUEVO: Confirmar ubicación y calcular costo de envío
+  async confirmLocation(): Promise<void> {
+    const location = this.selectedLocation();
+    if (!location) {
+      alert('Por favor selecciona una ubicación primero');
+      return;
+    }
+
+    this.isCalculatingShipping.set(true);
+
+    try {
+      const response = await this.orderService.calculateShipping({
+        destLat: location.latitude,
+        destLon: location.longitude
+      }).toPromise();
+
+      if (response) {
+        this.calculatedShippingCost.set(response.shippingCost);
+        this.confirmedLocation.set(location);
+        this.showConfirmLocationButton.set(false);
+
+        console.log('✅ Costo de envío calculado:', {
+          cost: response.shippingCost,
+          currency: response.currency
+        });
+
+        // Mostrar mensaje de éxito
+        alert(`✅ Ubicación confirmada\nCosto de envío: S/ ${response.shippingCost.toFixed(2)}`);
+      }
+    } catch (error: any) {
+      console.error('❌ Error al calcular envío:', error);
+      const errorMessage = error?.error || 'No se pudo calcular el costo de envío. Intenta con otra ubicación.';
+      alert(`❌ ${errorMessage}`);
+      // Resetear todo si hay error
+      this.selectedLocation.set(null);
+      this.confirmedLocation.set(null);
+      this.calculatedShippingCost.set(0);
+      this.showConfirmLocationButton.set(false);
+    } finally {
+      this.isCalculatingShipping.set(false);
+    }
   }
 
   onPaymentMethodChange(method: 'exact' | 'cash'): void {
@@ -214,8 +275,9 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   validateOrder(): boolean {
-    if (!this.selectedLocation()) {
-      alert('Por favor selecciona una ubicación de entrega');
+    // MODIFICADO: Verificar que la ubicación esté confirmada
+    if (!this.confirmedLocation()) {
+      alert('Por favor confirma tu ubicación de entrega');
       return false;
     }
 
@@ -253,7 +315,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
     if (this.validateOrder()) {
       this.tempOrderData = {
         items: this.cartItems(),
-        location: this.selectedLocation()!,
+        location: this.confirmedLocation()!, // Usar la ubicación confirmada
         payment: {
           method: this.paymentMethod(),
           cashAmount: this.cashAmount(),
@@ -344,9 +406,5 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
 
   goBack(): void {
     this.router.navigate(['/cart']);
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

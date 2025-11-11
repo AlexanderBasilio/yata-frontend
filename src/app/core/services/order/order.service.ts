@@ -34,6 +34,16 @@ export interface CreateOrderRequest {
   customerPhone: string;
 }
 
+export interface CalculateShippingRequest {
+  destLat: number;
+  destLon: number;
+}
+
+export interface CalculateShippingResponse {
+  shippingCost: number;
+  currency: string;
+}
+
 export interface CreateOrderResponse {
   success: boolean;
   orderId: string;
@@ -47,6 +57,14 @@ export class OrderService {
   private apiUrl = `${environment.orderServiceUrl}/api/orders`;
 
   constructor(private http: HttpClient) {}
+
+  calculateShipping(request: CalculateShippingRequest): Observable<CalculateShippingResponse> {
+    console.log('📍 Calculando costo de envío para:', request);
+    return this.http.post<CalculateShippingResponse>(
+      `${this.apiUrl}/shipping-cost`,
+      request
+    );
+  }
 
   createOrder(orderData: CreateOrderRequest): Observable<CreateOrderResponse> {
     console.log('📤 Enviando orden completa al backend:', orderData);
