@@ -111,7 +111,7 @@ export class CatalogHomeComponent {
     {
       id: '12',
       name: 'Whisky JOHNNIE WALKER Red Label',
-      price: 58.90,
+      price: 56.00,
       oldPrice: 64.40,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_JOHNNIE_WALKER_Red_Label_750ml_p4izhh.png',
       unit: 'unid',
@@ -123,7 +123,7 @@ export class CatalogHomeComponent {
     {
       id: '2',
       name: "6 pack Pilsen 473ML",
-      price: 36.00,
+      price: 35.00,
       oldPrice: 40.00,
       image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431658/6pack-pilsen-473ml_ggmfz3.png',
       unit: 'unid',
