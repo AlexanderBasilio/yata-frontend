@@ -1,10 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BannerComponent } from '../../components/banner/banner.component';
 import { InfoTableComponent } from '../../components/info-table/info-table.component';
 import { CategoryListComponent } from '../../components/category-list/category-list.component';
 import { ProductSectionComponent } from '../../components/product-section/product-section.component';
 import { FloatingCartButtonComponent } from '../../../../shared/components/floating-cart-button/floating-cart-button.component';
+import { ProductService, Product } from '../../../../core/services/product/product.service';
 
 @Component({
   selector: 'app-catalog-home',
@@ -20,588 +21,105 @@ import { FloatingCartButtonComponent } from '../../../../shared/components/float
   templateUrl: './catalog-home.component.html',
   styleUrl: './catalog-home.component.scss'
 })
+export class CatalogHomeComponent implements OnInit {
+  // Inyección del servicio de productos
+  private productService = inject(ProductService);
 
-export class CatalogHomeComponent {
-  // Datos de ejemplo - después vendrán del backend
-  ofertasProducts = signal([
-    {
-      id: '7',
-      name: 'FourLoko Blue',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/FourLoko-Blue_stflr4.png',
-      unit: 'unid',
-      description: '(1) FourLoko Blue 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 12,
-    },
-    {
-      id: '9',
-      name: 'FourLoko Gold',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506175/FourLoko_Gold_yv2ljg.png',
-      unit: 'unid',
-      description: '(1) FourLoko Gold 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 12,
-    },
-    // {
-    //   id: '11',
-    //   name: 'Mikes Lemonade',
-    //   price: 6.30,
-    //   oldPrice: 7.00,
-    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
-    //   unit: 'unid',
-    //   description: '(1) FourLoko Blue 355 ml',
-    //   pack: '1x355ml Lata',
-    //   category: 'RTD',
-    //   stock: 6,
-    // },
-    {
-      id: '35',
-      name: 'Ron flor de caña',
-      price: 56.00,
-      oldPrice: 62.20,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Ron_flor_de_ca%C3%B1a_750ml_ntplqp.jpg',
-      unit: 'unid',
-      description: '(1) Ron flor de caña 5años 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 3,
-    },
-    {
-      id: '1',
-      name: "6 pack Cusqueña 473ML",
-      price: 37.00,
-      oldPrice: 41.10,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431653/6pack-cusque%C3%B1a-473ml_ljodiz.png',
-      unit: 'unid',
-      description: "(1) 6 pack Cusqueña 473ML 1 und",
-      pack: '1x1 Unidad - 473ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    // {
-    //   id: '31',
-    //   name: 'Vodka Russkaya Apple',
-    //   price: 26.50,
-    //   oldPrice: 29.40,
-    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
-    //   unit: 'unid',
-    //   description: '(1) Vodka Russkaya Apple 750ml',
-    //   pack: '1x750ml Botella',
-    //   category: 'OtrosLicores',
-    //   stock: 6,
-    // },
-    {
-      id: '15',
-      name: 'Whisky Old Times Black',
-      price: 29.50,
-      oldPrice: 31.80,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_OLD_TIMES_Black_Botella_750ml_bvcihp.png',
-      unit: 'unid',
-      description: '(1) Whisky Old Times Black 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 6,
-    },
-    {
-      id: '12',
-      name: 'Whisky JOHNNIE WALKER Red Label',
-      price: 56.00,
-      oldPrice: 64.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_JOHNNIE_WALKER_Red_Label_750ml_p4izhh.png',
-      unit: 'unid',
-      description: '(1) Whisky Johnnie Walker Red Label 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 6,
-    },
-    {
-      id: '2',
-      name: "6 pack Pilsen 473ML",
-      price: 35.00,
-      oldPrice: 40.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431658/6pack-pilsen-473ml_ggmfz3.png',
-      unit: 'unid',
-      description: "(1) 6 pack Pilsen 473ML 1 und",
-      pack: '1x1 Unidad - 473ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    }
-  ]);
+  // Signals para cada categoría de productos
+  ofertasProducts = signal<Product[]>([]);
+  cervezasProducts = signal<Product[]>([]);
+  listosParaTomarProducts = signal<Product[]>([]);
+  whiskyProducts = signal<Product[]>([]);
+  bebidasSinAlcoholProducts = signal<Product[]>([]);
+  vinosProducts = signal<Product[]>([]);
+  cigarrillosVapesProducts = signal<Product[]>([]);
+  aperitivosProducts = signal<Product[]>([]);
+  otrosLicoresProducts = signal<Product[]>([]);
 
-  cervezasProducts = signal([
-    {
-      id: '1',
-      name: "6 pack Cusqueña 473ML",
-      price: 37.00,
-      oldPrice: 41.10,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431653/6pack-cusque%C3%B1a-473ml_ljodiz.png',
-      unit: 'unid',
-      description: "(1) 6 pack Cusqueña 473ML 1 und",
-      pack: '1x1 Unidad - 473ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    {
-      id: '2',
-      name: "6 pack Pilsen 473ML",
-      price: 35.00,
-      oldPrice: 40.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431658/6pack-pilsen-473ml_ggmfz3.png',
-      unit: 'unid',
-      description: "(1) 6 pack Pilsen 473ML 1 und",
-      pack: '1x1 Unidad - 473ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    {
-      id: '3',
-      name: "6 pack Cusqueña 355ML",
-      price: 28.50,
-      oldPrice: 32.20,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431651/6pack-cusque%C3%B1a-355ml_breggl.png',
-      unit: 'unid',
-      description: "(1) 6 pack Cusqueña 355ML 1 und",
-      pack: '1x1 Unidad - 473ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    {
-      id: '4',
-      name: "6 pack Pilsen 355ML",
-      price: 27.00,
-      oldPrice: 30.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431655/6pack-pilsen-355ml_lmjk4f.png',
-      unit: 'unid',
-      description: "(1) 6 pack Cusqueña 355ML 1 und",
-      pack: '1x1 Unidad - 355ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    {
-      id: '5',
-      name: "6 pack Corona 330ML",
-      price: 34.50,
-      oldPrice: 38.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431649/6pack-Corona-330ml_ij7k1s.png',
-      unit: 'unid',
-      description: "(1) 6 pack Corona 330ML 1 und",
-      pack: '1x1 Unidad - 330ml Lata',
-      category: 'Cervezas',
-      stock: 6,
-    },
-    {
-      id: '6',
-      name: "6 pack Coronita 210ML",
-      price: 23.00,
-      oldPrice: 25.60,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761431755/6pack-Corona-210ml_mlgjh3.png',
-      unit: 'unid',
-      description: "(1) 6 pack Coronita 210ML 1 und",
-      pack: '1x1 Unidad - 210ml Lata',
-      category: 'Cervezas',
-      stock: 4,
-    }
+  // Signal para indicar si está cargando
+  isLoading = signal(true);
 
-  ]);
+  // Signal para manejar errores
+  error = signal<string | null>(null);
 
-  listosParaTomarProducts = signal([
-    {
-      id: '7',
-      name: 'FourLoko Blue',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/FourLoko-Blue_stflr4.png',
-      unit: 'unid',
-      description: '(1) FourLoko Blue 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 12,
-    },
-    {
-      id: '8',
-      name: 'FourLoko Green',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506175/FourLoko-Green_rv7gsw.png',
-      unit: 'unid',
-      description: '(1) FourLoko Green 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 6,
-    },
-    {
-      id: '9',
-      name: 'FourLoko Gold',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506175/FourLoko_Gold_yv2ljg.png',
-      unit: 'unid',
-      description: '(1) FourLoko Gold 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 12,
-    },
-    {
-      id: '10',
-      name: 'FourLoko Purple',
-      price: 12.00,
-      oldPrice: 13.30,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/FourLoko-Purple_h1wktq.jpg',
-      unit: 'unid',
-      description: '(1) FourLoko Purple 473 ml',
-      pack: '1x473ml Lata',
-      category: 'RTD',
-      stock: 6,
-    },
-    // {
-    //   id: '11',
-    //   name: 'Mikes Lemonade',
-    //   price: 6.30,
-    //   oldPrice: 7.00,
-    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506174/Mike_s_lemonade_aic6fs.jpg',
-    //   unit: 'unid',
-    //   description: '(1) FourLoko Blue 355 ml',
-    //   pack: '1x355ml Lata',
-    //   category: 'RTD',
-    //   stock: 6,
-    // },
-    {
-      id: '12',
-      name: 'Russkaya Wild SOTB',
-      price: 6.00,
-      oldPrice: 7.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506175/Russkaya_WILD_sex_on_the_beach_355ml_psa4gt.png',
-      unit: 'unid',
-      description: '(1) Russkaya Wild SOTB 355 ml',
-      pack: '1x355ml Botella',
-      category: 'RTD',
-      stock: 6,
-    }
-  ]);
+  ngOnInit(): void {
+    this.loadAllProducts();
+  }
 
-  whiskyProducts = signal([
-    {
-      id: '13',
-      name: 'Whisky JOHNNIE WALKER Red Label',
-      price: 56.00,
-      oldPrice: 62.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_JOHNNIE_WALKER_Red_Label_750ml_p4izhh.png',
-      unit: 'unid',
-      description: '(1) Whisky Johnnie Walker Red Label 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 6,
-    },
-    {
-      id: '14',
-      name: 'Whisky JOHNNIE WALKER Black Label',
-      price: 125.00,
-      oldPrice: 144.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506188/Whisky_JOHNNIE_WALKER_Black_Label_750ml_yexvh6.jpg',
-      unit: 'unid',
-      description: '(1) Whisky Johnnie Walker Black Label 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 2,
-    },
-    {
-      id: '15',
-      name: 'Whisky JOHNNIE WALKER Double Black Label',
-      price: 185.00,
-      oldPrice: 199.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506188/Whisky_JOHNNIE_WALKER_Double_Black_Label_750ml_lvmb4w.jpg',
-      unit: 'unid',
-      description: '(1) Whisky Johnnie Walker Double Black Label 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 1,
-    },
-    {
-      id: '16',
-      name: 'Whisky Old Times Black',
-      price: 29.50,
-      oldPrice: 31.80,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761506187/Whisky_OLD_TIMES_Black_Botella_750ml_bvcihp.png',
-      unit: 'unid',
-      description: '(1) Whisky Old Times Black 750ml',
-      pack: '1x750ml Botella',
-      category: 'Whisky',
-      stock: 6,
-    }
-  ]);
+  /**
+   * Carga todos los productos del catálogo desde el backend
+   * y los organiza por categorías
+   */
+  private loadAllProducts(): void {
+    this.isLoading.set(true);
+    this.error.set(null);
 
-  bebidasSinAlcoholProducts = signal([
-    {
-      id: '17',
-      name: 'Coca Cola',
-      price: 12.00,
-      oldPrice: 14.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761413123/coca-cola-3L_yaysjg.jpg',
-      unit: 'unid',
-      description: '(1) Coca Cola 3L',
-      pack: '1x3L Botella',
-      category: 'BebidasSinAlcohol',
-      stock: 6,
-    },
-    {
-      id: '18',
-      name: 'Guarana',
-      price: 8.80,
-      oldPrice: 9.80,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761413127/guarana-3L_wqs5zt.webp',
-      unit: 'unid',
-      description: '(1) Guarana 3L',
-      pack: '1x3L Botella',
-      category: 'BebidasSinAlcohol',
-      stock: 6,
-    },
-    {
-      id: '19',
-      name: 'Agua San Mateo',
-      price: 2.00,
-      oldPrice: 2.20,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761795317/agua-san-mateo-600ml_hjr2sd.jpg',
-      unit: 'unid',
-      description: '(1) Agua San Mateo 600ml',
-      pack: '1x600ml Botella',
-      category: 'BebidasSinAlcohol',
-      stock: 12,
-    },
-    {
-      id: '20',
-      name: 'Agua Cielo',
-      price: 1.80,
-      oldPrice: 2.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761795150/agua-cielo-625ml_uutm38.jpg',
-      unit: 'unid',
-      description: '(1) Agua Cielo 625ml',
-      pack: '1x625ml Botella',
-      category: 'BebidasSinAlcohol',
-      stock: 12,
-    },
-    {
-      id: '21',
-      name: 'Evervess',
-      price: 7.50,
-      oldPrice: 8.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761413125/evervess-1.5L_gt6oma.jpg',
-      unit: 'unid',
-      description: '(1) Evervess 1.5L',
-      pack: '1x1.5L Botella',
-      category: 'BebidasSinAlcohol',
-      stock: 6,
-    }
-  ]);
+    // Obtener todos los productos del rubro "Licores"
+    this.productService.getProductsByRubro('Licores').subscribe({
+      next: (products) => {
+        // Organizar productos por categoría
+        this.organizeProductsByCategory(products);
+        this.isLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Error al cargar productos:', err);
+        this.error.set('No se pudieron cargar los productos. Por favor, intenta de nuevo.');
+        this.isLoading.set(false);
+      }
+    });
+  }
 
+  /**
+   * Organiza los productos en sus respectivas categorías
+   * Filtra productos con descuento para la sección "Ofertas"
+   */
+  private organizeProductsByCategory(products: Product[]): void {
+    // Filtrar solo productos disponibles
+    const availableProducts = products.filter(p => p.isAvailable && p.stockQuantity > 0);
 
-  vinosProducts = signal([
-    {
-      id: '22',
-      name: 'Vino Queirolo Rosé',
-      price: 18.00,
-      oldPrice: 21.11,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531667/Vino_Santiago_Queirolo_Ros%C3%A9_pibg14.jpg',
-      unit: 'unid',
-      description: '(1) Vino Queirolo Rosé 750 ml',
-      pack: '1x750ml Botella',
-      category: 'Vinos',
-      stock: 2,
-    },
-    {
-      id: '23',
-      name: 'Vino Tabernero',
-      price: 19.00,
-      oldPrice: 24.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531668/Vino_Tabernero_Gran_Ros%C3%A9_xqh5en.png',
-      unit: 'unid',
-      description: '(1) Vino Tabernero 750 ml',
-      pack: '1x750ml Botella',
-      category: 'Vinos',
-      stock: 4,
-    },
-    {
-      id: '24',
-      name: 'Vino Viña Vieja Rosé',
-      price: 21.00,
-      oldPrice: 26.70,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531669/Vi%C3%B1a_Vieja_Gran_Ros%C3%A9_u2yvd5.png',
-      unit: 'unid',
-      description: '(1) Vino Viña Vieja Rosé 750 ml',
-      pack: '1x750ml Botella',
-      category: 'Vinos',
-      stock: 6,
-    }
-  ]);
+    // Ofertas: productos con oldPrice definido (productos en descuento)
+    const ofertas = availableProducts
+      .filter(p => p.oldPrice && p.oldPrice > p.price)
+      .slice(0, 8); // Limitar a 8 productos
+    this.ofertasProducts.set(ofertas);
 
-  cigarrillosVapesProducts = signal([
-    {
-      id: '25',
-      name: 'Lucky strike Wild(morado)',
-      price: 12.50,
-      oldPrice: 13.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531588/Lucky_strike_Wild_morado_10unid_d0yyyg.jpg',
-      unit: 'unid',
-      description: '(1) Lucky strike Wild Mix Slim 10unid',
-      pack: '1x10unid Cajetilla',
-      category: 'CigarrillosVapes',
-      stock: 3,
-    },
-    {
-      id: '26',
-      name: 'Lucky strike Fresh(rojo y verde)',
-      price: 12.50,
-      oldPrice: 13.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531588/Lucky_strike_Fresh_rojo_y_verde_10unid_nfpehp.jpg',
-      unit: 'unid',
-      description: '(1) Lucky strike Fresh Twist 10unid',
-      pack: '1x10unid Cajetilla',
-      category: 'CigarrillosVapes',
-      stock: 3,
-    },
-    {
-      id: '27',
-      name: 'Lucky strike Crush(amarillo y celeste)',
-      price: 12.50,
-      oldPrice: 13.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531589/Lucky_strike_Crush_amarillo_y_celeste_bx9fhl.jpg',
-      unit: 'unid',
-      description: '(1) Lucky strike Crush Slim 10unid',
-      pack: '1x10unid Cajetilla',
-      category: 'CigarrillosVapes',
-      stock: 3,
-    }
-  ]);
+    // Cervezas
+    const cervezas = availableProducts.filter(p => p.category === 'Cerveza');
+    this.cervezasProducts.set(cervezas);
 
-  aperitivosProducts = signal([
-    {
-      id: '28',
-      name: 'Piqueo Snacks',
-      price: 10.00,
-      oldPrice: 11.10,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531533/Piqueo_Snacks_190g_ffk2vb.jpg',
-      unit: 'unid',
-      description: '(1) Piqueo Snacks 190g',
-      pack: '1x190g Bolsa',
-      category: 'Aperitivos',
-      stock: 10,
-    },
-    {
-      id: '29',
-      name: 'Cheetos mega queso bolsa',
-      price: 9.00,
-      oldPrice: 10.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531533/Cheetos_mega_queso_bolsa_180g_gjvbb4.jpg',
-      unit: 'unid',
-      description: '(1) Cheetos mega queso bolsa 180g',
-      pack: '1x180g Bolsa',
-      category: 'Aperitivos',
-      stock: 10,
-    },
-    {
-      id: '30',
-      name: 'Inca chips',
-      price: 8.50,
-      oldPrice: 9.40,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761531533/Inca_chips_135g_dtgzz2.jpg',
-      unit: 'unid',
-      description: '(1) Inca chips 135g',
-      pack: '1x135g Bolsa',
-      category: 'Aperitivos',
-      stock: 10,
-    }
-  ]);
+    // Listos para Tomar (RTD - Ready To Drink)
+    const rtd = availableProducts.filter(p => p.category === 'Listo para beber');
+    this.listosParaTomarProducts.set(rtd);
 
-  otrosLicoresProducts = signal([
-    {
-      id: '31',
-      name: 'Jagermeister',
-      price: 80.00,
-      oldPrice: 88.90,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519690/Jagermeister_700ml_orurcv.jpg',
-      unit: 'unid',
-      description: '(1) Jagermeister 700ml',
-      pack: '1x700ml Botella',
-      category: 'OtrosLicores',
-      stock: 2,
-    },
-    // {
-    //   id: '32',
-    //   name: 'Vodka Russkaya Apple',
-    //   price: 26.50,
-    //   oldPrice: 29.40,
-    //   image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Vodka_Russkaya_Green_750ml_hnkept.jpg',
-    //   unit: 'unid',
-    //   description: '(1) Vodka Russkaya Apple 750ml',
-    //   pack: '1x750ml Botella',
-    //   category: 'OtrosLicores',
-    //   stock: 6,
-    // },
-    {
-      id: '33',
-      name: 'Jose Cuervo Tequila Blanco',
-      price: 77.00,
-      oldPrice: 85.50,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519691/Jose_Cuervo_Tequila_Blanco_750ml_hce1ue.jpg',
-      unit: 'unid',
-      description: '(1) Jose Cuervo Tequila Blanco 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 2,
-    },
-    {
-      id: '34',
-      name: 'Pisco Santiago Queirolo Quebranta',
-      price: 32.00,
-      oldPrice: 35.50,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519692/Pisco_Santiago_Queirolo_Quebranta_750_ml_udfmng.jpg',
-      unit: 'unid',
-      description: '(1) Pisco Santiago Queirolo Quebranta 750 ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 2,
-    },
-    {
-      id: '35',
-      name: 'Pisco Santiago Queirolo Acholado',
-      price: 32.00,
-      oldPrice: 35.50,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519691/Pisco_Santiago_Queirolo_Acholado_750_ml_usvneg.jpg',
-      unit: 'unid',
-      description: '(1) Pisco Santiago Queirolo Acholado 750 ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 2,
-    },
-    {
-      id: '36',
-      name: 'Ron flor de caña',
-      price: 56.00,
-      oldPrice: 62.20,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519693/Ron_flor_de_ca%C3%B1a_750ml_ntplqp.jpg',
-      unit: 'unid',
-      description: '(1) Ron flor de caña 5años 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 3,
-    },
-    {
-      id: '37',
-      name: 'Ron Cartavio Black',
-      price: 27.00,
-      oldPrice: 30.00,
-      image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1761519694/Ron_Cartavio_Black_1L_iadmfq.jpg',
-      unit: 'unid',
-      description: '(1) Ron Cartavio Black 750ml',
-      pack: '1x750ml Botella',
-      category: 'OtrosLicores',
-      stock: 4,
-    }
-  ]);
+    // Whisky
+    const whisky = availableProducts.filter(p => p.category === 'Whiskys');
+    this.whiskyProducts.set(whisky);
 
+    // Bebidas sin Alcohol
+    const bebidasSinAlcohol = availableProducts.filter(p => p.category === 'Bebidas sin alcohol');
+    this.bebidasSinAlcoholProducts.set(bebidasSinAlcohol);
+
+    // Vinos
+    const vinos = availableProducts.filter(p => p.category === 'Vinos');
+    this.vinosProducts.set(vinos);
+
+    // Cigarrillos y Vapes
+    const cigarrillosVapes = availableProducts.filter(p => p.category === 'Cigarrillos y Vaporizadores');
+    this.cigarrillosVapesProducts.set(cigarrillosVapes);
+
+    // Aperitivos
+    const aperitivos = availableProducts.filter(p => p.category === 'Aperitivos');
+    this.aperitivosProducts.set(aperitivos);
+
+    // Otros Licores
+    const otrosLicores = availableProducts.filter(p => p.category === 'Otros Licores');
+    this.otrosLicoresProducts.set(otrosLicores);
+  }
+
+  /**
+   * Método para recargar los productos (útil para refrescar el catálogo)
+   */
+  reloadProducts(): void {
+    this.loadAllProducts();
+  }
 }
