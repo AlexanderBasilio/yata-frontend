@@ -1,3 +1,93 @@
-:host {
-  display: block;
+// Contenedor de la sección
+.product-section {
+  position: relative;
+}
+
+// Lista de productos - ocultar scrollbar
+.products-list {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Clase helper para ocultar scrollbar
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Scroll suave
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+// Indicadores de scroll (flechas)
+.scroll-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+  pointer-events: none; // El contenedor no es clickeable
+
+  // Flecha izquierda
+  &.left {
+    left: 0;
+    width: 2.5rem;
+    background: linear-gradient(to right, white, transparent);
+    justify-content: flex-start;
+    padding-left: 0.25rem;
+  }
+
+  // Flecha derecha
+  &.right {
+    right: 0;
+    width: 3rem;
+    background: linear-gradient(to left, white 60%, rgba(255, 255, 255, 0.9) 80%, transparent);
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+  }
+}
+
+// Botón de flecha - AHORA SÍ ES CLICKEABLE
+.arrow-button {
+  width: 1.75rem;
+  height: 1.75rem;
+  background-color: white;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  border: none;
+  cursor: pointer;
+  pointer-events: auto; // Hacer que el botón sea clickeable
+  transition: all 0.2s;
+  animation: gentle-pulse-arrow 2s ease-in-out infinite;
+
+  // Efecto al tocar/presionar
+  &:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 4px -1px rgb(0 0 0 / 0.1);
+  }
+}
+
+// Animación de pulso para las flechas
+@keyframes gentle-pulse-arrow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
 }

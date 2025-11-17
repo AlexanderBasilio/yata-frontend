@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
         <h3 class="text-[#0F456E] font-bold">{{ deliveryTime() }}</h3>
       </div>
       <div class="flex flex-col justify-center items-center w-1/2">
-        <h3 class="text-[#0F456E] font-semibold text-sm">Costo de envío</h3>
+        <h3 class="text-[#0F456E] font-semibold text-sm">Acumula IntiCoins</h3>
         <h3 class="text-[#0F456E] font-bold">{{ shippingCost() }}</h3>
       </div>
     </div>
@@ -23,5 +23,5 @@ import { CommonModule } from '@angular/common';
 })
 export class InfoTableComponent {
   deliveryTime = input<string>('15 - 35 min');
-  shippingCost = input<string>('s/5');
+  shippingCost = input<string>('Por cada pedido');
 }

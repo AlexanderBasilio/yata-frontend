@@ -1,1 +1,54 @@
-<p>product-section works!</p>,
+<section class="product-section py-4">
+  <!-- Header de la sección -->
+  <div class="section-header flex justify-between items-center px-4 mb-3">
+    <h2 class="text-xl font-bold text-gray-800">{{ title() }}</h2>
+  </div>
+
+  <!-- Contenedor con flechas indicadoras -->
+  <div class="relative">
+    <!-- Flecha izquierda (solo visible si se puede scrollear a la izquierda) -->
+    @if (canScrollLeft()) {
+      <div class="scroll-indicator left">
+        <button
+          class="arrow-button"
+          (click)="scrollLeft()"
+          aria-label="Deslizar a la izquierda">
+          <svg class="w-4 h-4 text-[#0F456E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Flecha derecha (solo visible si se puede scrollear a la derecha) -->
+    @if (canScrollRight()) {
+      <div class="scroll-indicator right">
+        <button
+          class="arrow-button"
+          (click)="scrollRight()"
+          aria-label="Deslizar a la derecha">
+          <svg class="w-4 h-4 text-[#0F456E]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/>
+          </svg>
+        </button>
+      </div>
+    }
+
+    <!-- Lista de productos con scroll horizontal -->
+    <div
+      #scrollContainer
+      (scroll)="onScroll()"
+      class="products-list flex gap-3 overflow-x-auto px-4 pb-3 scroll-smooth scrollbar-hide">
+      @for (product of products(); track product.id) {
+        <app-product-card [product]="product" />
+      }
+
+      <!-- Mensaje si no hay productos en esta categoría -->
+      @if (products().length === 0) {
+        <div class="w-full text-center py-8 text-gray-500">
+          <p>No hay productos disponibles en esta categoría</p>
+        </div>
+      }
+    </div>
+  </div>
+</section>

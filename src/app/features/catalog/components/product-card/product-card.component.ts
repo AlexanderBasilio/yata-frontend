@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CartService } from '../../../../core/services/cart/cart.service';
 import { Product } from '../../../../core/services/product/product.service';
@@ -11,13 +11,11 @@ import { Product } from '../../../../core/services/product/product.service';
   styleUrl: './product-card.component.scss'
 })
 export class ProductCardComponent {
-  // Usar la interfaz Product del servicio
   product = input.required<Product>();
 
-  /**
-   * Computed signal que verifica si el producto tiene descuento
-   * Un producto tiene descuento si oldPrice existe y es mayor que price
-   */
+  // Signal para mostrar feedback visual
+  showFeedback = signal(false);
+
   hasDiscount = computed(() => {
     const prod = this.product();
     return prod.oldPrice !== undefined &&
@@ -25,9 +23,6 @@ export class ProductCardComponent {
            prod.oldPrice > prod.price;
   });
 
-  /**
-   * Computed signal para obtener el precio anterior formateado
-   */
   formattedOldPrice = computed(() => {
     const oldPrice = this.product().oldPrice;
     return oldPrice ? oldPrice.toFixed(2) : '0.00';
@@ -35,19 +30,23 @@ export class ProductCardComponent {
 
   constructor(private cartService: CartService) {}
 
-  /**
-   * Agrega el producto al carrito
-   * Mapea los campos del backend a lo que espera el CartService
-   */
-  onAddToCart() {
+  onAddToCart(event: Event) {
+    event.stopPropagation(); // Evitar propagación si la card es clickeable
+
     const productData = this.product();
 
     this.cartService.addItem({
-      id: productData.id, // UUID del backend
-      name: productData.name, // Nombre descriptivo
-      price: productData.price, // Precio actual
-      image: productData.imageUrl, // URL de la imagen
-      unit: productData.unit // Unidad de medida
+      id: productData.id,
+      name: productData.name,
+      price: productData.price,
+      image: productData.imageUrl,
+      unit: productData.unit
     });
+
+    // Mostrar feedback visual
+    this.showFeedback.set(true);
+    setTimeout(() => {
+      this.showFeedback.set(false);
+    }, 600);
   }
 }

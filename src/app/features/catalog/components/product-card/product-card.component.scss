@@ -1,3 +1,52 @@
-.product-card {
-  min-height: 320px; // Altura mínima uniforme
+.add-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: #0F456E;
+  color: white;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+
+  // Animación de pulso suave cada 3 segundos
+  animation: gentle-pulse 3s ease-in-out infinite;
+
+  // Active effect (al tocar)
+  &:active {
+    transform: scale(0.95);
+  }
+
+  // Cuando se agregó al carrito
+  &.added-to-cart {
+    background-color: #22c55e;
+    animation: success-bounce 0.6s ease-out;
+  }
+}
+
+// Animaciones
+@keyframes gentle-pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 4px 12px -1px rgb(15 69 110 / 0.4);
+  }
+}
+
+@keyframes success-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
 }

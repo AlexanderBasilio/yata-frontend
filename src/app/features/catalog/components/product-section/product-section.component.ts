@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, signal, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ProductCardComponent } from '../product-card/product-card.component';
 import { Product } from '../../../../core/services/product/product.service';
@@ -7,39 +7,60 @@ import { Product } from '../../../../core/services/product/product.service';
   selector: 'app-product-section',
   standalone: true,
   imports: [CommonModule, ProductCardComponent],
-  template: `
-    <section class="product-section py-4">
-      <!-- Header de la sección -->
-      <div class="section-header flex justify-between items-center px-3 mb-3">
-        <h2 class="text-xl font-bold text-gray-800">{{ title() }}</h2>
-        <button class="text-sm text-[#0F456E] font-semibold px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">
-          Ver más
-        </button>
-      </div>
-
-      <!-- Lista de productos con scroll horizontal -->
-      <div class="products-list flex gap-3 overflow-x-auto px-3 scroll-smooth">
-        @for (product of products(); track product.id) {
-          <app-product-card [product]="product" />
-        }
-
-        <!-- Mensaje si no hay productos en esta categoría -->
-        @if (products().length === 0) {
-          <div class="w-full text-center py-8 text-gray-500">
-            <p>No hay productos disponibles en esta categoría</p>
-          </div>
-        }
-      </div>
-    </section>
-  `,
-  styles: [`
-    .products-list::-webkit-scrollbar {
-      display: none;
-    }
-  `]
+  templateUrl: './product-section.component.html',
+  styleUrl: './product-section.component.scss'
 })
-export class ProductSectionComponent {
-  // Usar la interfaz Product del servicio
+export class ProductSectionComponent implements AfterViewInit {
+  // Inputs
   title = input.required<string>();
   products = input<Product[]>([]);
+
+  // ViewChild para acceder al contenedor de scroll
+  @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
+
+  // Signals para controlar las flechas
+  canScrollLeft = signal(false);
+  canScrollRight = signal(true);
+
+  ngAfterViewInit() {
+    // Verificar scroll inicial después de que se rendericen las cards
+    setTimeout(() => this.updateScrollIndicators(), 150);
+  }
+
+  onScroll() {
+    this.updateScrollIndicators();
+  }
+
+  /**
+   * Desplazar hacia la izquierda
+   */
+  scrollLeft() {
+    if (!this.scrollContainer) return;
+    const container = this.scrollContainer.nativeElement;
+    const scrollAmount = container.clientWidth * 0.8; // Desplazar 80% del ancho visible
+    container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+  }
+
+  /**
+   * Desplazar hacia la derecha
+   */
+  scrollRight() {
+    if (!this.scrollContainer) return;
+    const container = this.scrollContainer.nativeElement;
+    const scrollAmount = container.clientWidth * 0.8; // Desplazar 80% del ancho visible
+    container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+  }
+
+  private updateScrollIndicators() {
+    if (!this.scrollContainer) return;
+
+    const container = this.scrollContainer.nativeElement;
+    const scrollLeft = container.scrollLeft;
+    const scrollWidth = container.scrollWidth;
+    const clientWidth = container.clientWidth;
+
+    // Actualizar señales con margen de tolerancia de 10px
+    this.canScrollLeft.set(scrollLeft > 10);
+    this.canScrollRight.set(scrollLeft < scrollWidth - clientWidth - 10);
+  }
 }

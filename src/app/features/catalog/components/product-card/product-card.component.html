@@ -1,44 +1,42 @@
 <div class="product-card flex-shrink-0 w-[180px] bg-white rounded-xl p-3 shadow-sm flex flex-col">
   <!-- Imagen del producto con botón de agregar -->
   <div class="product-img relative mb-2 h-[180px] flex items-center justify-center bg-gray-50 rounded-lg">
-    <!-- Cambio: image a imageUrl, name a brand en el alt -->
     <img
       [src]="product().imageUrl"
       [alt]="product().brand"
       class="max-w-full max-h-full object-contain">
 
-    <!-- Botón para agregar al carrito -->
+    <!-- Botón para agregar al carrito - CAMBIADO: ahora con ícono de carrito -->
     <button
-      (click)="onAddToCart()"
-      class="add-btn absolute top-2 right-2 w-7 h-7 bg-[#0F456E] text-white rounded-full flex items-center justify-center text-lg hover:bg-[#0d3a5a] transition-colors active:scale-95 shadow-md">
-      +
+      (click)="onAddToCart($event)"
+      class="add-btn absolute top-2 right-2 w-7 h-7 bg-[#0F456E] text-white rounded-full flex items-center justify-center hover:bg-[#0d3a5a] transition-colors active:scale-95 shadow-md"
+      [class.added-to-cart]="showFeedback()">
+      <!-- SVG del símbolo + gordito y centrado -->
+      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </button>
   </div>
 
   <!-- Información del producto -->
   <div class="product-info flex-1 flex flex-col">
-    <!-- Precio actual -->
     <p class="text-base font-bold text-gray-800">
       S/ {{ product().price.toFixed(2) }}
       <span class="text-xs font-normal text-gray-600">{{ product().unit }}</span>
     </p>
 
-    <!-- Precio anterior (si existe descuento) -->
     @if (hasDiscount()) {
       <p class="text-xs text-gray-400 line-through">
         S/ {{ formattedOldPrice() }}
       </p>
     }
 
-    <!-- Cambio: description a name (nombre descriptivo del producto) -->
     <p class="text-xs text-gray-700 mt-2 line-clamp-2 flex-1">
       {{ product().name }}
     </p>
 
-    <!-- Pack del producto -->
     <p class="text-xs text-gray-500 mt-1">{{ product().pack }}</p>
 
-    <!-- Indicador de stock bajo (opcional) -->
     @if (product().stockQuantity < 5 && product().stockQuantity > 0) {
       <p class="text-xs text-orange-600 mt-1">
         ¡Solo quedan {{ product().stockQuantity }}!
