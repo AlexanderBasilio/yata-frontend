@@ -11,6 +11,13 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <!-- Google Analytics Services -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-LHM0T0C63D"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    // NO llamar a config aquí, lo hará Angular
+    console.log('🔧 gtag función inicializada');
+  </script>
 
   <!-- Mapbox GL CSS -->
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">

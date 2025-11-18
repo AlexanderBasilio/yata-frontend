@@ -10,51 +10,75 @@ declare let gtag: Function;
 })
 export class AnalyticsService {
   private router = inject(Router);
+  private isInitialized = false;
 
   /**
    * Inicializa Google Analytics y registra cambios de ruta
    */
   initialize() {
-    // En desarrollo, solo registra en consola
-    if (!environment.production) {
-      console.log('📊 Analytics en modo desarrollo');
-      this.trackDevelopmentPages();
-      return;
-    }
-
-    // En producción, inicializa Google Analytics
-    this.initializeGoogleAnalytics();
-    this.trackPageViews();
+    // Esperar a que gtag esté disponible
+    this.waitForGtag().then(() => {
+      this.setupAnalytics();
+    });
   }
 
-  private initializeGoogleAnalytics() {
-    if (typeof gtag === 'undefined') {
-      console.warn('Google Analytics no está cargado');
-      return;
-    }
+  /**
+   * Espera a que gtag esté disponible (máximo 5 segundos)
+   */
+  private waitForGtag(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 50 intentos = 5 segundos
 
-    // Inicializar gtag con tu ID
-    gtag('js', new Date());
+      const checkGtag = setInterval(() => {
+        attempts++;
+
+        if (typeof gtag !== 'undefined') {
+          clearInterval(checkGtag);
+          console.log('✅ gtag está disponible');
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkGtag);
+          console.warn('⚠️ Google Analytics no se cargó después de 5 segundos');
+          reject();
+        }
+      }, 100); // Revisar cada 100ms
+    });
+  }
+
+  /**
+   * Configura Google Analytics
+   */
+  private setupAnalytics() {
+    if (this.isInitialized) return;
+
+    // Configurar gtag
     gtag('config', environment.googleAnalyticsId, {
-      send_page_view: false // Deshabilitamos el envío automático
+      send_page_view: false
     });
 
-    console.log('✅ Google Analytics inicializado:', environment.googleAnalyticsId);
+    this.isInitialized = true;
+
+    if (environment.production) {
+      console.log('✅ Google Analytics PRODUCCIÓN inicializado:', environment.googleAnalyticsId);
+    } else {
+      console.log('📊 Google Analytics DESARROLLO inicializado:', environment.googleAnalyticsId);
+    }
+
+    // Rastrear cambios de página
+    this.trackPageViews();
   }
 
   private trackPageViews() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
-      this.trackPageView(event.urlAfterRedirects);
-    });
-  }
+      const url = event.urlAfterRedirects;
+      this.trackPageView(url);
 
-  private trackDevelopmentPages() {
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: any) => {
-      console.log('📄 Página vista (dev):', event.urlAfterRedirects);
+      if (!environment.production) {
+        console.log('📄 Página vista:', url);
+      }
     });
   }
 
@@ -62,11 +86,10 @@ export class AnalyticsService {
    * Registra una vista de página
    */
   trackPageView(url: string) {
-    if (typeof gtag !== 'undefined') {
+    if (this.isInitialized && typeof gtag !== 'undefined') {
       gtag('config', environment.googleAnalyticsId, {
         page_path: url
       });
-      console.log('📊 Página registrada:', url);
     }
   }
 
@@ -74,15 +97,16 @@ export class AnalyticsService {
    * Registra un evento personalizado
    */
   trackEvent(action: string, category: string, label?: string, value?: number) {
-    if (typeof gtag !== 'undefined') {
+    if (this.isInitialized && typeof gtag !== 'undefined') {
       gtag('event', action, {
         event_category: category,
         event_label: label,
         value: value
       });
-      console.log('🎯 Evento:', { action, category, label, value });
-    } else if (!environment.production) {
-      console.log('🎯 Evento (dev):', { action, category, label, value });
+
+      if (!environment.production) {
+        console.log('🎯 Evento:', { action, category, label, value });
+      }
     }
   }
 
@@ -97,14 +121,13 @@ export class AnalyticsService {
    * Rastrear compra completada
    */
   trackPurchase(orderId: string, total: number, itemCount: number) {
-    if (typeof gtag !== 'undefined') {
+    if (this.isInitialized && typeof gtag !== 'undefined') {
       gtag('event', 'purchase', {
         transaction_id: orderId,
         value: total,
         currency: 'PEN',
         items: itemCount
       });
-      console.log('💰 Compra registrada:', { orderId, total, itemCount });
     }
   }
 
