@@ -368,6 +368,51 @@
     </div>
   }
 
+  <!-- ✨ NUEVO: Modal de IntiCoins -->
+  @if (showIntiCoinsModal()) {
+    <div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+      <div class="bg-white rounded-2xl p-8 max-w-sm w-full text-center animate-scale-in shadow-2xl">
+        <!-- Icono de moneda animado -->
+        <div class="relative w-24 h-24 mx-auto mb-4">
+          <div class="absolute inset-0 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full animate-pulse"></div>
+          <div class="absolute inset-2 bg-white rounded-full flex items-center justify-center">
+            <span class="text-4xl font-bold text-amber-500">I</span>
+          </div>
+        </div>
+
+        <!-- Título -->
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">
+          ¡Gracias por tu compra!
+        </h2>
+
+        <!-- Mensaje de IntiCoins -->
+        <div class="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-xl p-4 mb-4">
+          <p class="text-sm text-gray-700 mb-2">
+            Estás acumulando
+          </p>
+          <p class="text-4xl font-bold text-amber-600 mb-2">
+            {{ accumulatedIntiCoins().toLocaleString('es-PE') }} IntiCoins
+          </p>
+          <p class="text-xs text-gray-600">
+            que podrás canjear como prefieras
+          </p>
+        </div>
+
+        <!-- Descripción adicional -->
+        <p class="text-sm text-gray-600 mb-6">
+          ✨ Acumula más IntiCoins en cada compra y disfruta de increíbles beneficios
+        </p>
+
+        <!-- Botón para continuar -->
+        <button
+          (click)="closeIntiCoinsModal()"
+          class="w-full bg-gradient-to-r from-amber-500 to-yellow-500 text-white py-4 rounded-xl font-bold text-lg hover:from-amber-600 hover:to-yellow-600 transition-all active:scale-[0.98] shadow-lg">
+          ¡Genial! Continuar
+        </button>
+      </div>
+    </div>
+  }
+
   <!-- Modal de Éxito -->
   @if (showSuccessModal()) {
     <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

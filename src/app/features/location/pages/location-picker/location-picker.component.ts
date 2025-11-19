@@ -67,7 +67,11 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
 
   // Modales
   showConfirmModal = signal(false);
+  showIntiCoinsModal = signal(false);
   showSuccessModal = signal(false);
+
+  // IntiCoins acumulados
+  accumulatedIntiCoins = signal<number>(0);
 
   // Datos del carrito
   cartItems = computed(() => this.cartService.items());
@@ -387,21 +391,42 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
 
       console.log('✅ Pedido guardado:', response);
 
-      this.tempOrderData = null;
-      this.cartService.clearCart();
-      this.showSuccessModal.set(true);
+      // ✨ NUEVO: Calcular IntiCoins (1000 IntiCoins por cada S/ 1 gastado, redondeado)
+      const intiCoins = Math.floor(this.tempOrderData.summary.total * 1000);
+      this.accumulatedIntiCoins.set(intiCoins);
 
-      setTimeout(() => {
-        this.router.navigate(['/catalog']);
-      }, 3000);
+      // ✨ NUEVO: Mostrar primero el modal de IntiCoins
+      this.showIntiCoinsModal.set(true);
+
+      // Ya no limpiamos el carrito ni redirigimos aquí
+      // Eso se hará después de cerrar el modal de IntiCoins
 
     } catch (error: any) {
       console.error('❌ Error al guardar orden:', error);
       alert(error?.error?.message || 'Hubo un error al procesar tu orden');
       this.tempOrderData = null;
+      this.showIntiCoinsModal.set(false); // Asegurar que el modal no se muestre si hay error
     } finally {
       this.isSubmitting.set(false);
     }
+  }
+
+  /**
+   * ✨ NUEVO: Cierra el modal de IntiCoins y muestra el modal de éxito
+   * Luego limpia el carrito y redirige al catálogo
+   */
+  closeIntiCoinsModal(): void {
+    this.showIntiCoinsModal.set(false);
+    this.showSuccessModal.set(true);
+
+    // Limpiar carrito y datos temporales
+    this.tempOrderData = null;
+    this.cartService.clearCart();
+
+    // Redirigir al catálogo después de 3 segundos
+    setTimeout(() => {
+      this.router.navigate(['/catalog']);
+    }, 3000);
   }
 
   goBack(): void {
