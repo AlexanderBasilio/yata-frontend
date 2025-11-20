@@ -392,7 +392,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
       console.log('✅ Pedido guardado:', response);
 
       // ✨ NUEVO: Calcular IntiCoins (1000 IntiCoins por cada S/ 1 gastado, redondeado)
-      const intiCoins = Math.floor(this.tempOrderData.summary.total * 1000);
+      const intiCoins = Math.round(this.tempOrderData.summary.total * 1000);
       this.accumulatedIntiCoins.set(intiCoins);
 
       // ✨ NUEVO: Mostrar primero el modal de IntiCoins
