@@ -1,0 +1,70 @@
+<div class="dish-card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow flex gap-3 p-3">
+
+  <!-- Contenido del platillo (lado izquierdo) -->
+  <div class="dish-info flex-1 flex flex-col">
+
+    <!-- Nombre del platillo -->
+    <h3 class="text-base font-bold text-gray-800 mb-1 line-clamp-2">
+      {{ dish().name }}
+    </h3>
+
+    <!-- Ingredientes/Descripción -->
+    <p class="text-xs text-gray-600 mb-2 line-clamp-2 flex-1">
+      {{ dish().ingredients }}
+    </p>
+
+    <!-- Precio -->
+    <div class="flex items-end justify-between mt-auto">
+      <div class="price">
+        <p class="text-lg font-bold text-gray-800">
+          S/ {{ dish().price.toFixed(2) }}
+        </p>
+      </div>
+
+      <!-- Indicadores adicionales -->
+      <div class="flex items-center gap-2 text-xs">
+        <!-- Tiene modificadores opcionales -->
+        @if (modifiers().length > 0) {
+          <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-semibold">
+            + Extras
+          </span>
+        }
+
+        <!-- Tiene selecciones requeridas -->
+        @if (requiredSelections().length > 0) {
+          <span class="bg-green-50 text-green-700 px-2 py-1 rounded-full font-semibold">
+            ✓ Incluye
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- No disponible overlay -->
+    @if (!dish().isAvailable) {
+      <div class="mt-2">
+        <span class="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
+          No disponible
+        </span>
+      </div>
+    }
+  </div>
+
+  <!-- Imagen del platillo (lado derecho) -->
+  <div class="dish-image relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+    <img
+      [src]="dish().imageUrl"
+      [alt]="dish().name"
+      class="w-full h-full object-cover"
+      loading="lazy">
+
+    <!-- Overlay si no está disponible -->
+    @if (!dish().isAvailable) {
+      <div class="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
+        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+        </svg>
+      </div>
+    }
+  </div>
+
+</div>

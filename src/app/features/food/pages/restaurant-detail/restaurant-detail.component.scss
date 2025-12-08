@@ -1,0 +1,32 @@
+.navbar {
+  height: 56px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-chip {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid transparent;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background-color: #0F456E;
+    color: white;
+    border-color: #0F456E;
+  }
+}
+
+.category-section {
+  scroll-margin-top: 120px; // Para el scroll suave con sticky headers
+}

@@ -1,0 +1,56 @@
+<div class="min-h-screen bg-gray-50 py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-gray-800 mb-2">
+        ¿Qué te gustaría pedir hoy?
+      </h1>
+      <p class="text-gray-600">
+        Selecciona el servicio que necesitas
+      </p>
+    </div>
+
+    <!-- Grid de servicios -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      @for (service of services; track service.id) {
+        <button
+          (click)="selectService(service)"
+          [disabled]="!service.available"
+          class="service-card group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 text-left"
+          [class.opacity-50]="!service.available"
+          [class.cursor-not-allowed]="!service.available">
+
+          <!-- Badge "Próximamente" -->
+          @if (service.comingSoon) {
+            <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
+              Próximamente
+            </div>
+          }
+
+          <!-- Ícono -->
+          <div class="w-16 h-16 bg-[#0F456E]/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <span class="text-4xl">{{ service.icon }}</span>
+          </div>
+
+          <!-- Contenido -->
+          <h3 class="text-xl font-bold text-gray-800 mb-2">
+            {{ service.name }}
+          </h3>
+          <p class="text-gray-600 text-sm">
+            {{ service.description }}
+          </p>
+
+          <!-- Flecha -->
+          @if (service.available) {
+            <div class="mt-4 flex items-center text-[#0F456E] font-semibold text-sm group-hover:translate-x-2 transition-transform">
+              Explorar
+              <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          }
+        </button>
+      }
+    </div>
+  </div>
+</div>

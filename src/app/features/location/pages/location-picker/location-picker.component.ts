@@ -113,7 +113,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   ngOnInit(): void {
     if (this.cartItems().length === 0) {
       alert('Tu carrito está vacío');
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/liquor/catalog']);
     }
   }
 
@@ -343,7 +343,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   cancelOrder(): void {
     if (confirm('¿Estás seguro de cancelar tu compra?')) {
       this.tempOrderData = null;
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/liquor/catalog']);
     }
   }
 
@@ -425,11 +425,11 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
 
     // Redirigir al catálogo después de 3 segundos
     setTimeout(() => {
-      this.router.navigate(['/catalog']);
+      this.router.navigate(['/liquor/catalog']);
     }, 3000);
   }
 
   goBack(): void {
-    this.router.navigate(['/cart']);
+    this.router.navigate(['/liquor/cart']);
   }
 }

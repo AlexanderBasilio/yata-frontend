@@ -43,10 +43,10 @@ export class CartViewComponent {
       alert('Tu carrito está vacío');
       return;
     }
-    this.router.navigate(['/location']);
+    this.router.navigate(['/liquor/location']);
   }
 
   goBack(): void {
-    this.router.navigate(['/catalog']);
+    this.router.navigate(['/liquor/catalog']);
   }
 }

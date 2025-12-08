@@ -1,0 +1,5 @@
+.service-card {
+  &:not(:disabled):active {
+    transform: scale(0.98);
+  }
+}

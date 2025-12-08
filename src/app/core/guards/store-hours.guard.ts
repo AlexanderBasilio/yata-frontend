@@ -25,8 +25,8 @@ export const storeHoursGuard: CanActivateFn = (route, state) => {
 
   // Si la tienda está ABIERTA y está en /closed
   if (isOpen && currentUrl.startsWith('/closed')) {
-    console.log('✅ Tienda abierta - Redirigiendo a /catalog');
-    router.navigate(['/catalog']);
+    console.log('✅ Tienda abierta - Redirigiendo a /liquor/catalog');
+    router.navigate(['/liquor/catalog']);
     return false;
   }
 

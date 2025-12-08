@@ -20,6 +20,6 @@ export class FloatingCartButtonComponent {
   ) {}
 
   goToCart(): void {
-    this.router.navigate(['/cart']);
+    this.router.navigate(['/liquor/cart']);
   }
 }

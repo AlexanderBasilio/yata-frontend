@@ -1,0 +1,13 @@
+.restaurant-card {
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.card-image {
+  position: relative;
+}
+
+.restaurant-logo {
+  z-index: 10;
+}
