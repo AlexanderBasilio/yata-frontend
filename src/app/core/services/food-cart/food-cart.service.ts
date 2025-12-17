@@ -1,90 +1,146 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { FoodCart, FoodCartItem, AddToCartRequest } from '../../models/food-cart.model';
+import { FoodCart, AddToCartRequest } from '../../models/food-cart.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FoodCartService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/v1/food-cart`;
+  private foodCartApiUrl = `${environment.foodCartServiceUrl}/api/food-cart`;
+  private readonly CART_ID_KEY = 'yata_cart_id';
 
-  // Estado del carrito en signals
-  private cartSignal = signal<FoodCart | null>(null);
+  // ✅ Obtener o crear Cart ID
+  private getCartId(): string | null {
+    return localStorage.getItem(this.CART_ID_KEY);
+  }
 
-  // Computed signals
-  cart = computed(() => this.cartSignal());
-  items = computed(() => this.cartSignal()?.items || []);
-  itemCount = computed(() =>
-    this.items().reduce((sum, item) => sum + item.quantity, 0)
-  );
-  subtotal = computed(() => this.cartSignal()?.subtotal || 0);
-  total = computed(() => this.cartSignal()?.total || 0);
-  restaurantId = computed(() => this.cartSignal()?.restaurantId);
-  restaurantName = computed(() => this.cartSignal()?.restaurantName);
+  // ✅ Guardar Cart ID
+  private setCartId(cartId: string): void {
+    localStorage.setItem(this.CART_ID_KEY, cartId);
+  }
 
-  /**
-   * Obtener carrito actual
-   */
-  getCart(): Observable<FoodCart> {
-    return this.http.get<FoodCart>(this.apiUrl).pipe(
-      tap(cart => this.cartSignal.set(cart))
+  // ✅ Crear headers con X-CART-ID
+  private getHeaders(): HttpHeaders {
+    const cartId = this.getCartId();
+    let headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    if (cartId) {
+      headers = headers.set('X-CART-ID', cartId);
+    }
+
+    return headers;
+  }
+
+  // Obtener carrito actual
+  getCart(): Observable<FoodCart | null> {
+    return this.http.get<FoodCart>(this.foodCartApiUrl, { headers: this.getHeaders() }).pipe(
+      tap((cart) => {
+        // Guardar el cart ID si lo recibimos
+        if (cart?.id) {
+          this.setCartId(cart.id);
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        if (error.status === 404 || error.status === 0) {
+          console.log('📭 Carrito vacío o no existe');
+          return of(null);
+        }
+        console.error('❌ Error obteniendo carrito:', error);
+        return of(null);
+      })
     );
   }
 
-  /**
-   * Agregar item al carrito
-   */
+  // Agregar item al carrito
   addItem(request: AddToCartRequest): Observable<FoodCart> {
-    return this.http.post<FoodCart>(`${this.apiUrl}/items`, request).pipe(
-      tap(cart => {
-        this.cartSignal.set(cart);
-        console.log('✅ Platillo agregado al carrito');
+    return this.http.post<FoodCart>(`${this.foodCartApiUrl}/items`, request, {
+      headers: this.getHeaders()
+    }).pipe(
+      tap((cart) => {
+        // Guardar el cart ID después de agregar
+        if (cart?.id) {
+          this.setCartId(cart.id);
+          console.log('🛒 Cart ID guardado:', cart.id);
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error agregando item:', error);
+        return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Actualizar cantidad de un item
-   */
-  updateItem(itemId: string, quantity: number): Observable<FoodCart> {
-    return this.http.put<FoodCart>(`${this.apiUrl}/items/${itemId}`, { quantity }).pipe(
-      tap(cart => this.cartSignal.set(cart))
+  // Actualizar cantidad de un item
+  updateItemQuantity(itemId: string, quantity: number): Observable<FoodCart> {
+    return this.http.put<FoodCart>(`${this.foodCartApiUrl}/items/${itemId}`,
+      { quantity },
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error actualizando cantidad:', error);
+        return throwError(() => error);
+      })
     );
   }
 
-  /**
-   * Eliminar item del carrito
-   */
-  removeItem(itemId: string): Observable<FoodCart> {
-    return this.http.delete<FoodCart>(`${this.apiUrl}/items/${itemId}`).pipe(
-      tap(cart => this.cartSignal.set(cart))
+  // Eliminar un item del carrito
+  removeItem(itemId: string): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(
+      `${this.foodCartApiUrl}/items/${itemId}`,
+      { headers: this.getHeaders() }
+    ).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error eliminando item:', error);
+        return throwError(() => error);
+      })
     );
   }
 
-  /**
-   * Vaciar carrito completo
-   */
+  // Vaciar el carrito
   clearCart(): Observable<void> {
-    return this.http.delete<void>(this.apiUrl).pipe(
+    return this.http.delete<void>(this.foodCartApiUrl, { headers: this.getHeaders() }).pipe(
       tap(() => {
-        this.cartSignal.set(null);
-        console.log('🗑️ Carrito vaciado');
+        // Opcional: podrías limpiar el cartId aquí si quieres
+        // localStorage.removeItem(this.CART_ID_KEY);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        console.error('❌ Error vaciando carrito:', error);
+        return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Validar si se puede agregar de otro restaurante
-   */
-  validateRestaurant(restaurantId: string): Observable<{ canAdd: boolean; message?: string }> {
-    return this.http.post<{ canAdd: boolean; message?: string }>(
-      `${this.apiUrl}/validate-restaurant`,
-      { restaurantId }
+  // ✅ CORREGIDO: Validar restaurante (POST según tu backend)
+
+  // En food-cart.service.ts
+  validateRestaurant(restaurantId: string): Observable<boolean> {
+    // El body debe ser un objeto JSON con la clave 'restaurantId'
+    const body = { restaurantId: restaurantId };
+
+    return this.http.post<boolean>(
+      `${this.foodCartApiUrl}/validate-restaurant`,
+      body, // <-- Enviamos el objeto
+      { headers: this.getHeaders() }
+    ).pipe(
+      map((canAdd) => canAdd),
+      catchError((error: HttpErrorResponse) => {
+        // Si el backend responde con 409 (Conflicto, carrito de otro restaurante),
+        // el componente padre lo manejará con `if (!canAdd) { ... }`.
+        // En este caso, el servidor retornará 409, no un booleano, así que lanzamos el error
+        // para que sea capturado en el try/catch del componente padre.
+
+        // Corregimos el catchError para que relance el error
+        return throwError(() => error);
+      })
     );
   }
 
-  // ❌ REMOVIDO: calculateFees() - Esto ahora va en FoodOrderService
+  // ✅ NUEVO: Limpiar cart ID (útil para logout o testing)
+  clearCartId(): void {
+    localStorage.removeItem(this.CART_ID_KEY);
+  }
 }

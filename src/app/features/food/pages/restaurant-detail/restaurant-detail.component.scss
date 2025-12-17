@@ -30,3 +30,59 @@
 .category-section {
   scroll-margin-top: 120px; // Para el scroll suave con sticky headers
 }
+
+.restaurant-detail {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  .floating-cart-button {
+    // Animación de entrada
+    animation: slideInFromLeft 0.3s ease-out;
+
+    // Sombra más pronunciada
+    box-shadow: 0 8px 24px rgba(52, 199, 89, 0.4);
+
+    &:hover {
+      box-shadow: 0 12px 32px rgba(52, 199, 89, 0.5);
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: scale(0.95) translateY(0);
+    }
+
+    // Responsive: En mobile, hacerlo más pequeño
+    @media (max-width: 640px) {
+      bottom: 1rem;
+      left: 1rem;
+      padding: 0.875rem 1rem;
+
+      svg {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+
+      .text-lg {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-100px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+}

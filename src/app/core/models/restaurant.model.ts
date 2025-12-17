@@ -54,24 +54,46 @@ export interface Dish {
   requiredSelections?: RequiredSelection[];
 }
 
+// ✅ NUEVO: DishSummary (para la lista)
+export interface DishSummary {
+  id: string;
+  name: string;
+  price: number;
+  imageUrl: string;
+  available: boolean; // ← Nota: "available" no "isAvailable"
+  category: string;
+  description: string;
+}
+
+// ✅ CAMBIADO: DishModifier ahora tiene options
 export interface DishModifier {
   id: string;
   dishId: string;
   name: string;
+  maxSelection: number; // ← NUEVO
+  isAvailable: boolean;
+  options: DishModifierOption[]; // ← NUEVO: Array de opciones
+}
+
+// ✅ NUEVO: DishModifierOption
+export interface DishModifierOption {
+  id: string;
+  modifierId: string;
+  name: string;
   price: number;
-  type: 'OPTIONAL';
   isAvailable: boolean;
 }
 
+// ✅ CAMBIADO: RequiredSelection (sin cambios mayores)
 export interface RequiredSelection {
   id: string;
-  dishId: string;
   title: string;
   minSelections: number;
   maxSelections: number;
   options: SelectionOption[];
 }
 
+// ✅ SelectionOption (sin cambios)
 export interface SelectionOption {
   id: string;
   name: string;

@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { Restaurant, Dish } from '../../models/restaurant.model';
+import { Restaurant, Dish, DishSummary } from '../../models/restaurant.model';
 
 export interface Specialty {
   name: string;
@@ -14,49 +15,70 @@ export interface Specialty {
 })
 export class RestaurantService {
   private http = inject(HttpClient);
-  // ✅ CAMBIO: Quitar /v1 y usar /api/restaurants directamente
-  private apiUrl = `${environment.restaurantServiceUrl}/api/restaurants`;
+  private restaurantApiUrl = `${environment.restaurantServiceUrl}/api/restaurants`;
+  private dishApiUrl = `${environment.restaurantServiceUrl}/api/dishes`; // ← NUEVO
 
   /**
    * Obtener todos los restaurantes
-   * GET /api/restaurants
    */
   getAllRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.apiUrl);
+    return this.http.get<Restaurant[]>(this.restaurantApiUrl);
   }
 
   /**
    * Obtener restaurante por ID
-   * GET /api/restaurants/{id}
    */
   getRestaurantById(id: string): Observable<Restaurant> {
-    return this.http.get<Restaurant>(`${this.apiUrl}/${id}`);
+    return this.http.get<Restaurant>(`${this.restaurantApiUrl}/${id}`);
   }
 
   /**
    * Buscar restaurantes por especialidad
-   * GET /api/restaurants?specialty=Chifa
    */
   searchBySpecialty(specialty: string): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.apiUrl, {
+    return this.http.get<Restaurant[]>(this.restaurantApiUrl, {
       params: { specialty }
     });
   }
 
   /**
-   * Obtener platillos de un restaurante
-   * GET /api/restaurants/{restaurantId}/dishes
+   * ✅ CAMBIADO: Obtener platillos de un restaurante
+   * Ahora usa /api/dishes/restaurant/{restaurantId}
+   * Y devuelve DishSummary[] que hay que mapear a Dish[]
    */
   getDishesByRestaurant(restaurantId: string): Observable<Dish[]> {
-    return this.http.get<Dish[]>(`${this.apiUrl}/${restaurantId}/dishes`);
+    return this.http.get<DishSummary[]>(`${this.dishApiUrl}/restaurant/${restaurantId}`).pipe(
+      map(summaries => summaries.map(summary => this.mapSummaryToDish(summary, restaurantId)))
+    );
   }
 
   /**
-   * Obtener detalle de un platillo
-   * GET /api/restaurants/{restaurantId}/dishes/{dishId}
+   * ✅ NUEVO: Mapear DishSummary a Dish
+   * (El summary no tiene modifiers ni requiredSelections, pero los agregamos vacíos)
    */
-  getDishById(restaurantId: string, dishId: string): Observable<Dish> {
-    return this.http.get<Dish>(`${this.apiUrl}/${restaurantId}/dishes/${dishId}`);
+  private mapSummaryToDish(summary: DishSummary, restaurantId: string): Dish {
+    return {
+      id: summary.id,
+      restaurantId: restaurantId,
+      name: summary.name,
+      description: summary.description,
+      ingredients: '', // No viene en el summary
+      price: summary.price,
+      imageUrl: summary.imageUrl,
+      category: summary.category,
+      isAvailable: summary.available, // ← Mapear "available" a "isAvailable"
+      preparationTime: 0, // No viene en el summary
+      modifiers: [], // Se cargarán al abrir el modal
+      requiredSelections: [] // Se cargarán al abrir el modal
+    };
+  }
+
+  /**
+   * ✅ NUEVO: Obtener detalle completo de un platillo
+   * GET /api/dishes/{id}
+   */
+  getDishById(dishId: string): Observable<Dish> {
+    return this.http.get<Dish>(`${this.dishApiUrl}/${dishId}`);
   }
 
   /**

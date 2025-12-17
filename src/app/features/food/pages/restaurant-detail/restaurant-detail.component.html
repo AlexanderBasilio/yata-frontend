@@ -4,134 +4,157 @@
   <nav class="navbar bg-white shadow-sm sticky top-0 z-50 px-4 py-3">
     <div class="max-w-screen-xl mx-auto flex items-center gap-3">
       <!-- Botón de retroceso -->
-      <button
-        (click)="goBack()"
+      <button (click)="goBack()"
         class="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors">
         <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
       <!-- Buscador (deshabilitado por ahora) -->
       <div class="flex-1 relative">
-        <input
-          type="text"
-          placeholder="Buscar en el menú..."
-          disabled
+        <input type="text" placeholder="Buscar en el menú..." disabled
           class="w-full px-4 py-2 pl-10 text-sm border border-gray-300 rounded-full focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
     </div>
   </nav>
 
   @if (isLoadingRestaurant()) {
-    <!-- Loading state -->
+  <!-- Loading state -->
+  <div class="flex justify-center items-center py-20">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F456E]"></div>
+  </div>
+  } @else if (restaurant()) {
+
+  <!-- Banner del restaurante -->
+  <div class="banner relative h-48 bg-gray-200">
+    <img [src]="restaurant()!.imageUrl" [alt]="restaurant()!.name" class="w-full h-full object-cover">
+  </div>
+
+  <!-- Info del restaurante -->
+  <div class="restaurant-info bg-white px-4 py-4 border-b border-gray-200">
+    <h1 class="text-2xl font-bold text-gray-800 mb-1">
+      {{ restaurant()!.name }}
+    </h1>
+    <p class="text-sm text-gray-500 flex items-center gap-1 mb-3">
+      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd"
+          d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+          clip-rule="evenodd" />
+      </svg>
+      {{ fullAddress() }}
+    </p>
+
+    <!-- Rating e info adicional -->
+    <div class="flex items-center gap-4 text-sm text-gray-600">
+      <div class="flex items-center gap-1">
+        <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+          <path
+            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+        </svg>
+        <span class="font-semibold">{{ restaurant()!.rating.toFixed(1) }}</span>
+        <span class="text-gray-500">({{ restaurant()!.reviewCount }})</span>
+      </div>
+      <span>•</span>
+      <span>{{ restaurant()!.preparationTime }} min</span>
+      <span>•</span>
+      <span>S/ {{ restaurant()!.minimumOrder.toFixed(2) }} mínimo</span>
+    </div>
+  </div>
+
+  <!-- Barra de categorías del menú (scroll horizontal) -->
+  <div class="categories-bar bg-white border-b border-gray-200 sticky top-[56px] z-40">
+    <div class="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
+      @for (category of categories(); track category) {
+      <button (click)="filterByCategory(category)"
+        class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
+        [class.active]="selectedCategory() === category">
+        {{ category }}
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Lista de platillos -->
+  <div class="dishes-container px-4 py-4">
+
+    @if (isLoadingDishes()) {
     <div class="flex justify-center items-center py-20">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F456E]"></div>
     </div>
-  } @else if (restaurant()) {
+    } @else if (filteredDishes().length > 0) {
 
-    <!-- Banner del restaurante -->
-    <div class="banner relative h-48 bg-gray-200">
-      <img
-        [src]="restaurant()!.imageUrl"
-        [alt]="restaurant()!.name"
-        class="w-full h-full object-cover">
-    </div>
+    <!-- Agrupar por categoría -->
+    @for (category of categories(); track category) {
+    @if (!selectedCategory() || selectedCategory() === category) {
+    <div [id]="'category-' + category" class="category-section mb-6">
 
-    <!-- Info del restaurante -->
-    <div class="restaurant-info bg-white px-4 py-4 border-b border-gray-200">
-      <h1 class="text-2xl font-bold text-gray-800 mb-1">
-        {{ restaurant()!.name }}
-      </h1>
-      <p class="text-sm text-gray-500 flex items-center gap-1 mb-3">
-        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-        </svg>
-        {{ fullAddress() }}
-      </p>
+      <h2 class="text-lg font-bold text-gray-800 mb-3">
+        {{ category }}
+      </h2>
 
-      <!-- Rating e info adicional -->
-      <div class="flex items-center gap-4 text-sm text-gray-600">
-        <div class="flex items-center gap-1">
-          <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-            <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
-          </svg>
-          <span class="font-semibold">{{ restaurant()!.rating.toFixed(1) }}</span>
-          <span class="text-gray-500">({{ restaurant()!.reviewCount }})</span>
-        </div>
-        <span>•</span>
-        <span>{{ restaurant()!.preparationTime }} min</span>
-        <span>•</span>
-        <span>S/ {{ restaurant()!.minimumOrder.toFixed(2) }} mínimo</span>
-      </div>
-    </div>
-
-    <!-- Barra de categorías del menú (scroll horizontal) -->
-    <div class="categories-bar bg-white border-b border-gray-200 sticky top-[56px] z-40">
-      <div class="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
-        @for (category of categories(); track category) {
-          <button
-            (click)="filterByCategory(category)"
-            class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
-            [class.active]="selectedCategory() === category">
-            {{ category }}
-          </button>
+      <div class="flex flex-col gap-4">
+        @for (dish of filteredDishes(); track dish.id) {
+        @if (dish.category === category) {
+        <app-dish-card [dish]="dish" (click)="onDishClick(dish)" />
+        }
         }
       </div>
     </div>
+    }
+    }
 
-    <!-- Lista de platillos -->
-    <div class="dishes-container px-4 py-4">
+    } @else {
+    <div class="text-center py-20">
+      <p class="text-gray-500">No hay platillos disponibles</p>
+    </div>
+    }
 
-      @if (isLoadingDishes()) {
-        <div class="flex justify-center items-center py-20">
-          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F456E]"></div>
-        </div>
-      } @else if (filteredDishes().length > 0) {
+  </div>
 
-        <!-- Agrupar por categoría -->
-        @for (category of categories(); track category) {
-          @if (!selectedCategory() || selectedCategory() === category) {
-            <div
-              [id]="'category-' + category"
-              class="category-section mb-6">
+  }
 
-              <h2 class="text-lg font-bold text-gray-800 mb-3">
-                {{ category }}
-              </h2>
+  <!-- ✅ NUEVO: Botón flotante del carrito -->
+  @if (shouldShowCartButton()) {
+  <button (click)="goToCart()"
+    class="floating-cart-button fixed bottom-6 left-6 z-40 bg-[#34C759] text-white rounded-full shadow-2xl hover:bg-[#2da84a] transition-all active:scale-95 flex items-center gap-3 px-5 py-4 group">
 
-              <div class="space-y-3">
-                @for (dish of filteredDishes(); track dish.id) {
-                  @if (dish.category === category) {
-                    <app-dish-card
-                      [dish]="dish"
-                      (click)="onDishClick(dish)" />
-                  }
-                }
-              </div>
-            </div>
-          }
-        }
+    <!-- Icono del carrito -->
+    <div class="relative">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
 
-      } @else {
-        <div class="text-center py-20">
-          <p class="text-gray-500">No hay platillos disponibles</p>
-        </div>
-      }
-
+      <!-- Badge con la cantidad de items -->
+      <span
+        class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+        {{ cartItemCount() }}
+      </span>
     </div>
 
+    <!-- Texto y precio -->
+    <div class="flex flex-col items-start">
+      <span class="text-xs font-semibold opacity-90">Ver carrito</span>
+      <span class="text-lg font-bold">S/ {{ cartTotal().toFixed(2) }}</span>
+    </div>
+
+    <!-- Flecha -->
+    <svg class="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor"
+      viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+    </svg>
+  </button>
   }
 
   <!-- Modal de detalle del platillo -->
   @if (showDishModal() && selectedDish()) {
-    <app-dish-modal
-      [dish]="selectedDish()!"
-      (close)="closeDishModal()"
-      (addToCart)="onAddToCart($event)" />
+  <app-dish-modal [dish]="selectedDish()!" (close)="closeDishModal()" (addToCart)="onAddToCart($event)" />
   }
 
 </div>
