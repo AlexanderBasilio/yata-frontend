@@ -1,0 +1,244 @@
+<div class="checkout-container mx-auto p-4 max-w-4xl">
+    <h1 class="text-3xl font-bold text-center mb-8">Finalizar Pedido</h1>
+
+    <!-- Steps Indicator (Manual) -->
+    <div class="flex items-center justify-center mb-8">
+        <div class="flex items-center">
+            <div [class]="currentStep >= 1 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'"
+                class="w-10 h-10 rounded-full flex items-center justify-center font-bold">1</div>
+            <span class="ml-2 font-medium" [class.text-black]="currentStep>=1"
+                [class.text-gray-400]="currentStep<1">Ubicación</span>
+        </div>
+        <div class="w-20 h-1 bg-gray-200 mx-4 relative overflow-hidden">
+            <div class="absolute h-full bg-black transition-all duration-300"
+                [style.width]="currentStep === 2 ? '100%' : '0%'"></div>
+        </div>
+        <div class="flex items-center">
+            <div [class]="currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'"
+                class="w-10 h-10 rounded-full flex items-center justify-center font-bold">2</div>
+            <span class="ml-2 font-medium" [class.text-black]="currentStep===2"
+                [class.text-gray-400]="currentStep<2">Confirmación</span>
+        </div>
+    </div>
+
+    <!-- STEP 1: Ubicación -->
+    <div *ngIf="currentStep === 1" class="step-content animate-fade-in">
+        <p class="text-gray-600 mb-4 text-center">Busca tu dirección o mueve el pin en el mapa.</p>
+
+        <form [formGroup]="locationForm" class="max-w-lg mx-auto space-y-4">
+
+            <!-- Buscador (Encima del mapa) -->
+            <div class="form-group flex gap-2">
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Buscar dirección</label>
+                    <input type="text" formControlName="address"
+                        (keydown.enter)="$event.preventDefault(); searchAddress()"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all"
+                        placeholder="Ej: Av. Larco 100, Miraflores">
+                    <p *ngIf="locationForm.get('address')?.touched && locationForm.get('address')?.hasError('required')"
+                        class="text-red-500 text-xs mt-1">Ingresa una dirección</p>
+                </div>
+                <button type="button" (click)="searchAddress()"
+                    class="mt-6 bg-gray-900 text-white px-4 rounded-lg hover:bg-black transition-colors flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mapa -->
+            <div class="map-container relative w-full h-96 rounded-xl overflow-hidden shadow-lg border border-gray-200">
+                <div #mapElement class="w-full h-full"></div>
+            </div>
+
+            <!-- Coordenadas Debug (Opcional) -->
+            <div class="text-sm text-gray-600 font-mono text-center mb-2 font-bold">
+                Lat: {{ locationForm.get('latitude')?.value | number:'1.6-6' }}, Lng: {{
+                locationForm.get('longitude')?.value | number:'1.6-6' }}
+            </div>
+
+            <!-- Referencia (Debajo del mapa) -->
+            <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Referencia (Opcional)</label>
+                <input type="text" formControlName="reference"
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-all"
+                    placeholder="Ej: Casa azul, 3er piso, frente al parque">
+            </div>
+
+            <div class="flex justify-end pt-4">
+                <button (click)="goToStep2()" [disabled]="locationForm.invalid || isLoadingSummary"
+                    class="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center min-w-[200px]">
+                    <span *ngIf="!isLoadingSummary">Confirmar Ubicación</span>
+                    <span *ngIf="isLoadingSummary">Calculando...</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- STEP 2: Pagos y Detalles -->
+    <div *ngIf="currentStep === 2" class="step-content animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-8">
+
+        <!-- Columna Izquierda -->
+        <div class="form-section">
+            <h2 class="text-xl font-bold mb-4">Tus Datos</h2>
+            <form [formGroup]="detailsForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                    <input type="text" formControlName="clientName"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono / Celular</label>
+                    <input type="tel" formControlName="clientPhoneNumber" placeholder="999 999 999"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black">
+                    <p *ngIf="detailsForm.get('clientPhoneNumber')?.touched && detailsForm.get('clientPhoneNumber')?.invalid"
+                        class="text-red-500 text-xs mt-1">Número inválido (9 dígitos)</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Instrucciones de entrega</label>
+                    <textarea formControlName="deliveryInstructions" rows="2" placeholder="Dejar en portería..."
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black"></textarea>
+                </div>
+
+                <div class="flex items-center gap-2 py-2">
+                    <input type="checkbox" id="isOver18" formControlName="isOver18" class="w-5 h-5 accent-black">
+                    <label for="isOver18" class="text-sm font-medium">Soy mayor de 18 años</label>
+                </div>
+
+                <div class="pt-4">
+                    <h3 class="font-bold mb-3">Método de Pago</h3>
+                    <div class="space-y-2">
+                        <div *ngFor="let method of paymentMethods"
+                            class="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                            (click)="detailsForm.patchValue({paymentMethod: method})">
+                            <input type="radio" [value]="method" formControlName="paymentMethod"
+                                class="w-4 h-4 accent-black">
+                            <span class="text-sm">{{ method === 'MANUAL_TRANSFER' ? 'Yape / Plin / Transferencia' :
+                                method }}</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Columna Derecha: Resumen -->
+        <div>
+            <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 sticky top-4">
+                <h3 class="text-lg font-bold mb-4">Resumen del Pedido</h3>
+
+                <div *ngIf="orderSummary; else loadingSummary">
+                    <div class="flex justify-between mb-2 text-gray-600">
+                        <span>Subtotal</span>
+                        <span>S/ {{ orderSummary.validatedSubtotal | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="flex justify-between mb-2 text-gray-600">
+                        <span>Envío</span>
+                        <span>S/ {{ orderSummary.deliveryFee | number:'1.2-2' }}</span>
+                    </div>
+                    <div class="flex justify-between mb-4 text-gray-600">
+                        <span>Servicio</span>
+                        <span>S/ {{ orderSummary.serviceFee | number:'1.2-2' }}</span>
+                    </div>
+
+                    <div class="h-px bg-gray-300 w-full my-4"></div>
+
+                    <div class="flex justify-between items-center text-xl font-bold text-gray-900 mb-6">
+                        <span>Total</span>
+                        <span>S/ {{ orderSummary.totalAmount | number:'1.2-2' }}</span>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button (click)="goToStep1()"
+                            class="px-4 py-3 bg-white border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                            Atrás
+                        </button>
+                        <button (click)="confirmOrder()" [disabled]="detailsForm.invalid || isProcessingOrder"
+                            class="flex-1 bg-black text-white py-3 rounded-lg font-bold hover:bg-gray-800 disabled:opacity-50 transition-all">
+                            <span *ngIf="!isProcessingOrder">Realizar Pedido</span>
+                            <span *ngIf="isProcessingOrder">Procesando...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <ng-template #loadingSummary>
+                    <div class="flex flex-col items-center justify-center h-40 text-gray-500">
+                        <div class="w-8 h-8 border-4 border-gray-300 border-t-black rounded-full animate-spin mb-2">
+                        </div>
+                        <p>Calculando total...</p>
+                    </div>
+                </ng-template>
+            </div>
+        </div>
+
+    </div>
+    <!-- STEP 3: Éxito -->
+    <div *ngIf="currentStep === 3" class="step-content animate-fade-in text-center py-12">
+        <div class="mb-6 flex justify-center">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+        </div>
+
+        <h2 class="text-2xl md:text-3xl font-bold mb-2">{{ greetingMessage() }}</h2>
+        <p class="text-gray-500 mb-8">Tu pedido ha sido registrado correctamente.</p>
+
+        <div class="max-w-md mx-auto space-y-6 text-gray-600 mb-8">
+
+            <!-- Bloque de Código de Pedido -->
+            <div class="bg-gray-100 p-4 rounded-xl border border-gray-200 relative group">
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-2 font-bold">Código de Pedido</p>
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-300">
+                    <span class="font-mono text-lg font-bold text-gray-800 truncate select-all">{{
+                        confirmedOrder?.orderCode }}</span>
+                    <button (click)="copyCode()" class="ml-3 text-gray-400 hover:text-black transition-colors"
+                        title="Copiar código">
+                        <ng-container *ngIf="!copied">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                            </svg>
+                        </ng-container>
+                        <ng-container *ngIf="copied">
+                            <span class="text-green-600 font-bold text-sm flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
+                                    fill="currentColor">
+                                    <path fill-rule="evenodd"
+                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                Copiado
+                            </span>
+                        </ng-container>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Instrucciones -->
+            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-left">
+                <p class="font-bold text-blue-800 mb-2 flex items-center">
+                    <span class="mr-2">👇</span> Siguiente paso:
+                </p>
+                <p class="mb-2">
+                    Nos contactaremos contigo por <strong>WhatsApp</strong>.
+                </p>
+                <p class="text-sm text-blue-700">
+                    Por favor, ten a la mano el <span class="font-bold">código de pedido</span> o compártelo cuando te
+                    lo solicitemos para coordinar el pago (Yape/Plin).
+                </p>
+            </div>
+        </div>
+
+        <button (click)="goHome()"
+            class="bg-black text-white px-8 py-3 rounded-lg font-bold hover:bg-gray-800 transition-all w-full max-w-xs">
+            Volver al Inicio
+        </button>
+    </div>
+</div>

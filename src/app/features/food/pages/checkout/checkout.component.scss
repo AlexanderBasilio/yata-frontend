@@ -1,0 +1,24 @@
+// La mayoría de los estilos ahora son manejados por TailwindCSS en el HTML.
+// Solo mantenemos estilos específicos que Tailwind no cubra fácilmente o para mapbox.
+
+.map-container {
+    // Mapbox necesita altura definida explícitamente a veces si el contenedor padre es flex
+    min-height: 400px;
+}
+
+/* Animación simple para cambio de pasos */
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -20,5 +20,10 @@ export const FOOD_ROUTES: Routes = [
     path: 'cart',
     loadComponent: () => import('./pages/food-cart/food-cart.component')
       .then(m => m.FoodCartComponent)
+  },
+  {
+    path: 'checkout',
+    loadComponent: () => import('./pages/checkout/checkout.component')  // ⚠️ Dará error hasta que crees este componente
+      .then(m => m.CheckoutComponent)
   }
 ];
