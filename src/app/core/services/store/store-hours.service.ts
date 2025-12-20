@@ -10,7 +10,7 @@ export interface StoreHours {
 })
 export class StoreHoursService {
   private readonly STORE_HOURS: StoreHours = {
-    open: '23:56',
+    open: '00:01',
     close: '23:55'
   };
 
