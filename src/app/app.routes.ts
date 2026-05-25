@@ -1,18 +1,28 @@
 import { Routes } from '@angular/router';
 import { storeHoursGuard } from './core/guards/store-hours.guard';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   // ============================================
-  // 1. SERVICE SELECTOR - RAÍZ
+  // 1. ROOT - REDIRIGE A LANDING
   // ============================================
   {
     path: '',
-    loadComponent: () => import('./features/service-selector/service-selector.component')
-      .then(m => m.ServiceSelectorComponent)
+    redirectTo: 'zisify',
+    pathMatch: 'full'
   },
 
   // ============================================
-  // 2. AUTH (para implementar después)
+  // LANDING PAGE (PÚBLICO)
+  // ============================================
+  {
+    path: 'zisify',
+    loadComponent: () => import('./features/landing/landing.component')
+      .then(m => m.LandingComponent)
+  },
+
+  // ============================================
+  // 2. AUTH (PÚBLICO)
   // ============================================
   {
     path: 'auth',
@@ -20,11 +30,40 @@ export const routes: Routes = [
   },
 
   // ============================================
-  // 3. SERVICIO DE LICORES
+  // 3. HOME / SERVICE SELECTOR (PROTEGIDO)
+  // ============================================
+  {
+    path: 'home',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/service-selector/service-selector.component')
+      .then(m => m.ServiceSelectorComponent)
+  },
+
+  // ============================================
+  // PROFILE (PROTEGIDO)
+  // ============================================
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/profile/profile.component')
+      .then(m => m.ProfileComponent)
+  },
+
+  // ============================================
+  // ORDERS (PROTEGIDO)
+  // ============================================
+  {
+    path: 'orders',
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/orders/orders.routes').then(m => m.ORDERS_ROUTES)
+  },
+
+  // ============================================
+  // 4. SERVICIO DE LICORES (PROTEGIDO)
   // ============================================
   {
     path: 'liquor',
-    canActivate: [storeHoursGuard],
+    canActivate: [authGuard, storeHoursGuard],
     children: [
       {
         path: '',
@@ -46,12 +85,12 @@ export const routes: Routes = [
     ]
   },
 
- // ============================================
-  // 4. SERVICIO DE COMIDA
+  // ============================================
+  // 5. SERVICIO DE COMIDA (PROTEGIDO)
   // ============================================
   {
     path: 'food',
-    canActivate: [storeHoursGuard],
+    canActivate: [authGuard, storeHoursGuard],
     loadChildren: () => import('./features/food/food.routes').then(m => m.FOOD_ROUTES)
   },
 
@@ -64,8 +103,12 @@ export const routes: Routes = [
     pathMatch: 'full'
   },
   {
+    path: 'select-cart',
+    loadComponent: () => import('./shared/components/empty-cart-selector/empty-cart-selector.component').then(m => m.EmptyCartSelectorComponent)
+  },
+  {
     path: 'cart',
-    redirectTo: 'liquor/cart',
+    redirectTo: 'select-cart',
     pathMatch: 'full'
   },
   {

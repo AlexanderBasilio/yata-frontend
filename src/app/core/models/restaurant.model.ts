@@ -60,7 +60,7 @@ export interface DishSummary {
   name: string;
   price: number;
   imageUrl: string;
-  available: boolean; // ← Nota: "available" no "isAvailable"
+  isAvailable: boolean; // Backend usa isAvailable
   category: string;
   description: string;
 }

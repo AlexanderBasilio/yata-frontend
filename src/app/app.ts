@@ -1,10 +1,11 @@
 import { Component, signal, OnInit, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AnalyticsService } from './core/services/analytics/analytics.service';
+import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, BottomNavComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

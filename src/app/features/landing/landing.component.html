@@ -1,0 +1,490 @@
+<!-- ============================================================
+     ZISIFY LANDING PAGE
+     Design System: Azul Noche (#1A0A2E), Magenta (#C30364)
+     Fonts: Inknut Antiqua (H1-H4), Epilogue (body/labels)
+     ============================================================ -->
+
+<!-- ─── NAVBAR ─────────────────────────────────────────────── -->
+<nav
+    class="sticky top-0 z-50 bg-[rgba(26,10,46,0.90)] backdrop-blur-[12px] border-b border-[#31204F] px-6 py-4 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+        <!-- Logo placeholder: replace src with your Cloudinary URL -->
+        <img src="YOUR_CLOUDINARY_LOGO_URL_HERE" alt="Zisify" class="h-8 w-auto object-contain"
+            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <!-- Fallback wordmark if logo fails to load -->
+        <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white tracking-wide hidden" id="logo-fallback">
+            Zisify
+        </span>
+    </div>
+
+    <!-- Nav Links (Desktop) -->
+    <div class="hidden md:flex items-center gap-8">
+        <a href="#features"
+            class="font-['Epilogue'] text-sm text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a>
+        <a href="#points"
+            class="font-['Epilogue'] text-sm text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a>
+        <a href="#avatar"
+            class="font-['Epilogue'] text-sm text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a>
+        <a href="#stats"
+            class="font-['Epilogue'] text-sm text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadísticas</a>
+    </div>
+
+    <!-- Auth Buttons -->
+    <div class="flex items-center gap-3">
+        <a routerLink="/auth/login"
+            class="font-['Epilogue'] text-sm font-semibold text-[#C30364] border border-[#C30364] px-4 py-2 rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all">
+            Ingresar
+        </a>
+        <a routerLink="/auth/register"
+            class="font-['Epilogue'] text-sm font-bold text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-4 py-2 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98]">
+            Registrarse
+        </a>
+    </div>
+</nav>
+
+<!-- ─── HERO ──────────────────────────────────────────────── -->
+<section
+    class="relative min-h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden bg-[#0D0518] px-6 py-20">
+    <!-- Background glows -->
+    <div class="absolute inset-0 pointer-events-none">
+        <div
+            class="absolute top-[-80px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-[#C30364] opacity-10 blur-[120px] rounded-full">
+        </div>
+        <div class="absolute bottom-0 right-0 w-80 h-80 bg-[#5A3D88] opacity-15 blur-[100px] rounded-full"></div>
+    </div>
+
+    <!-- Eyebrow -->
+    <div class="relative z-10 mb-6">
+        <span
+            class="font-['Epilogue'] text-[11px] text-[#FF6DB5] tracking-[0.2em] uppercase font-bold bg-[rgba(195,3,100,0.12)] border border-[rgba(195,3,100,0.25)] px-4 py-1.5 rounded-full">
+            ✨ La app que te recompensa por comer bien
+        </span>
+    </div>
+
+    <!-- Headline -->
+    <h1
+        class="font-['Inknut_Antiqua'] text-4xl md:text-6xl font-bold text-white leading-tight relative z-10 max-w-3xl mb-4">
+        Come bien,<br>
+        <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">gana puntos,</span><br>
+        <span class="text-white">obten descuentos.</span>
+    </h1>
+
+    <!-- Subtitle -->
+    <p class="font-['Epilogue'] text-[#9D96A8] text-base md:text-lg max-w-xl leading-relaxed relative z-10 mt-2 mb-10">
+        La única plataforma de delivery en Huancayo que te premia cada vez que pides — con puntos, avatares épicos y
+        beneficios reales.
+    </p>
+
+    <!-- CTAs -->
+    <div class="flex flex-col sm:flex-row gap-4 relative z-10 mb-16">
+        <a routerLink="/auth/register"
+            class="font-['Epilogue'] font-bold text-base text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-8 py-4 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.5)] transition-all active:scale-[0.98]">
+            Empieza gratis →
+        </a>
+        <a routerLink="/auth/login"
+            class="font-['Epilogue'] font-semibold text-base text-[#FAF8FB] bg-transparent border border-[#31204F] px-8 py-4 rounded-xl hover:border-[#5A3D88] hover:bg-[rgba(90,61,136,0.1)] transition-all">
+            Ya tengo cuenta
+        </a>
+    </div>
+
+    <!-- Stats strip -->
+    <div class="relative z-10 flex flex-wrap justify-center gap-8 md:gap-16">
+        @for (stat of stats; track stat.label) {
+        <div class="text-center">
+            <p class="font-['Inknut_Antiqua'] text-2xl md:text-3xl font-bold text-white">{{ stat.value }}</p>
+            <p class="font-['Epilogue'] text-[11px] text-[#9D96A8] mt-1 tracking-wide">{{ stat.label }}</p>
+        </div>
+        }
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── FEATURES ──────────────────────────────────────────── -->
+<section id="features" class="bg-[#0D0518] px-6 py-20">
+    <div class="max-w-4xl mx-auto">
+        <!-- Section label -->
+        <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] tracking-[0.2em] uppercase font-bold mb-4">Por qué Zisify
+        </p>
+        <!-- Heading -->
+        <h2 class="font-['Inknut_Antiqua'] text-3xl md:text-4xl font-bold text-white leading-snug mb-12">
+            Todo lo que esperas, <span
+                class="italic text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">más lo que no
+                esperabas</span>
+        </h2>
+
+        <!-- Features grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            @for (feat of features; track feat.title) {
+            <div class="group bg-gradient-to-br from-[#221638] to-[#1A0A2E] border rounded-[16px] p-6 hover:border-[#432D6A] hover:shadow-[0_8px_24px_rgba(26,10,46,0.16)] transition-all duration-200 cursor-default"
+                [class.border-[#C30364]]="feat.highlight" [class.border-[#31204F]]="!feat.highlight"
+                [class.shadow-[0_4px_20px_rgba(195,3,100,0.2)]]="feat.highlight">
+                <div class="text-3xl mb-4">{{ feat.icon }}</div>
+                <h3 class="font-['Epilogue'] text-[15px] font-bold text-white mb-2">{{ feat.title }}</h3>
+                <p class="font-['Epilogue'] text-[12px] text-[#9D96A8] leading-relaxed">{{ feat.desc }}</p>
+                @if (feat.highlight) {
+                <div class="mt-4">
+                    <span
+                        class="font-['Epilogue'] text-[10px] text-[#E8368A] font-bold bg-[rgba(195,3,100,0.12)] px-2.5 py-1 rounded-full">⭐
+                        Función estrella</span>
+                </div>
+                }
+            </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── POINTS SECTION ─────────────────────────────────────── -->
+<section id="points" class="bg-[#0D0518] px-6 py-20">
+    <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <!-- Left copy -->
+        <div>
+            <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] tracking-[0.2em] uppercase font-bold mb-4">Sistema de
+                puntos</p>
+            <h2 class="font-['Inknut_Antiqua'] text-3xl md:text-4xl font-bold text-white leading-snug mb-6">
+                Puntos que <span
+                    class="italic text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">evolucionan</span>
+                contigo
+            </h2>
+            <p class="font-['Epilogue'] text-[#9D96A8] text-sm leading-relaxed mb-8">
+                Los Inti Points son la moneda de Zisify. Cada pedido cuenta. Cada nivel desbloquea beneficios
+                exclusivos: descuentos, prioridades y acceso a servicios premium.
+            </p>
+            <!-- Level ladder -->
+            <div class="flex flex-col gap-3">
+                @for (level of levels; track level.name) {
+                <div class="flex items-center gap-4 p-3 rounded-[12px] border transition-all"
+                    [class.bg-gradient-to-r]="level.active" [class.from-[#C30364]]="level.active"
+                    [class.to-[#5A3D88]]="level.active" [class.border-transparent]="level.active"
+                    [class.shadow-[0_0_20px_rgba(195,3,100,0.3)]]="level.active" [class.bg-[#221638]]="!level.active"
+                    [class.border-[#31204F]]="!level.active" [class.opacity-60]="!level.active">
+                    <span class="text-2xl">{{ level.icon }}</span>
+                    <div>
+                        <p class="font-['Epilogue'] text-sm font-bold text-white">{{ level.name }}</p>
+                        <p class="font-['Epilogue'] text-[10px] text-[rgba(255,255,255,0.7)]">{{ level.range }}</p>
+                    </div>
+                    @if (level.active) {
+                    <span
+                        class="ml-auto font-['Epilogue'] text-[10px] font-bold text-white bg-[rgba(255,255,255,0.2)] px-2 py-1 rounded-full">Activo</span>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right: Points card mock -->
+        <div class="relative">
+            <!-- Glow -->
+            <div class="absolute inset-0 bg-[#C30364] opacity-10 blur-[80px] rounded-full pointer-events-none"></div>
+            <div
+                class="relative bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[24px] p-8 shadow-2xl">
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] tracking-widest uppercase font-bold mb-3">Inti
+                    Points</p>
+                <h3 class="font-['Inknut_Antiqua'] text-5xl font-bold text-white mb-2">14.230</h3>
+                <p class="font-['Epilogue'] text-sm text-[#E8368A] mb-6">+480 esta semana — canjea por descuentos</p>
+
+                <!-- EXP bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between font-['Epilogue'] text-[10px] text-[#9D96A8] mb-2">
+                        <span>Progreso al siguiente nivel</span>
+                        <span>88%</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-[#31204F] rounded-full overflow-hidden">
+                        <div class="h-full w-[88%] bg-gradient-to-r from-[#C30364] to-[#E8368A] rounded-full shadow-[0_0_10px_rgba(195,3,100,0.7)]"
+                            style="animation: fill-bar 1.4s ease both;"></div>
+                    </div>
+                </div>
+
+                <!-- Level Badges -->
+                <div class="grid grid-cols-3 gap-2">
+                    <div class="bg-[#1A0A2E] border border-[#31204F] rounded-xl p-3 text-center">
+                        <p class="font-['Epilogue'] text-[10px] font-bold text-[#9D96A8]">Hatun Runa</p>
+                        <p class="font-['Epilogue'] text-[9px] text-[#52465E]">0–9k</p>
+                    </div>
+                    <div
+                        class="bg-gradient-to-r from-[#D97706] to-[#F59E0B] border border-[#F59E0B]/30 rounded-xl p-3 text-center shadow-[0_0_15px_rgba(217,119,6,0.3)] scale-105">
+                        <p class="font-['Epilogue'] text-[10px] font-black text-[#1A0A2E]">Sapa Inca</p>
+                        <p class="font-['Epilogue'] text-[9px] text-[#1A0A2E] font-bold opacity-80">10–20k</p>
+                    </div>
+                    <div class="bg-[#1A0A2E] border border-[#31204F] rounded-xl p-3 text-center opacity-40">
+                        <p class="font-['Epilogue'] text-[10px] font-bold text-[#9D96A8]">Nova</p>
+                        <p class="font-['Epilogue'] text-[9px] text-[#52465E]">20k+</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── AVATAR SECTION ─────────────────────────────────────── -->
+<section id="avatar" class="bg-[#0D0518] px-6 py-20">
+    <div class="max-w-4xl mx-auto text-center">
+        <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] tracking-[0.2em] uppercase font-bold mb-4">Tu camino
+            heroico</p>
+        <h2 class="font-['Inknut_Antiqua'] text-3xl md:text-4xl font-bold text-white leading-snug mb-4">
+            Tu avatar <span
+                class="italic text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">crece</span>
+            con cada pedido
+        </h2>
+        <p class="font-['Epilogue'] text-[#9D96A8] text-sm max-w-xl mx-auto leading-relaxed mb-14">
+            Inspirado en la mitología andina, tu avatar evoluciona desde Hatun Runa hasta Inti Mismo. Cada nivel
+            desbloquea beneficios únicos y te acerca a ser leyenda.
+        </p>
+
+        <!-- Avatar path visual -->
+        <div class="flex items-center justify-center gap-3 md:gap-6 flex-wrap">
+            <!-- Step 1 -->
+            <div class="flex flex-col items-center gap-2 opacity-40">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#221638] border-2 border-[#31204F] flex items-center justify-center text-2xl">
+                    🏓</div>
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] font-bold">Hatun Runa</p>
+                <p class="font-['Epilogue'] text-[9px] text-[#52465E]">0–9k</p>
+            </div>
+            <!-- Connector -->
+            <div class="w-8 h-[2px] bg-[#31204F] rounded-full flex-shrink-0"></div>
+            <!-- Step 2 — Active -->
+            <div class="flex flex-col items-center gap-2">
+                <div
+                    class="w-20 h-20 rounded-full bg-white border-4 border-[#E8368A] flex items-center justify-center text-3xl shadow-[0_0_30px_rgba(195,3,100,0.6)]">
+                    ☀️</div>
+                <span
+                    class="font-['Epilogue'] text-[10px] bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white px-2 py-0.5 rounded-full font-bold">Activo</span>
+                <p class="font-['Epilogue'] text-xs text-white font-bold">Sapa Inca</p>
+                <p class="font-['Epilogue'] text-[9px] text-[#9D96A8]">10–20k</p>
+            </div>
+            <!-- Connector -->
+            <div class="w-8 h-[2px] bg-[#31204F] rounded-full flex-shrink-0"></div>
+            <!-- Step 3 -->
+            <div class="flex flex-col items-center gap-2 opacity-30">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#221638] border-2 border-[#31204F] flex items-center justify-center text-2xl">
+                    🌟</div>
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] font-bold">Nova</p>
+                <p class="font-['Epilogue'] text-[9px] text-[#52465E]">20–50k</p>
+            </div>
+            <!-- Connector -->
+            <div class="w-8 h-[2px] bg-[#31204F] rounded-full flex-shrink-0"></div>
+            <!-- Step 4 -->
+            <div class="flex flex-col items-center gap-2 opacity-20">
+                <div
+                    class="w-16 h-16 rounded-full bg-[#221638] border-2 border-[#31204F] flex items-center justify-center text-2xl">
+                    ✨</div>
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] font-bold">Inti Mismo</p>
+                <p class="font-['Epilogue'] text-[9px] text-[#52465E]">50k+</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── GIFT DELIVERY BANNER ───────────────────────────────── -->
+<section class="bg-[#0D0518] px-6 py-14">
+    <div class="max-w-3xl mx-auto">
+        <div
+            class="bg-gradient-to-r from-[#E6F5F2] to-[#D1EBE5] rounded-[24px] p-8 md:p-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div
+                class="w-16 h-16 bg-[#16A34A] rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 shadow-[0_0_30px_rgba(22,163,74,0.3)]">
+                🎁</div>
+            <div class="flex-1">
+                <h3 class="font-['Inknut_Antiqua'] text-2xl font-bold text-[#0D0518] mb-2">
+                    Regala un delivery a <span class="italic">quien quieras</span>
+                </h3>
+                <p class="font-['Epilogue'] text-sm text-[#16A34A] leading-relaxed">
+                    Selecciona la dirección de tu amigo o familiar, elige su restaurante favorito y sorpréndelo con un
+                    pedido desde Zisify — sin que se entere hasta que llegue.
+                </p>
+            </div>
+            <a routerLink="/auth/register"
+                class="font-['Epilogue'] font-bold text-sm text-white bg-[#16A34A] px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(22,163,74,0.3)] hover:bg-[#15803D] transition-colors flex-shrink-0">
+                Probar gratis ↗
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── STATS SECTION ──────────────────────────────────────── -->
+<section id="stats" class="bg-[#0D0518] px-6 py-20">
+    <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <!-- Left: stats cards -->
+        <div class="grid grid-cols-2 gap-4">
+            <div
+                class="bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[16px] p-6 flex flex-col gap-1">
+                <h4 class="font-['Inknut_Antiqua'] text-3xl font-bold text-[#5A3D88]">18</h4>
+                <p class="font-['Epilogue'] text-xs text-white">Pedidos mensuales</p>
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] mt-2">Promedio del usuario Zisify activo</p>
+            </div>
+            <div
+                class="bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[16px] p-6 flex flex-col gap-1">
+                <h4 class="font-['Inknut_Antiqua'] text-3xl font-bold text-[#16A34A]">S/ 340</h4>
+                <p class="font-['Epilogue'] text-xs text-white">Gasto promedio / mes</p>
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] mt-2">Invertido en experiencias gastronómicas</p>
+            </div>
+            <div
+                class="col-span-2 bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[16px] p-5">
+                <!-- Mini bar chart: monthly orders -->
+                <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] uppercase tracking-widest font-bold mb-3">Pedidos
+                    — últimos 6 meses</p>
+                <div class="flex items-end gap-2 h-16">
+                    <div class="flex-1 bg-white/20 rounded-t" style="height:35%"></div>
+                    <div class="flex-1 bg-white/30 rounded-t" style="height:50%"></div>
+                    <div class="flex-1 bg-white/30 rounded-t" style="height:45%"></div>
+                    <div class="flex-1 bg-[#5A3D88] rounded-t" style="height:65%"></div>
+                    <div class="flex-1 bg-[#5A3D88] rounded-t" style="height:80%"></div>
+                    <div class="flex-1 bg-gradient-to-t from-[#C30364] to-[#E8368A] rounded-t shadow-[0_0_12px_rgba(195,3,100,0.5)]"
+                        style="height:100%"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    @for (m of ['Feb','Mar','Abr','May','Jun','Jul']; track m) {
+                    <p class="font-['Epilogue'] text-[9px] text-[#9D96A8] flex-1 text-center">{{ m }}</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Right copy -->
+        <div>
+            <p class="font-['Epilogue'] text-[10px] text-[#9D96A8] tracking-[0.2em] uppercase font-bold mb-4">Tu perfil
+                analítico</p>
+            <h2 class="font-['Inknut_Antiqua'] text-3xl md:text-4xl font-bold text-white leading-snug mb-6">
+                Conoce tus hábitos <span
+                    class="italic text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">mejor que
+                    nunca</span>
+            </h2>
+            <ul class="font-['Epilogue'] text-sm text-[#9D96A8] leading-loose space-y-1 list-none">
+                <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Ranking de tus platos más
+                    pedidos</li>
+                <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Gasto mensual para no
+                    perder la noción</li>
+                <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Categorías favoritas con
+                    gráfica visual</li>
+                <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Rating promedio como
+                    cliente frecuente</li>
+                <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Historial de Inti Points
+                    acumulados</li>
+            </ul>
+            <a routerLink="/auth/register"
+                class="inline-block mt-8 font-['Epilogue'] font-bold text-sm text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-7 py-3.5 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.4)] transition-all">
+                Ver mi perfil →
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Gradient separator -->
+<div class="w-full h-px bg-gradient-to-r from-transparent via-[#C30364] to-transparent"></div>
+
+<!-- ─── FOOTER ─────────────────────────────────────────────── -->
+<footer class="bg-[#1A0A2E] border-t border-[#31204F] px-6 py-14">
+    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
+        <!-- Brand col -->
+        <div class="col-span-2 md:col-span-1">
+            <!-- Logo -->
+            <img src="YOUR_CLOUDINARY_LOGO_URL_HERE" alt="Zisify" class="h-8 w-auto object-contain mb-4"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+            <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white hidden mb-4 block"
+                id="footer-logo-fallback">Zisify</span>
+            <p class="font-['Epilogue'] text-xs text-[#9D96A8] leading-relaxed mb-4">
+                La plataforma de delivery que te premia.<br>
+                Hecho con ❤️ en Huancayo, Perú.
+            </p>
+            <!-- Social -->
+            <div class="flex gap-3 mt-4">
+                <a href="#"
+                    class="w-8 h-8 border border-[#31204F] rounded-lg flex items-center justify-center text-sm hover:border-[#C30364] transition-colors">𝕏</a>
+                <a href="#"
+                    class="w-8 h-8 border border-[#31204F] rounded-lg flex items-center justify-center text-sm hover:border-[#C30364] transition-colors">📷</a>
+                <a href="#"
+                    class="w-8 h-8 border border-[#31204F] rounded-lg flex items-center justify-center text-sm hover:border-[#C30364] transition-colors">💼</a>
+            </div>
+        </div>
+
+        <!-- Links: Plataforma -->
+        <div>
+            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Plataforma
+            </h5>
+            <ul class="space-y-2.5">
+                <li><a href="#features"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a>
+                </li>
+                <li><a href="#points"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a>
+                </li>
+                <li><a href="#avatar"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a>
+                </li>
+                <li><a href="#stats"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadísticas</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Links: Empresa -->
+        <div>
+            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Empresa</h5>
+            <ul class="space-y-2.5">
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a>
+                </li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Socios</a>
+                </li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Trabaja
+                        con nosotros</a></li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Prensa</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Links: Soporte + CTA -->
+        <div>
+            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Soporte</h5>
+            <ul class="space-y-2.5 mb-6">
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro
+                        de ayuda</a></li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a>
+                </li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos</a>
+                </li>
+            </ul>
+            <!-- Auth CTA Buttons in Footer -->
+            <div class="flex flex-col gap-2">
+                <a routerLink="/auth/register"
+                    class="font-['Epilogue'] text-xs font-bold text-white text-center bg-gradient-to-r from-[#C30364] to-[#E8368A] px-4 py-2.5 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.4)] transition-all">
+                    Registrarse
+                </a>
+                <a routerLink="/auth/login"
+                    class="font-['Epilogue'] text-xs font-semibold text-center text-[#C30364] border border-[#C30364] px-4 py-2.5 rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all">
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom bar -->
+    <div
+        class="max-w-5xl mx-auto mt-12 pt-6 border-t border-[#31204F] flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="font-['Epilogue'] text-[10px] text-[#52465E]">© 2025 Zisify. Todos los derechos reservados. Huancayo,
+            Perú.</p>
+        <p class="font-['Epilogue'] text-[10px] text-[#52465E]">Hecho para subir de nivel 🚀</p>
+    </div>
+</footer>

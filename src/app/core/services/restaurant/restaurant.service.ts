@@ -22,7 +22,9 @@ export class RestaurantService {
    * Obtener todos los restaurantes
    */
   getAllRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.restaurantApiUrl);
+    return this.http.get<Restaurant[]>(this.restaurantApiUrl, {
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   /**
@@ -66,7 +68,7 @@ export class RestaurantService {
       price: summary.price,
       imageUrl: summary.imageUrl,
       category: summary.category,
-      isAvailable: summary.available, // ← Mapear "available" a "isAvailable"
+      isAvailable: summary.isAvailable, // ✅ Mapeado desde isAvailable
       preparationTime: 0, // No viene en el summary
       modifiers: [], // Se cargarán al abrir el modal
       requiredSelections: [] // Se cargarán al abrir el modal

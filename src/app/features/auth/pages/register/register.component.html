@@ -1,0 +1,131 @@
+<div class="min-h-screen bg-gradient-hero flex flex-col justify-center items-center p-4">
+    <div class="bg-dark-card w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+
+        <div class="absolute -top-24 -left-24 w-48 h-48 bg-[#5A3D88] rounded-full blur-[80px] opacity-40"></div>
+        <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-[#C30364] rounded-full blur-[80px] opacity-40"></div>
+
+        <div class="relative z-10">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-extrabold text-[#FAF8FB] tracking-tight drop-shadow-md mb-2">Crear Cuenta</h1>
+                <p class="text-[#9D96A8] text-sm">Únete a Zisify y disfruta.</p>
+            </div>
+
+            <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-4">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[#FAF8FB] text-xs font-semibold mb-1">Nombre</label>
+                        <input type="text" formControlName="firstName"
+                            class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                            placeholder="Juan"
+                            [class.border-[#DC2626]]="registerForm.get('firstName')?.invalid && registerForm.get('firstName')?.touched">
+                    </div>
+                    <div>
+                        <label class="block text-[#FAF8FB] text-xs font-semibold mb-1">Apellido</label>
+                        <input type="text" formControlName="lastName"
+                            class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                            placeholder="Pérez"
+                            [class.border-[#DC2626]]="registerForm.get('lastName')?.invalid && registerForm.get('lastName')?.touched">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[#FAF8FB] text-xs font-semibold mb-1">Teléfono</label>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Prefijo Perú Fijo -->
+                        <div
+                            class="bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-xl px-2 py-2 text-sm font-bold w-[3.5rem] flex items-center justify-center cursor-not-allowed opacity-70">
+                            +51
+                        </div>
+
+                        <!-- Caja 1 -->
+                        <input type="text" #p1 formControlName="phone1" maxlength="3"
+                            (input)="p1.value.length === 3 ? p2.focus() : null"
+                            class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                            placeholder="999"
+                            [class.border-[#DC2626]]="registerForm.get('phone1')?.invalid && registerForm.get('phone1')?.touched">
+
+                        <span class="text-[#31204F] font-bold">-</span>
+
+                        <!-- Caja 2 -->
+                        <input type="text" #p2 formControlName="phone2" maxlength="3"
+                            (input)="p2.value.length === 3 ? p3.focus() : null"
+                            (keyup.backspace)="p2.value.length === 0 ? p1.focus() : null"
+                            class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                            placeholder="999"
+                            [class.border-[#DC2626]]="registerForm.get('phone2')?.invalid && registerForm.get('phone2')?.touched">
+
+                        <span class="text-[#31204F] font-bold">-</span>
+
+                        <!-- Caja 3 -->
+                        <input type="text" #p3 formControlName="phone3" maxlength="3"
+                            (keyup.backspace)="p3.value.length === 0 ? p2.focus() : null"
+                            class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-2 py-2 text-center text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                            placeholder="999"
+                            [class.border-[#DC2626]]="registerForm.get('phone3')?.invalid && registerForm.get('phone3')?.touched">
+                    </div>
+
+                    @if ((registerForm.get('phone1')?.invalid && registerForm.get('phone1')?.touched) ||
+                    (registerForm.get('phone2')?.invalid && registerForm.get('phone2')?.touched) ||
+                    (registerForm.get('phone3')?.invalid && registerForm.get('phone3')?.touched)) {
+                    <p class="text-[#DC2626] text-[10px] mt-1 font-medium">Asegúrate de rellenar los 9 dígitos.</p>
+                    }
+                </div>
+
+                <div>
+                    <label class="block text-[#FAF8FB] text-xs font-semibold mb-1">Correo Electrónico</label>
+                    <input type="email" formControlName="email"
+                        class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                        placeholder="juan@ejemplo.com"
+                        [class.border-[#DC2626]]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+                    @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+                    <p class="text-[#DC2626] text-[10px] mt-1 font-medium">Ingresa un dominio válido (ej. @gmail.com).
+                    </p>
+                    }
+                </div>
+
+                <div>
+                    <label class="block text-[#FAF8FB] text-xs font-semibold mb-1">Contraseña</label>
+                    <input type="password" formControlName="password"
+                        class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-colors"
+                        placeholder="••••••••"
+                        [class.border-[#DC2626]]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+                    @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+                    <p class="text-[#DC2626] text-[10px] mt-1 font-medium">Al menos 8 caracteres.</p>
+                    }
+                </div>
+
+                @if (errorMessage) {
+                <div class="bg-[#DC2626]/10 border border-[#DC2626]/50 rounded-lg p-2 text-center mt-2">
+                    <p class="text-[#DC2626] text-xs font-medium">{{ errorMessage }}</p>
+                </div>
+                }
+
+                <button type="submit" [disabled]="isLoading"
+                    class="w-full bg-gradient-cta text-white font-bold rounded-xl py-3 mt-4 transition-all duration-300 flex justify-center items-center shadow-lg disabled:opacity-70 disabled:cursor-not-allowed">
+                    @if (isLoading) {
+                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    Creando...
+                    } @else {
+                    Registrarse
+                    }
+                </button>
+            </form>
+
+            <div class="my-5 separator-gradient"></div>
+
+            <div class="text-center text-sm text-[#9D96A8]">
+                <p>¿Ya tienes una cuenta? <span (click)="goToLogin()"
+                        class="text-[#C30364] font-bold cursor-pointer hover:underline">Ingresa aquí</span></p>
+            </div>
+        </div>
+    </div>
+</div>

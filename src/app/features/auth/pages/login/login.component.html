@@ -1,0 +1,84 @@
+<div class="min-h-screen bg-gradient-hero flex flex-col justify-center items-center p-4">
+
+    <!-- Contenedor Principal Dark Card -->
+    <div class="bg-dark-card w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+
+        <!-- Efecto Glow de fondo -->
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-[#C30364] rounded-full blur-[80px] opacity-40"></div>
+        <div class="absolute -bottom-24 -left-24 w-48 h-48 bg-[#5A3D88] rounded-full blur-[80px] opacity-40"></div>
+
+        <div class="relative z-10">
+
+            <!-- Logo y Título -->
+            <div class="text-center mb-8">
+                <h1 class="text-4xl font-extrabold text-[#FAF8FB] tracking-tight drop-shadow-md mb-2">Zisify</h1>
+                <p class="text-[#9D96A8] text-sm">Bienvenido de vuelta. Ingresa a tu cuenta.</p>
+            </div>
+
+            <!-- Formulario -->
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-5">
+
+                <!-- Email Input -->
+                <div>
+                    <label class="block text-[#FAF8FB] text-sm font-semibold mb-2">Correo Electrónico</label>
+                    <input type="email" formControlName="email"
+                        class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#C30364]/50 focus:border-[#C30364] transition-colors"
+                        placeholder="juan.perez@ejemplo.com"
+                        [class.border-[#DC2626]]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+                    @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+                    <p class="text-[#DC2626] text-xs mt-1 font-medium">Ingresa un correo electrónico válido.</p>
+                    }
+                </div>
+
+                <!-- Password Input -->
+                <div>
+                    <label class="block text-[#FAF8FB] text-sm font-semibold mb-2">Contraseña</label>
+                    <input type="password" formControlName="password"
+                        class="w-full bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] placeholder-[#52465E] rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#C30364]/50 focus:border-[#C30364] transition-colors"
+                        placeholder="••••••••"
+                        [class.border-[#DC2626]]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+                    @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+                    <p class="text-[#DC2626] text-xs mt-1 font-medium">La contraseña debe tener al menos 8 caracteres.
+                    </p>
+                    }
+                </div>
+
+                <!-- Error global -->
+                @if (errorMessage) {
+                <div class="bg-[#DC2626]/10 border border-[#DC2626]/50 rounded-lg p-3 text-center">
+                    <p class="text-[#DC2626] text-sm font-medium">{{ errorMessage }}</p>
+                </div>
+                }
+
+                <!-- Botón Submit -->
+                <button type="submit" [disabled]="isLoading"
+                    class="w-full bg-gradient-cta text-white font-bold rounded-xl py-3.5 mt-4 transition-all duration-300 flex justify-center items-center shadow-lg disabled:opacity-70 disabled:cursor-not-allowed">
+                    @if (isLoading) {
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    Iniciando sesión...
+                    } @else {
+                    Ingresar
+                    }
+                </button>
+
+            </form>
+
+            <!-- Separador -->
+            <div class="my-6 separator-gradient"></div>
+
+            <!-- Links Adicionales -->
+            <div class="text-center text-sm text-[#9D96A8]">
+                <p>¿No tienes una cuenta? <span (click)="goToRegister()"
+                        class="text-[#C30364] font-bold cursor-pointer hover:underline">Regístrate</span></p>
+            </div>
+
+        </div>
+    </div>
+</div>

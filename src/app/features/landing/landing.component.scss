@@ -1,0 +1,25 @@
+/* Landing Page — bar fill animation */
+@keyframes fill-bar {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 88%;
+    }
+}
+
+/* Smooth scroll */
+:host {
+    scroll-behavior: smooth;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}

@@ -16,7 +16,7 @@ export class FoodOrderService {
   private http = inject(HttpClient);
 
   // Usamos la nueva URL definida en environment para el servicio de órdenes
-  private apiUrl = `${environment.foodOrderServiceUrl}/api/orders`;
+  private apiUrl = `${environment.restaurantServiceUrl}/api/orders`;
 
   /**
    * PASO A: Calcula los costos finales (Subtotal, Delivery, Servicio, Total)

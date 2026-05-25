@@ -90,8 +90,22 @@ export class DishModalComponent {
   }
 
   // Agregar opción de modificador
-  addModifierOption(option: DishModifierOption) {
+  addModifierOption(modifier: DishModifier, option: DishModifierOption) {
     const current = this.selectedModifierOptions();
+
+    // Check maxSelection for the modifier group
+    if (modifier.maxSelection > 0) {
+      let groupSelectedCount = 0;
+      modifier.options.forEach(opt => {
+        groupSelectedCount += current.get(opt.id) || 0;
+      });
+
+      if (groupSelectedCount >= modifier.maxSelection) {
+        alert(`No puedes agregar más de ${modifier.maxSelection} opciones extras en ${modifier.name}`);
+        return;
+      }
+    }
+
     const qty = current.get(option.id) || 0;
     current.set(option.id, qty + 1);
     this.selectedModifierOptions.set(new Map(current));
@@ -179,9 +193,9 @@ export class DishModalComponent {
 
     const request: AddToCartRequest = {
       dishId: this.dish().id,
-      dishName: this.dish().name,           // ← NUEVO
-      dishImageUrl: this.dish().imageUrl,   // ← NUEVO
-      basePrice: this.dish().price,         // ← NUEVO
+      dishName: this.dish().name,
+      dishImageUrl: this.dish().imageUrl,
+      basePrice: this.dish().price,
       quantity: this.quantity(),
       modifiers,
       requiredSelections,

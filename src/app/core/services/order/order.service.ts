@@ -1,73 +1,39 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { OrderResponse, PaymentReportRequest } from '../../models/order.model';
 
 export interface CreateOrderRequest {
-  items: Array<{
-    productId: string;
-    name: string;
-    price: number;
-    quantity: number;
-    unit: string;
-  }>;
-  location: {
-    address: string;
-    latitude: number;
-    longitude: number;
-    city?: string;
-    region?: string;
-  };
-  payment: {
-    method: 'exact' | 'cash';
-    cashAmount: number | null;
-    changeAmount: number;
-  };
-  summary: {
-    subtotal: number;
-    serviceCost: number;
-    shippingCost: number;
-    total: number;
-  };
+  items: { productId: string, name: string, price: number, quantity: number, unit?: string }[];
+  location: { address: string, latitude: number, longitude: number, city: string, region: string };
+  payment: { method: string, cashAmount: number | null, changeAmount: number };
+  summary: { subtotal: number, serviceCost: number, shippingCost: number, total: number };
   deliveryNote: string;
   customerName: string;
   customerPhone: string;
-}
-
-export interface CalculateShippingRequest {
-  destLat: number;
-  destLon: number;
-}
-
-export interface CalculateShippingResponse {
-  shippingCost: number;
-  currency: string;
-}
-
-export interface CreateOrderResponse {
-  success: boolean;
-  orderId: string;
-  message: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderService {
-  private apiUrl = `${environment.orderServiceUrl}/api/orders`;
+  private http = inject(HttpClient);
+  private apiUrl = `${environment.restaurantServiceUrl}/api/orders`;
 
-  constructor(private http: HttpClient) {}
-
-  calculateShipping(request: CalculateShippingRequest): Observable<CalculateShippingResponse> {
-    console.log('📍 Calculando costo de envío para:', request);
-    return this.http.post<CalculateShippingResponse>(
-      `${this.apiUrl}/shipping-cost`,
-      request
-    );
+  getMyOrders(): Observable<OrderResponse[]> {
+    return this.http.get<OrderResponse[]>(`${this.apiUrl}/my-orders`);
   }
 
-  createOrder(orderData: CreateOrderRequest): Observable<CreateOrderResponse> {
-    console.log('📤 Enviando orden completa al backend:', orderData);
-    return this.http.post<CreateOrderResponse>(this.apiUrl, orderData);
+  reportPayment(orderCode: string, request: PaymentReportRequest): Observable<OrderResponse> {
+    return this.http.patch<OrderResponse>(`${this.apiUrl}/${orderCode}/report-payment`, request);
+  }
+
+  calculateShipping(location: { destLat: number; destLon: number }): Observable<{ shippingCost: number, currency: string }> {
+    return this.http.post<{ shippingCost: number, currency: string }>(`${this.apiUrl}/calculate-shipping`, location);
+  }
+
+  createOrder(request: CreateOrderRequest): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}`, request);
   }
 }

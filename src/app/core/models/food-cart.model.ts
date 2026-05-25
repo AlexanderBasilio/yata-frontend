@@ -1,5 +1,7 @@
 export interface FoodCart {
   id: string;
+  userId?: string;
+  sessionId?: string;
   restaurantId: string;
   restaurantName: string;
   items: FoodCartItem[];
@@ -44,13 +46,13 @@ export interface SelectedRequired {
 // ✅ ACTUALIZADO: Para agregar al carrito (coincide con AddItemRequest)
 export interface AddToCartRequest {
   dishId: string;
-  dishName: string;           // ← NUEVO
-  dishImageUrl: string;       // ← NUEVO
-  basePrice: number;          // ← NUEVO
+  dishName: string;
+  dishImageUrl: string;
+  basePrice: number;
   quantity: number;
   modifiers: SelectedModifier[];
   requiredSelections: SelectedRequired[];
   specialInstructions?: string;
-  restaurantId: string;       // ← NUEVO
-  restaurantName: string;     // ← NUEVO
+  restaurantId: string;
+  restaurantName: string;
 }

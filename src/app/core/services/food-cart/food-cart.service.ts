@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
@@ -10,8 +10,11 @@ import { FoodCart, AddToCartRequest } from '../../models/food-cart.model';
 })
 export class FoodCartService {
   private http = inject(HttpClient);
-  private foodCartApiUrl = `${environment.foodCartServiceUrl}/api/food-cart`;
+  private foodCartApiUrl = `${environment.restaurantServiceUrl}/api/food-cart`;
   private readonly CART_ID_KEY = 'yata_cart_id';
+
+  // State
+  public totalItems = signal<number>(0);
 
   // ✅ Obtener o crear Cart ID
   private getCartId(): string | null {
@@ -38,11 +41,19 @@ export class FoodCartService {
   // Obtener carrito actual
   getCart(): Observable<FoodCart | null> {
     return this.http.get<FoodCart>(this.foodCartApiUrl, { headers: this.getHeaders() }).pipe(
+      map(cart => {
+        if (cart && !cart.items) {
+          cart.items = [];
+        }
+        return cart;
+      }),
       tap((cart) => {
         // Guardar el cart ID si lo recibimos
         if (cart?.id) {
           this.setCartId(cart.id);
         }
+        const count = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        this.totalItems.set(count);
       }),
       catchError((error: HttpErrorResponse) => {
         if (error.status === 404 || error.status === 0) {
@@ -60,12 +71,20 @@ export class FoodCartService {
     return this.http.post<FoodCart>(`${this.foodCartApiUrl}/items`, request, {
       headers: this.getHeaders()
     }).pipe(
+      map(cart => {
+        if (cart && !cart.items) {
+          cart.items = [];
+        }
+        return cart;
+      }),
       tap((cart) => {
         // Guardar el cart ID después de agregar
         if (cart?.id) {
           this.setCartId(cart.id);
           console.log('🛒 Cart ID guardado:', cart.id);
         }
+        const count = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        this.totalItems.set(count);
       }),
       catchError((error: HttpErrorResponse) => {
         console.error('❌ Error agregando item:', error);
@@ -80,6 +99,16 @@ export class FoodCartService {
       { quantity },
       { headers: this.getHeaders() }
     ).pipe(
+      map(cart => {
+        if (cart && !cart.items) {
+          cart.items = [];
+        }
+        return cart;
+      }),
+      tap(cart => {
+        const count = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+        this.totalItems.set(count);
+      }),
       catchError((error: HttpErrorResponse) => {
         console.error('❌ Error actualizando cantidad:', error);
         return throwError(() => error);
@@ -104,6 +133,7 @@ export class FoodCartService {
   clearCart(): Observable<void> {
     return this.http.delete<void>(this.foodCartApiUrl, { headers: this.getHeaders() }).pipe(
       tap(() => {
+        this.totalItems.set(0);
         // Opcional: podrías limpiar el cartId aquí si quieres
         // localStorage.removeItem(this.CART_ID_KEY);
       }),

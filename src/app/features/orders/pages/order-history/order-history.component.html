@@ -1,0 +1,99 @@
+<div class="min-h-screen bg-[#0D0518] pb-24 font-sans">
+  <!-- Navbar -->
+  <nav class="navbar bg-[#1A0A2E]/80 backdrop-blur-xl shadow-sm sticky top-0 z-40 px-4 py-3 border-b border-[#31204F]">
+    <div class="max-w-screen-xl mx-auto flex items-center justify-between">
+      <!-- Botón de retroceso -->
+      <button (click)="goBack()" class="flex items-center gap-2 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <h1 class="text-xl font-['Inknut_Antiqua'] font-bold text-[#FAF8FB]">Mis Pedidos</h1>
+
+      <div class="w-8"></div>
+    </div>
+  </nav>
+
+  <div class="max-w-md mx-auto px-4 py-6">
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-20">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C30364]"></div>
+      </div>
+    } @else if (orders().length === 0) {
+      <div class="text-center py-20 bg-[#221638] rounded-[24px] border border-[#31204F] mt-10 p-8 shadow-lg">
+        <div class="mb-4">
+          <svg class="w-20 h-20 mx-auto text-[#5A3D88]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">No tienes pedidos</h2>
+        <p class="text-[#9D96A8]">¡Aún no has realizado ninguna compra!</p>
+      </div>
+    } @else {
+      <div class="space-y-4">
+        @for (order of orders(); track order.orderId) {
+          <div class="bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-2xl shadow-lg p-5">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="font-bold text-[#FAF8FB] text-lg">{{ order.restaurantName }}</h3>
+                <p class="text-xs text-[#9D96A8] mt-1">Código: <span class="font-mono text-[#FAF8FB]">{{ order.orderCode }}</span></p>
+                <p class="text-[10px] text-[#716A7D] mt-0.5">{{ order.createdAt | date:'dd MMM yyyy, hh:mm a' }}</p>
+              </div>
+              <div class="px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap {{ getStatusConfig(order.status).bg }} {{ getStatusConfig(order.status).color }}">
+                {{ getStatusConfig(order.status).label }}
+              </div>
+            </div>
+
+            <div class="border-t border-[#31204F] pt-3 mb-3">
+              <p class="text-sm font-semibold text-[#FAF8FB] flex justify-between">
+                <span>Total:</span>
+                <span class="text-[#C30364]">S/ {{ order.totalAmount.toFixed(2) }}</span>
+              </p>
+            </div>
+
+            @if (getStatusConfig(order.status).action) {
+              <button (click)="openPaymentReport(order)" class="w-full mt-2 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-xl font-bold text-sm hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
+                Reportar Pago Manual
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Modal para reportar pago -->
+  @if (reportingOrder()) {
+    <div class="fixed inset-0 bg-[#0D0518]/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-[#221638] border border-[#31204F] rounded-3xl p-6 w-full max-w-sm shadow-2xl relative animate-slide-up">
+        
+        <button (click)="closePaymentReport()" class="absolute top-4 right-4 text-[#9D96A8] hover:text-[#FAF8FB]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <h3 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">Reportar Pago</h3>
+        <p class="text-sm text-[#9D96A8] mb-6">
+          Ingresa el número de operación de Yape/Plin/Transferencia para el pedido <strong class="text-[#FAF8FB]">{{ reportingOrder()?.orderCode }}</strong>.
+        </p>
+
+        <div class="mb-6">
+          <label class="block text-sm font-semibold text-[#FAF8FB] mb-2">Número de Operación</label>
+          <input type="text" [(ngModel)]="operationNumber" placeholder="Ej: 19283746"
+            class="w-full px-4 py-3 bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-xl focus:border-[#C30364] focus:ring-1 focus:ring-[#C30364] outline-none">
+        </div>
+
+        <button (click)="submitPaymentReport()" [disabled]="isReporting() || !operationNumber"
+          class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3.5 rounded-xl font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50 flex justify-center items-center gap-2">
+          @if (isReporting()) {
+            <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            Enviando...
+          } @else {
+            Confirmar Pago
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+</div>

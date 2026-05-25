@@ -1,56 +1,111 @@
-<div class="min-h-screen bg-gray-50 py-8 px-4">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="text-center mb-8">
-      <h1 class="text-3xl font-bold text-gray-800 mb-2">
-        ¿Qué te gustaría pedir hoy?
-      </h1>
-      <p class="text-gray-600">
-        Selecciona el servicio que necesitas
-      </p>
+<div class="min-h-screen bg-[#FAF8FB] font-sans pb-24">
+
+  <!-- Encabezado Curvo Zisify -->
+  <div class="bg-[#1A0A2E] pt-12 pb-16 px-6 rounded-b-[2.5rem] shadow-xl relative w-full mx-auto text-[#FAF8FB]">
+    <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-20"></div>
+
+    <!-- User Profile & Wallet -->
+    <div class="flex justify-between items-center mb-8 relative z-10">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#31204F]">
+          <img src="https://ui-avatars.com/api/?name={{customerName}}&background=C30364&color=fff&font-size=0.4"
+            alt="User">
+        </div>
+        <div>
+          <h2 class="text-base font-bold">{{ customerName }}</h2>
+          <p class="text-[10px] text-[#9D96A8]">app.zisify.com/{{ customerName | lowercase }}</p>
+        </div>
+      </div>
+      <div class="text-right">
+        <p class="text-[10px] text-[#9D96A8]">Saldo o Puntos</p>
+        <p class="text-xl font-black text-white">S/ {{ walletBalance }}</p>
+      </div>
     </div>
 
-    <!-- Grid de servicios -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      @for (service of services; track service.id) {
-        <button
-          (click)="selectService(service)"
-          [disabled]="!service.available"
-          class="service-card group relative bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 text-left"
-          [class.opacity-50]="!service.available"
-          [class.cursor-not-allowed]="!service.available">
+    <!-- Stats Row -->
+    <div class="flex justify-between items-center px-4 relative z-10">
+      <div class="text-center">
+        <p class="text-xl font-bold">{{ ordersCount }}</p>
+        <p class="text-[10px] text-[#9D96A8]">Pedidos</p>
+      </div>
+      <div class="text-center">
+        <p class="text-xl font-bold">{{ pointsCount }}</p>
+        <p class="text-[10px] text-[#9D96A8]">Z-Puntos</p>
+      </div>
+      <div class="text-center">
+        <p class="text-xl font-bold">{{ vouchersCount }}</p>
+        <p class="text-[10px] text-[#9D96A8]">Cupones</p>
+      </div>
+    </div>
+  </div>
 
-          <!-- Badge "Próximamente" -->
-          @if (service.comingSoon) {
-            <div class="absolute top-4 right-4 bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full">
-              Próximamente
-            </div>
+  <!-- Search Bar (Overlapping) -->
+  <div class="px-6 -mt-7 relative z-20">
+    <div class="bg-white rounded-2xl shadow-md p-3 flex items-center gap-3 w-full border border-gray-100">
+      <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+      <input type="text" placeholder="¿Qué deseas pedir hoy?"
+        class="w-full bg-transparent focus:outline-none text-sm text-gray-800 font-medium">
+    </div>
+  </div>
+
+  <!-- Categories -->
+  <div class="pl-6 mt-8">
+    <div class="flex overflow-x-auto gap-4 pb-4 scrollbar-hide pr-6">
+      @for (cat of categories; track cat.id) {
+      <button (click)="selectCategory(cat)" class="flex flex-col items-center gap-2 min-w-[70px]"
+        [class.opacity-50]="!cat.available">
+        <div
+          class="w-[70px] h-[70px] bg-white rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center justify-center text-3xl transition-transform transform active:scale-95"
+          [class.border-[#C30364]]="cat.id === 'food'">
+          @if (isUrl(cat.icon)) {
+            <img [src]="cat.icon" [alt]="cat.name" class="w-10 h-10 object-contain">
+          } @else {
+            {{ cat.icon }}
           }
-
-          <!-- Ícono -->
-          <div class="w-16 h-16 bg-[#0F456E]/10 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <span class="text-4xl">{{ service.icon }}</span>
-          </div>
-
-          <!-- Contenido -->
-          <h3 class="text-xl font-bold text-gray-800 mb-2">
-            {{ service.name }}
-          </h3>
-          <p class="text-gray-600 text-sm">
-            {{ service.description }}
-          </p>
-
-          <!-- Flecha -->
-          @if (service.available) {
-            <div class="mt-4 flex items-center text-[#0F456E] font-semibold text-sm group-hover:translate-x-2 transition-transform">
-              Explorar
-              <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-              </svg>
-            </div>
-          }
-        </button>
+        </div>
+        <span class="text-xs font-bold text-[#1A0A2E]">{{ cat.name }}</span>
+      </button>
       }
     </div>
   </div>
+
+  <!-- Promotions Slider -->
+  <div class="mt-6 px-6">
+    <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+      @for (promo of promotions; track promo.id) {
+      <div class="min-w-[280px] w-[280px] h-[160px] rounded-3xl overflow-hidden relative shadow-lg snap-center shrink-0">
+        <img [src]="promo.image" [alt]="promo.title" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4">
+          <h3 class="text-white font-bold text-lg leading-tight">{{ promo.title }}</h3>
+        </div>
+      </div>
+      }
+    </div>
+    <!-- Indicadores de slide estáticos para la UI -->
+    <div class="flex justify-center gap-1.5 mt-2">
+      @for (promo of promotions; track promo.id) {
+        <div class="w-2 h-2 rounded-full" [class.bg-[#C30364]]="$first" [class.bg-gray-300]="!$first"></div>
+      }
+    </div>
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="mt-8 px-6">
+    <div class="grid grid-cols-3 gap-3">
+      @for (shortcut of shortcuts; track shortcut.id) {
+      <a [routerLink]="shortcut.route" class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFF0F7] to-[#FFE0EF] flex items-center justify-center text-[#C30364]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="shortcut.icon"></path>
+          </svg>
+        </div>
+        <span class="text-[10px] font-bold text-gray-700 text-center leading-tight">{{ shortcut.name }}</span>
+      </a>
+      }
+    </div>
+  </div>
+
 </div>
