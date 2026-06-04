@@ -6,6 +6,6 @@ export const environment = {
   liquorServiceUrl: 'https://api.yata-delivery.com', // Placeholder or old URL for liquors
   googleAnalyticsId: 'G-LHM0T0C63D',
   mapbox: {
-    accessToken: '' // Pega tu token aquí
+    accessToken: 'pk.eyJ1IjoieWF0YS10ZWNoLXNlcnZpY2VzIiwiYSI6ImNtcHlwaHNlNzA5bDUycW9qYmZ0OHc5ZGEifQ.RMWQY1E-kY9pwrMb-L4yiw' // Pega tu token aquí
   }
 };
