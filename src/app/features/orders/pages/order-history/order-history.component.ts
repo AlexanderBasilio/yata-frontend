@@ -102,4 +102,19 @@ export class OrderHistoryComponent implements OnInit {
   goBack() {
     this.router.navigate(['/home']);
   }
+
+  yapeCopiedOrderCode: string | null = null;
+  async copyNumberAndOpenYape(orderCode: string) {
+    try {
+      await navigator.clipboard.writeText('963434580');
+      this.yapeCopiedOrderCode = orderCode;
+      setTimeout(() => {
+        this.yapeCopiedOrderCode = null;
+      }, 3000);
+      window.open('https://www.yape.com.pe/', '_blank');
+    } catch (err) {
+      console.error('Error al copiar celular:', err);
+      alert('No se pudo copiar el número automáticamente. El número es 963434580');
+    }
+  }
 }

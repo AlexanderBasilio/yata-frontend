@@ -48,7 +48,7 @@
 
         <!-- Botón Central (Pedidos Activos/Realizados) -->
         <a routerLink="/orders" class="relative group pointer-events-auto">
-            <div
+            <div [class.animate-soft-blink]="shouldBlinkOrders()"
                 class="w-12 h-12 rounded-full bg-gradient-cta flex items-center justify-center shadow-[0_4px_15px_rgba(195,3,100,0.5)] border-2 border-[#1A0A2E] transform group-hover:scale-105 transition-all">
                 <!-- Ícono de Delivery/Pedidos -->
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

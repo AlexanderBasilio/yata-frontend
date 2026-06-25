@@ -38,6 +38,10 @@ export class BottomNavComponent {
         return this.router.url.includes(route);
     }
 
+    shouldBlinkOrders(): boolean {
+        return !!localStorage.getItem('yata_confirmed_order') && !this.router.url.includes('/orders');
+    }
+
     getCartRoute(): string {
         if (this.router.url.includes('/food')) {
             return '/food/cart';

@@ -1,23 +1,38 @@
-<div class="checkout-container mx-auto p-4 max-w-4xl min-h-screen bg-[#0D0518] text-[#FAF8FB]">
+<div class="checkout-container mx-auto p-4 pb-40 max-w-4xl min-h-screen bg-[#0D0518] text-[#FAF8FB]">
     <h1 class="text-3xl font-bold font-['Inknut_Antiqua'] text-center mb-8">Finalizar Pedido</h1>
 
     <!-- Steps Indicator (Manual) -->
-    <div class="flex items-center justify-center mb-8">
+    <div class="flex items-center justify-center mb-8 flex-wrap gap-y-2">
+        <!-- Paso 1 -->
         <div class="flex items-center">
             <div [class]="currentStep >= 1 ? 'bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB]' : 'bg-[#221638] text-[#716A7D]'"
                 class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">1</div>
-            <span class="ml-2 font-medium" [class.text-[#FAF8FB]]="currentStep>=1"
+            <span class="ml-2 font-medium text-xs sm:text-sm" [class.text-[#FAF8FB]]="currentStep>=1"
                 [class.text-[#716A7D]]="currentStep<1">Ubicación</span>
         </div>
-        <div class="w-20 h-1 bg-[#221638] mx-4 relative overflow-hidden rounded-full">
+        <!-- Conector 1-2 -->
+        <div class="w-10 sm:w-16 h-1 bg-[#221638] mx-2 relative overflow-hidden rounded-full">
             <div class="absolute h-full bg-gradient-to-r from-[#C30364] to-[#E8368A] transition-all duration-300"
-                [style.width]="currentStep === 2 ? '100%' : '0%'"></div>
+                [style.width]="currentStep >= 2 ? '100%' : '0%'"></div>
         </div>
+        <!-- Paso 2 -->
         <div class="flex items-center">
-            <div [class]="currentStep === 2 ? 'bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB]' : 'bg-[#221638] text-[#716A7D]'"
+            <div [class]="currentStep >= 2 ? 'bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB]' : 'bg-[#221638] text-[#716A7D]'"
                 class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">2</div>
-            <span class="ml-2 font-medium" [class.text-[#FAF8FB]]="currentStep===2"
+            <span class="ml-2 font-medium text-xs sm:text-sm" [class.text-[#FAF8FB]]="currentStep>=2"
                 [class.text-[#716A7D]]="currentStep<2">Confirmación</span>
+        </div>
+        <!-- Conector 2-3 -->
+        <div class="w-10 sm:w-16 h-1 bg-[#221638] mx-2 relative overflow-hidden rounded-full">
+            <div class="absolute h-full bg-gradient-to-r from-[#C30364] to-[#E8368A] transition-all duration-300"
+                [style.width]="currentStep >= 3 ? '100%' : '0%'"></div>
+        </div>
+        <!-- Paso 3 -->
+        <div class="flex items-center">
+            <div [class]="currentStep === 3 ? 'bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB]' : 'bg-[#221638] text-[#716A7D]'"
+                class="w-10 h-10 rounded-full flex items-center justify-center font-bold shadow-lg">3</div>
+            <span class="ml-2 font-medium text-xs sm:text-sm" [class.text-[#FAF8FB]]="currentStep===3"
+                [class.text-[#716A7D]]="currentStep<3">Finalizar</span>
         </div>
     </div>
 
@@ -49,7 +64,8 @@
             </div>
 
             <!-- Mapa -->
-            <div class="map-container relative w-full h-96 rounded-xl overflow-hidden shadow-lg border border-[#31204F]">
+            <div
+                class="map-container relative w-full h-96 rounded-xl overflow-hidden shadow-lg border border-[#31204F]">
                 <div #mapElement class="w-full h-full"></div>
             </div>
 
@@ -117,7 +133,8 @@
                             (click)="detailsForm.patchValue({paymentMethod: method})">
                             <input type="radio" [value]="method" formControlName="paymentMethod"
                                 class="w-4 h-4 accent-[#C30364]">
-                            <span class="text-sm text-[#FAF8FB]">{{ method === 'MANUAL_TRANSFER' ? 'Yape / Plin / Transferencia' :
+                            <span class="text-sm text-[#FAF8FB]">{{ method === 'MANUAL_TRANSFER' ? 'Yape / Plin /
+                                Transferencia' :
                                 method }}</span>
                         </div>
                     </div>
@@ -166,7 +183,8 @@
 
                 <ng-template #loadingSummary>
                     <div class="flex flex-col items-center justify-center h-40 text-[#9D96A8]">
-                        <div class="w-8 h-8 border-4 border-[#31204F] border-t-[#C30364] rounded-full animate-spin mb-2">
+                        <div
+                            class="w-8 h-8 border-4 border-[#31204F] border-t-[#C30364] rounded-full animate-spin mb-2">
                         </div>
                         <p>Calculando total...</p>
                     </div>
@@ -178,7 +196,8 @@
     <!-- STEP 3: Éxito -->
     <div *ngIf="currentStep === 3" class="step-content animate-fade-in text-center py-12">
         <div class="mb-6 flex justify-center">
-            <div class="w-20 h-20 bg-[#1A0A2E] border border-[#C30364] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(195,3,100,0.4)]">
+            <div
+                class="w-20 h-20 bg-[#1A0A2E] border border-[#C30364] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(195,3,100,0.4)]">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#C30364]" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
@@ -186,7 +205,8 @@
             </div>
         </div>
 
-        <h2 class="text-2xl md:text-3xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">{{ greetingMessage() }}</h2>
+        <h2 class="text-2xl md:text-3xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">{{ greetingMessage() }}
+        </h2>
         <p class="text-[#9D96A8] mb-8">Tu pedido ha sido registrado correctamente.</p>
 
         <div class="max-w-md mx-auto space-y-6 text-[#9D96A8] mb-8">
@@ -226,14 +246,26 @@
                 <p class="font-bold text-[#FAF8FB] mb-2 flex items-center">
                     <span class="mr-2">👇</span> Siguiente paso:
                 </p>
-                <p class="mb-2 text-[#9D96A8]">
-                    Nos contactaremos contigo por <strong class="text-[#16A34A]">WhatsApp</strong>.
+                <p class="text-sm text-[#9D96A8] leading-relaxed mb-2">
+                    Debe realizar un pago por <strong class="text-[#C30364]">Yape</strong> y copiar el <strong>Nro. de
+                        operación</strong> que consta de 8 dígitos.
                 </p>
-                <p class="text-sm text-[#716A7D]">
-                    Por favor, ten a la mano el <span class="font-bold text-[#FAF8FB]">código de pedido</span> o compártelo cuando te
-                    lo solicitemos para coordinar el pago (Yape/Plin).
+                <p class="text-sm text-[#9D96A8] leading-relaxed mb-2">
+                    Luego de copiar ese número, tiene que ir a <strong class="text-white">mis pedidos</strong> y pegar
+                    ahí ese código.
+                </p>
+                <p class="text-xs text-[#716A7D] mt-2 font-medium">
+                    Con eso ya solo le quedará esperar a que llegue su pedido a su domicilio. ¡Gracias por confiar en
+                    Zisify!
                 </p>
             </div>
+
+            <!-- Botón de Pago con Yape -->
+            <button (click)="copyNumberAndOpenYape()" 
+                class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white py-4 rounded-xl font-bold text-base transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] flex items-center justify-center gap-2">
+                <span class="text-xl">📱</span>
+                <span>{{ yapeCopied ? '¡Celular Copiado! Abriendo Yape...' : 'Copiar Celular y Abrir Yape' }}</span>
+            </button>
         </div>
 
         <button (click)="goHome()"

@@ -11,7 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class LandingComponent {
     // Cloudinary logo URL — replace with your actual URL when ready
-    readonly logoUrl = 'YOUR_CLOUDINARY_LOGO_URL_HERE';
+    readonly logoUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png';
 
     stats = [
         { value: '+15k', label: 'Clientes activos' },

@@ -1,1 +1,14 @@
-/* SCSS is handled directly via Tailwind utility classes mapped to Zisify CSS variables */
+@keyframes soft-blink {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(195, 3, 100, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(195, 3, 100, 0.8), 0 0 15px rgba(195, 3, 100, 0.6);
+    transform: scale(1.08);
+  }
+}
+
+.animate-soft-blink {
+  animation: soft-blink 2s infinite ease-in-out;
+}

@@ -50,6 +50,16 @@ export const routes: Routes = [
   },
 
   // ============================================
+  // WALLET (PROTEGIDO)
+  // ============================================
+  {
+    path: 'wallet',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/wallet/wallet.component')
+      .then(m => m.WalletComponent)
+  },
+
+  // ============================================
   // ORDERS (PROTEGIDO)
   // ============================================
   {

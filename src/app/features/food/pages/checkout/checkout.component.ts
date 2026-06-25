@@ -398,6 +398,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
     }
 
+    yapeCopied = false;
+    async copyNumberAndOpenYape() {
+        try {
+            await navigator.clipboard.writeText('963434580');
+            this.yapeCopied = true;
+            this.cdr.detectChanges();
+            setTimeout(() => {
+                this.yapeCopied = false;
+                this.cdr.detectChanges();
+            }, 3000);
+            window.open('https://www.yape.com.pe/', '_blank');
+        } catch (err) {
+            console.error('Error al copiar celular:', err);
+            alert('No se pudo copiar el número automáticamente. El número es 963434580');
+        }
+    }
+
     goHome() {
         // Limpiamos la orden guardada al salir explícitamente, para permitir nuevas compras
         localStorage.removeItem('yata_confirmed_order');

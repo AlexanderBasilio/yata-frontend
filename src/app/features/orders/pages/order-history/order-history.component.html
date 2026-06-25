@@ -53,8 +53,15 @@
             </div>
 
             @if (getStatusConfig(order.status).action) {
+              <!-- Botón de Pago con Yape -->
+              <button (click)="copyNumberAndOpenYape(order.orderCode)" 
+                  class="w-full mt-2 bg-[#C30364] hover:bg-[#E8368A] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-[0_4px_15px_rgba(195,3,100,0.3)] flex items-center justify-center gap-2">
+                  <span class="text-base">📱</span>
+                  <span>{{ yapeCopiedOrderCode === order.orderCode ? '¡Celular Copiado! Abriendo Yape...' : 'Copiar Celular y Abrir Yape' }}</span>
+              </button>
+
               <button (click)="openPaymentReport(order)" class="w-full mt-2 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-xl font-bold text-sm hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
-                Reportar Pago Manual
+                Enviar Nro de operacion
               </button>
             }
           </div>

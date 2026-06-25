@@ -1,0 +1,47 @@
+<div class="min-h-screen bg-[#0D0518] font-sans pb-24 text-[#FAF8FB] flex flex-col justify-center items-center px-6">
+  <!-- Glow Effect background -->
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-64 h-64 bg-[#C30364] rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+
+  <!-- Wallet Header -->
+  <div class="w-full max-w-md text-center mb-8 relative z-10">
+    <h1 class="text-3xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB]">Mi Billetera</h1>
+    <p class="text-xs text-[#9D96A8] mt-2">Administra tus métodos de pago y Z-Points</p>
+  </div>
+
+  <!-- Wallet Content Card -->
+  <div class="w-full max-w-md bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[32px] p-8 shadow-2xl relative overflow-hidden flex flex-col items-center">
+    <!-- Glow element -->
+    <div class="absolute -top-20 -right-20 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-30"></div>
+
+    <!-- Icon -->
+    <div class="w-20 h-20 bg-gradient-cta rounded-2xl flex items-center justify-center text-4xl mb-6 shadow-[0_8px_30px_rgba(195,3,100,0.4)]">
+      💳
+    </div>
+
+    <!-- Title -->
+    <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-white mb-3 text-center">Billeteras Digitales</h2>
+
+    <!-- Description -->
+    <p class="text-sm text-[#9D96A8] leading-relaxed text-center mb-8 font-['Epilogue']">
+      Próximamente habilitaremos las billeteras digitales (Yape, Plin y tarjetas) para realizar tus pagos de manera mucho más rápida, fácil y segura.
+    </p>
+
+    <!-- Visual features placeholder -->
+    <div class="w-full space-y-3 mb-8">
+      <div class="flex items-center gap-3 bg-[#1A0A2E]/60 p-3 rounded-xl border border-[#31204F]/60 opacity-60">
+        <span class="text-lg">✨</span>
+        <span class="text-xs font-semibold text-[#FAF8FB]">Pago con un solo toque (Yape/Plin)</span>
+      </div>
+      <div class="flex items-center gap-3 bg-[#1A0A2E]/60 p-3 rounded-xl border border-[#31204F]/60 opacity-60">
+        <span class="text-lg">🔒</span>
+        <span class="text-xs font-semibold text-[#FAF8FB]">Seguridad encriptada de nivel bancario</span>
+      </div>
+    </div>
+
+    <!-- Button -->
+    <button (click)="goHome()" 
+      class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-white py-3.5 rounded-xl font-bold text-sm shadow-[0_4px_15px_rgba(195,3,100,0.4)] hover:shadow-[0_6px_25px_rgba(195,3,100,0.6)] transition-all">
+      Volver al Inicio
+    </button>
+  </div>
+</div>
