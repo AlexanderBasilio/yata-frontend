@@ -19,6 +19,8 @@ export class RegisterComponent {
     registerForm: FormGroup;
     isLoading = false;
     errorMessage = '';
+    showPassword = false;
+    showConfirmPassword = false;
 
     constructor() {
         this.registerForm = this.fb.group({
@@ -30,8 +32,15 @@ export class RegisterComponent {
             phone3: ['', [Validators.required, Validators.pattern(/^[0-9]{3}$/)]],
             // Exigencia de extensión .com o dos caracteres
             email: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)]],
-            password: ['', [Validators.required, Validators.minLength(8)]]
-        });
+            password: ['', [Validators.required, Validators.minLength(8)]],
+            confirmPassword: ['', [Validators.required]]
+        }, { validators: this.passwordMatchValidator });
+    }
+
+    passwordMatchValidator(g: FormGroup) {
+        const password = g.get('password')?.value;
+        const confirmPassword = g.get('confirmPassword')?.value;
+        return password === confirmPassword ? null : { mismatch: true };
     }
 
     onSubmit() {

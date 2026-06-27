@@ -1,0 +1,175 @@
+<div class="min-h-screen bg-[#0D0518] text-[#FAF8FB] font-sans pb-24 pt-12 px-6 flex flex-col items-center">
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#C30364] rounded-full blur-[120px] opacity-15 pointer-events-none"></div>
+
+  <!-- Header -->
+  <div class="w-full max-w-2xl text-center mb-10 relative z-10">
+    <div class="flex justify-center mb-4">
+      <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify" class="h-10 w-auto object-contain">
+    </div>
+    <h1 class="text-3xl font-bold font-['Inknut_Antiqua'] text-white">Libro de Reclamaciones</h1>
+    <p class="text-xs text-[#9D96A8] mt-2">Conforme al Código de Protección y Defensa del Consumidor de Perú</p>
+  </div>
+
+  <!-- Content Card -->
+  <div class="w-full max-w-2xl bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[24px] p-6 md:p-8 shadow-2xl relative z-10">
+    
+    @if (!isSubmitted) {
+      <p class="text-xs text-[#9D96A8] mb-6 leading-relaxed">
+        Ponemos a tu disposición nuestro Libro de Reclamaciones Virtual. Por favor, completa detalladamente la información requerida para procesar tu queja o reclamo. Nos comunicaremos contigo en un plazo no mayor a 15 días hábiles.
+      </p>
+
+      <form [formGroup]="claimForm" (ngSubmit)="submitClaim()" class="space-y-5">
+        <!-- Personal info -->
+        <h3 class="text-sm font-bold text-[#E8368A] uppercase tracking-wider border-b border-[#31204F] pb-2">1. Identificación del Consumidor</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Nombre Completo *</label>
+            <input type="text" formControlName="fullName" placeholder="Ej. Juan Pérez"
+              class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] transition-colors"
+              [class.border-red-500]="claimForm.get('fullName')?.touched && claimForm.get('fullName')?.invalid">
+            @if (claimForm.get('fullName')?.touched && claimForm.get('fullName')?.invalid) {
+              <p class="text-[10px] text-red-500 mt-1">El nombre completo es requerido (mín. 5 caracteres)</p>
+            }
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <div class="col-span-1">
+              <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Doc *</label>
+              <select formControlName="documentType"
+                class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-2 py-3 text-sm text-white focus:outline-none focus:border-[#C30364]">
+                <option value="DNI">DNI</option>
+                <option value="CE">C.E.</option>
+                <option value="RUC">RUC</option>
+              </select>
+            </div>
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Nro. Documento *</label>
+              <input type="text" formControlName="documentNumber" placeholder="12345678"
+                class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-3 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] transition-colors"
+                [class.border-red-500]="claimForm.get('documentNumber')?.touched && claimForm.get('documentNumber')?.invalid">
+              @if (claimForm.get('documentNumber')?.touched && claimForm.get('documentNumber')?.invalid) {
+                <p class="text-[10px] text-red-500 mt-1">Número de documento inválido</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Correo Electrónico *</label>
+            <input type="email" formControlName="email" placeholder="juan@gmail.com"
+              class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] transition-colors"
+              [class.border-red-500]="claimForm.get('email')?.touched && claimForm.get('email')?.invalid">
+            @if (claimForm.get('email')?.touched && claimForm.get('email')?.invalid) {
+              <p class="text-[10px] text-red-500 mt-1">Ingresa un correo electrónico válido</p>
+            }
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Teléfono Celular *</label>
+            <input type="text" formControlName="phone" placeholder="999888777"
+              class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] transition-colors"
+              [class.border-red-500]="claimForm.get('phone')?.touched && claimForm.get('phone')?.invalid">
+            @if (claimForm.get('phone')?.touched && claimForm.get('phone')?.invalid) {
+              <p class="text-[10px] text-red-500 mt-1">Ingresa un celular de 9 dígitos</p>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Dirección Domiciliaria *</label>
+          <input type="text" formControlName="address" placeholder="Av. Real 123, Huancayo"
+            class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] transition-colors"
+            [class.border-red-500]="claimForm.get('address')?.touched && claimForm.get('address')?.invalid">
+          @if (claimForm.get('address')?.touched && claimForm.get('address')?.invalid) {
+            <p class="text-[10px] text-red-500 mt-1">La dirección es requerida</p>
+          }
+        </div>
+
+        <!-- Detail of claim -->
+        <h3 class="text-sm font-bold text-[#E8368A] uppercase tracking-wider border-b border-[#31204F] pb-2 pt-4">2. Detalle de la Reclamación</h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Tipo de Registro *</label>
+            <div class="flex gap-4">
+              <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input type="radio" formControlName="type" value="RECLAMO" class="accent-[#C30364]">
+                <span>Reclamo</span>
+              </label>
+              <label class="flex items-center gap-2 text-sm text-white cursor-pointer">
+                <input type="radio" formControlName="type" value="QUEJA" class="accent-[#C30364]">
+                <span>Queja</span>
+              </label>
+            </div>
+            <p class="text-[9px] text-[#716A7D] mt-1.5">
+              <strong>Reclamo:</strong> Disconformidad relacionada a los productos o servicios ofrecidos.<br>
+              <strong>Queja:</strong> Descontento respecto a la atención o maltrato del personal.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Código de Pedido (Opcional)</label>
+            <input type="text" formControlName="orderCode" placeholder="Ej. ZIS-12345"
+              class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364]">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#9D96A8] mb-1.5">Descripción del Hecho *</label>
+          <textarea formControlName="description" rows="4" placeholder="Detalla lo sucedido..."
+            class="w-full bg-[#1A0A2E] border border-[#31204F] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#C30364] resize-none"
+            [class.border-red-500]="claimForm.get('description')?.touched && claimForm.get('description')?.invalid"></textarea>
+          @if (claimForm.get('description')?.touched && claimForm.get('description')?.invalid) {
+            <p class="text-[10px] text-red-500 mt-1">Describe detalladamente lo ocurrido (mín. 20 caracteres)</p>
+          }
+        </div>
+
+        <div class="pt-2">
+          <label class="flex items-start gap-2.5 text-xs text-[#9D96A8] cursor-pointer">
+            <input type="checkbox" formControlName="acceptTerms" class="accent-[#C30364] mt-0.5">
+            <span>Declaro ser el titular del documento y que la información brindada es real. Acepto el tratamiento de mis datos personales para la atención de este requerimiento. *</span>
+          </label>
+          @if (claimForm.get('acceptTerms')?.touched && claimForm.get('acceptTerms')?.invalid) {
+            <p class="text-[10px] text-red-500 mt-1">Debes aceptar esta declaración para continuar</p>
+          }
+        </div>
+
+        <!-- Submit -->
+        <div class="flex gap-4 pt-4">
+          <button type="button" (click)="goHome()"
+            class="flex-1 bg-transparent border border-[#31204F] text-[#FAF8FB] py-3.5 rounded-xl font-bold text-sm transition-colors hover:bg-[#31204F]/30">
+            Cancelar
+          </button>
+          <button type="submit"
+            class="flex-1 bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white py-3.5 rounded-xl font-bold text-sm shadow-[0_4px_15px_rgba(195,3,100,0.4)] transition-all active:scale-[0.98]">
+            Registrar Queja/Reclamo
+          </button>
+        </div>
+      </form>
+    @ } @else {
+      <!-- Success View -->
+      <div class="text-center py-8 flex flex-col items-center">
+        <div class="w-16 h-16 bg-[#16A34A] rounded-full flex items-center justify-center text-3xl mb-6 shadow-[0_0_20px_rgba(22,163,74,0.4)]">
+          ✓
+        </div>
+        <h2 class="text-2xl font-bold text-white font-['Inknut_Antiqua'] mb-3">Registro Exitoso</h2>
+        <p class="text-sm text-[#9D96A8] leading-relaxed max-w-md mb-6">
+          Su requerimiento ha sido registrado correctamente en nuestro Libro de Reclamaciones Virtual. Se ha enviado una copia a su correo electrónico.
+        </p>
+
+        <!-- Reference badge -->
+        <div class="bg-[#1A0A2E] border border-[#31204F] rounded-2xl px-6 py-4 mb-8">
+          <p class="text-[10px] text-[#9D96A8] uppercase tracking-wider mb-1">Código de Seguimiento</p>
+          <p class="text-lg font-black text-[#E8368A] tracking-wider">{{ claimCode }}</p>
+        </div>
+
+        <button (click)="goHome()"
+          class="bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white px-8 py-3.5 rounded-xl font-bold text-sm shadow-[0_4px_15px_rgba(195,3,100,0.4)] transition-all">
+          Volver al Inicio
+        </button>
+      </div>
+    }
+  </div>
+</div>

@@ -137,6 +137,25 @@ export const routes: Routes = [
   },
 
   // ============================================
+  // LEGAL & RECLAMACIONES (PÚBLICO)
+  // ============================================
+  {
+    path: 'privacy',
+    loadComponent: () => import('./features/legal/privacy/privacy.component')
+      .then(m => m.PrivacyComponent)
+  },
+  {
+    path: 'terms',
+    loadComponent: () => import('./features/legal/terms/terms.component')
+      .then(m => m.TermsComponent)
+  },
+  {
+    path: 'reclamaciones',
+    loadComponent: () => import('./features/legal/reclamaciones/reclamaciones.component')
+      .then(m => m.ReclamacionesComponent)
+  },
+
+  // ============================================
   // 7. CATCH ALL
   // ============================================
   {

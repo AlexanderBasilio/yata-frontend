@@ -10,7 +10,8 @@
     <!-- Logo -->
     <div class="flex items-center gap-3">
         <!-- Logo placeholder: replace src with your Cloudinary URL -->
-        <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify" class="h-8 w-auto object-contain"
+        <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify"
+            class="h-8 w-auto object-contain"
             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
         <!-- Fallback wordmark if logo fails to load -->
         <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white tracking-wide hidden" id="logo-fallback">
@@ -49,7 +50,7 @@
     style="background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781974220/zisify-hero-section.png');">
     <!-- Black overlay with transparency -->
     <div class="absolute inset-0 bg-[#0D0518]/65 z-0"></div>
-    
+
     <!-- Background glows -->
     <div class="absolute inset-0 pointer-events-none z-10">
         <div
@@ -71,12 +72,12 @@
         class="font-['Inknut_Antiqua'] text-4xl md:text-6xl font-bold text-white leading-tight relative z-10 max-w-3xl mb-4">
         Come bien,<br>
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#C30364] to-[#E8368A]">gana puntos,</span><br>
-        <span class="text-white">obten descuentos.</span>
+        <span class="text-white">obtén descuentos.</span>
     </h1>
 
     <!-- Subtitle -->
     <p class="font-['Epilogue'] text-[#9D96A8] text-base md:text-lg max-w-xl leading-relaxed relative z-10 mt-2 mb-10">
-        La única plataforma de delivery en Huancayo que te premia cada vez que pides — con puntos, avatares épicos y
+        La única plataforma de delivery en Perú que te premia cada vez que pides — con puntos, avatares épicos y
         beneficios reales.
     </p>
 
@@ -132,7 +133,7 @@
                 <div class="mt-4">
                     <span
                         class="font-['Epilogue'] text-[10px] text-[#E8368A] font-bold bg-[rgba(195,3,100,0.12)] px-2.5 py-1 rounded-full">⭐
-                        Función estrella</span>
+                        Próximamente</span>
                 </div>
                 }
             </div>
@@ -381,10 +382,10 @@
                 <li class="flex items-start gap-2"><span class="text-[#C30364] mt-1">▪</span> Historial de Inti Points
                     acumulados</li>
             </ul>
-            <a routerLink="/auth/register"
-                class="inline-block mt-8 font-['Epilogue'] font-bold text-sm text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-7 py-3.5 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.4)] transition-all">
-                Ver mi perfil →
-            </a>
+            <button disabled
+                class="inline-block mt-8 font-['Epilogue'] font-bold text-sm text-[#9D96A8] bg-[#221638] border border-[#31204F] px-7 py-3.5 rounded-xl cursor-not-allowed opacity-80">
+                Próximamente
+            </button>
         </div>
     </div>
 </section>
@@ -398,7 +399,8 @@
         <!-- Brand col -->
         <div class="col-span-2 md:col-span-1">
             <!-- Logo -->
-            <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify" class="h-8 w-auto object-contain mb-4"
+            <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify"
+                class="h-8 w-auto object-contain mb-4"
                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
             <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white hidden mb-4 block"
                 id="footer-logo-fallback">Zisify</span>
@@ -444,41 +446,43 @@
                 <li><a href="#"
                         class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a>
                 </li>
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Socios</a>
+                <li class="space-y-1">
+                    <span class="font-['Epilogue'] text-xs text-white font-semibold block">Únete a Zisify</span>
+                    <ul class="pl-2.5 space-y-1.5 border-l border-[#31204F]">
+                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registra tu restaurante</a></li>
+                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registrarse como repartidor</a></li>
+                    </ul>
                 </li>
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Trabaja
-                        con nosotros</a></li>
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Prensa</a>
-                </li>
+                <li><span class="font-['Epilogue'] text-xs text-[#52465E] cursor-not-allowed">Trabaja con nosotros (Próximamente)</span></li>
             </ul>
         </div>
 
-        <!-- Links: Soporte + CTA -->
+        <!-- Links: Soporte + Libro Reclamaciones -->
         <div>
             <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Soporte</h5>
             <ul class="space-y-2.5 mb-6">
                 <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro
-                        de ayuda</a></li>
-                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro de ayuda</a></li>
+                <li><a routerLink="/privacy"
                         class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a>
                 </li>
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos</a>
+                <li><a routerLink="/terms"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos y Condiciones</a>
                 </li>
             </ul>
-            <!-- Auth CTA Buttons in Footer -->
-            <div class="flex flex-col gap-2">
-                <a routerLink="/auth/register"
-                    class="font-['Epilogue'] text-xs font-bold text-white text-center bg-gradient-to-r from-[#C30364] to-[#E8368A] px-4 py-2.5 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.4)] transition-all">
-                    Registrarse
-                </a>
-                <a routerLink="/auth/login"
-                    class="font-['Epilogue'] text-xs font-semibold text-center text-[#C30364] border border-[#C30364] px-4 py-2.5 rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all">
-                    Iniciar Sesión
+            
+            <!-- Libro de Reclamaciones -->
+            <div class="p-3 bg-[#221638] border border-[#31204F] rounded-2xl flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">📖</span>
+                    <span class="font-['Epilogue'] text-[10px] font-bold text-white uppercase tracking-wider">Libro de Reclamaciones</span>
+                </div>
+                <p class="font-['Epilogue'] text-[9px] text-[#9D96A8] leading-relaxed">
+                    Conforme al Código de Protección al Consumidor, ingresa aquí tus quejas o reclamos.
+                </p>
+                <a routerLink="/reclamaciones"
+                    class="font-['Epilogue'] text-[9px] font-bold text-white text-center bg-gradient-to-r from-[#C30364] to-[#E8368A] px-3 py-1.5 rounded-xl hover:shadow-[0_4px_15px_rgba(195,3,100,0.3)] transition-all">
+                    Registrar queja o reclamo
                 </a>
             </div>
         </div>

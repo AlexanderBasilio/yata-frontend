@@ -10,7 +10,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
-            if (error.status === 401 || error.status === 403) {
+            const isAuthRequest = req.url.includes('/api/v1/auth/login') || req.url.includes('/api/v1/users/register');
+
+            if (!isAuthRequest && (error.status === 401 || error.status === 403)) {
                 // Token expirado o inválido
                 console.error('UNAUTHORIZED 401/403:', error);
                 authService.logout();

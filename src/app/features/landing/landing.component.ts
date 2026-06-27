@@ -14,9 +14,9 @@ export class LandingComponent {
     readonly logoUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png';
 
     stats = [
-        { value: '+15k', label: 'Clientes activos' },
+        { value: '+1k', label: 'Clientes activos' },
         { value: '30 min', label: 'Entrega promedio' },
-        { value: '4.9 ★', label: 'Calificación media' },
+        { value: '+20 ★', label: 'Restaurantes' },
     ];
 
     features = [
