@@ -2,6 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { CustomerService } from '../../core/services/customer/customer.service';
 
 interface Category {
   id: string;
@@ -21,26 +22,29 @@ interface Category {
 export class ServiceSelectorComponent implements OnInit {
   private router = inject(Router);
   public authService = inject(AuthService);
+  private customerService = inject(CustomerService);
 
-  customerName = 'Zisify User';
+  customerName = 'Zisify';
   walletBalance = '950.000';
   ordersCount = 21;
   pointsCount = 56;
-  vouchersCount = 17;
+  referidosCount = 3;
 
   categories: Category[] = [
     { id: 'food', name: 'Comida', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png', route: '/food/catalog', available: true },
-    { id: 'liquor', name: 'Licores', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779227373/delivery-categories/licuour.png', route: '/liquor/catalog', available: true },
+    { id: 'liquor', name: 'Licores', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779227373/delivery-categories/licuour.png', route: '/liquor/catalog', available: false },
     { id: 'market', name: 'Mercado', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237655/delivery-categories/market.png', route: '/market', available: false },
     { id: 'courier', name: 'Couriers', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237691/delivery-categories/courier.png', route: '/courier', available: false },
     { id: 'pharmacy', name: 'Farmacia', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237706/delivery-categories/farmacy.png', route: '/pharmacy', available: false }
   ];
 
   promotions = [
-    { id: 1, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232976/interface-assets/banner-polleria.png', title: '10% dscto en Pollo' },
-    { id: 2, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233021/interface-assets/banner-hamburguesas.png', title: 'Envío Gratis hoy' },
-    { id: 3, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233256/interface-assets/banner-pasta.png', title: 'Combos de Locura' },
-    { id: 4, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232461/interface-assets/banner-chifa.png', title: 'Combos Imperdibles' }
+    { id: 5, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233021/interface-assets/banner-hamburguesas.png', title: 'Envío gratis en tu 1er pedido' },
+    { id: 6, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233256/interface-assets/banner-pasta.png', title: 'Referidos - Próximamente' },
+    { id: 1, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232976/interface-assets/banner-polleria.png', title: 'Pollerías - Próximamente' },
+    { id: 2, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233021/interface-assets/banner-hamburguesas.png', title: 'Hamburguesas - Próximamente' },
+    { id: 3, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233256/interface-assets/banner-pasta.png', title: 'Pastas - Próximamente' },
+    { id: 4, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232461/interface-assets/banner-chifa.png', title: 'Chifas - Próximamente' }
   ];
 
   shortcuts = [
@@ -54,16 +58,31 @@ export class ServiceSelectorComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.authService.currentUser$.subscribe(user => {
-      if (user && user.firstName) {
-        this.customerName = user.firstName;
-      }
-    });
+    this.customerName = 'Zisify';
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.customerService.getOrdersCount(userId).subscribe({
+        next: (res) => this.ordersCount = res.count,
+        error: (err) => console.log('Could not fetch orders count', err)
+      });
+      this.customerService.getZPoints(userId).subscribe({
+        next: (res) => this.pointsCount = res.points,
+        error: (err) => console.log('Could not fetch Z-points count', err)
+      });
+    }
   }
 
   selectCategory(category: Category) {
     if (category.available) {
       this.router.navigate([category.route]);
+    }
+  }
+
+  clickShortcut(shortcut: any) {
+    if (shortcut.id === 'last_order') {
+      this.router.navigate([shortcut.route]);
+    } else {
+      alert(`${shortcut.name} estará disponible próximamente.`);
     }
   }
 }

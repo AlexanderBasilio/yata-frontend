@@ -46,4 +46,12 @@ export class CustomerService {
             tap(customer => this.currentCustomer$.next(customer))
         );
     }
+
+    getOrdersCount(userId: string): Observable<{ count: number }> {
+        return this.http.get<{ count: number }>(`${this.platformUrl}/api/v1/customers/${userId}/orders-count`);
+    }
+
+    getZPoints(userId: string): Observable<{ points: number }> {
+        return this.http.get<{ points: number }>(`${this.platformUrl}/api/v1/customers/${userId}/z-points`);
+    }
 }

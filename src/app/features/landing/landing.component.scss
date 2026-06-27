@@ -23,3 +23,14 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
+.hero-section {
+    background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781974220/zisify-hero-section.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: 75% center; /* Mover a la derecha para mostrar al astronauta en móvil */
+
+    @media (min-width: 768px) {
+        background-position: center center;
+    }
+}

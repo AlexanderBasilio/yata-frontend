@@ -27,9 +27,6 @@ import { Router } from '@angular/router';
         <button (click)="goFood()" class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-white py-3.5 rounded-xl font-bold text-base shadow-[0_4px_15px_rgba(195,3,100,0.4)] hover:scale-105 transition-transform">
           Ver Comidas
         </button>
-        <button (click)="goLiquor()" class="w-full bg-[#221638] border border-[#31204F] text-[#FAF8FB] py-3.5 rounded-xl font-bold text-base hover:bg-[#31204F] transition-colors">
-          Ver Licores
-        </button>
       </div>
     </div>
   `
