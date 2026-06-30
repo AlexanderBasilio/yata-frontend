@@ -79,3 +79,7 @@ h3 {
     background: linear-gradient(90deg, transparent 0%, var(--color-zisify-magenta) 50%, transparent 100%);
     height: 1px;
 }
+
+html {
+    scroll-behavior: smooth;
+}

@@ -59,17 +59,6 @@ export class ServiceSelectorComponent implements OnInit {
 
   ngOnInit() {
     this.customerName = 'Zisify';
-    const userId = this.authService.getUserId();
-    if (userId) {
-      this.customerService.getOrdersCount(userId).subscribe({
-        next: (res) => this.ordersCount = res.count,
-        error: (err) => console.log('Could not fetch orders count', err)
-      });
-      this.customerService.getZPoints(userId).subscribe({
-        next: (res) => this.pointsCount = res.points,
-        error: (err) => console.log('Could not fetch Z-points count', err)
-      });
-    }
   }
 
   selectCategory(category: Category) {
