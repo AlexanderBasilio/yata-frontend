@@ -1,5 +1,13 @@
 <div class="checkout-container mx-auto p-4 pb-40 max-w-4xl min-h-screen bg-[#0D0518] text-[#FAF8FB]">
-    <h1 class="text-3xl font-bold font-['Inknut_Antiqua'] text-center mb-8">Finalizar Pedido</h1>
+    <h1 class="text-3xl font-bold font-['Inknut_Antiqua'] text-center mb-8">
+        @if (currentStep === 1) {
+            Selecciona Dirección de Envío
+        } @else if (currentStep === 2) {
+            Finalizar Pedido
+        } @else {
+            Instrucciones de Pago
+        }
+    </h1>
 
     <!-- Steps Indicator (Manual) -->
     <div class="flex items-center justify-center mb-8 flex-wrap gap-y-2">
@@ -98,7 +106,7 @@
 
         <!-- Columna Izquierda -->
         <div class="form-section">
-            <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-4">Tus Datos</h2>
+            <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-4">¿Quién recibirá el pedido?</h2>
             <form [formGroup]="detailsForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-[#9D96A8] mb-1">Nombre Completo</label>
@@ -133,9 +141,7 @@
                             (click)="detailsForm.patchValue({paymentMethod: method})">
                             <input type="radio" [value]="method" formControlName="paymentMethod"
                                 class="w-4 h-4 accent-[#C30364]">
-                            <span class="text-sm text-[#FAF8FB]">{{ method === 'MANUAL_TRANSFER' ? 'Yape / Plin /
-                                Transferencia' :
-                                method }}</span>
+                            <span class="text-sm text-[#FAF8FB]">{{ method === 'MANUAL_TRANSFER' ? 'Yape' : method }}</span>
                         </div>
                     </div>
                 </div>
@@ -163,10 +169,15 @@
 
                     <div class="h-px bg-[#31204F] w-full my-4"></div>
 
-                    <div class="flex justify-between items-center text-xl font-bold text-[#FAF8FB] mb-6">
+                    <div class="flex justify-between items-center text-xl font-bold text-[#FAF8FB] mb-2">
                         <span>Total</span>
                         <span class="text-[#C30364]">S/ {{ orderSummary.totalAmount | number:'1.2-2' }}</span>
                     </div>
+
+                    <!-- Propina Note -->
+                    <p class="text-[11px] text-[#9D96A8] leading-relaxed mb-6 italic">
+                        💡 La propina es 100% voluntaria. Si desea dejar propina, esta se entrega en efectivo directamente al repartidor al momento de recibir su pedido.
+                    </p>
 
                     <div class="flex gap-3">
                         <button (click)="goToStep1()"
@@ -242,21 +253,56 @@
             </div>
 
             <!-- Instrucciones -->
-            <div class="bg-[#1A0A2E] p-4 rounded-xl border border-[#31204F] text-left">
-                <p class="font-bold text-[#FAF8FB] mb-2 flex items-center">
-                    <span class="mr-2">👇</span> Siguiente paso:
+            <div class="bg-[#1A0A2E] p-5 rounded-xl border border-[#31204F] text-left space-y-4">
+                <p class="font-bold text-[#FAF8FB] flex items-center gap-2 border-b border-[#31204F] pb-2 text-sm">
+                    <span>💡</span> Pasos para completar tu compra:
                 </p>
-                <p class="text-sm text-[#9D96A8] leading-relaxed mb-2">
-                    Debe realizar un pago por <strong class="text-[#C30364]">Yape</strong> y copiar el <strong>Nro. de
-                        operación</strong> que consta de 8 dígitos.
+                <ol class="space-y-3.5 text-xs sm:text-sm text-[#9D96A8] list-decimal list-inside">
+                    <li class="leading-relaxed">
+                        Realice el pago del pedido a nuestra cuenta en Yape. Puede ingresar a través del botón en la parte inferior: <strong>“Copiar Celular y Abrir Yape”</strong>.
+                    </li>
+                    <li class="leading-relaxed">
+                        Verifique el monto antes de pagar: <strong class="text-[#C30364] text-base">S/ {{ (confirmedOrder?.totalAmount || orderSummary?.totalAmount || 38.50) | number:'1.2-2' }}</strong>.
+                    </li>
+                    <li class="leading-relaxed">
+                        Una vez realizado el pago, anote el número de la operación. Tiene 8 dígitos y aparece en la imagen del comprobante.
+                        <button type="button" (click)="showExampleImage = !showExampleImage" class="text-[#C30364] hover:text-[#E8368A] hover:underline font-bold focus:outline-none transition-colors inline-flex items-center gap-0.5 ml-1">
+                            Ver ejemplo
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform" [class.rotate-180]="showExampleImage" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+                        
+                        <!-- Imagen Ejemplo Toggled -->
+                        <div *ngIf="showExampleImage" class="mt-2.5 p-1 bg-[#0D0518] border border-[#31204F] rounded-lg overflow-hidden animate-fade-in">
+                            <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778957921/interface-assets/nro-operacion-ejemplo.png" 
+                                 alt="Ejemplo número de operación Yape" 
+                                 class="max-w-full h-auto rounded border border-[#31204F] mx-auto">
+                        </div>
+                    </li>
+                    <li class="leading-relaxed">
+                        Ingrese a la sección 
+                        <strong class="text-[#FAF8FB] inline-flex items-center gap-1 bg-[#221638] px-1.5 py-0.5 rounded border border-[#31204F]">
+                            mis pedidos 
+                            <svg class="w-3.5 h-3.5 text-[#C30364]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                        </strong> 
+                        y registre ahí el Nro de Operación de su pago.
+                    </li>
+                </ol>
+                
+                <div class="h-px bg-[#31204F] w-full my-3"></div>
+                
+                <p class="text-xs text-[#16A34A] font-medium leading-relaxed">
+                    ✨ ¡Listo, su pedido ha sido confirmado! Con eso ya solo le quedará esperar a que llegue su pedido a su domicilio. ¡Gracias por confiar en Zisify!
                 </p>
-                <p class="text-sm text-[#9D96A8] leading-relaxed mb-2">
-                    Luego de copiar ese número, tiene que ir a <strong class="text-white">mis pedidos</strong> y pegar
-                    ahí ese código.
-                </p>
-                <p class="text-xs text-[#716A7D] mt-2 font-medium">
-                    Con eso ya solo le quedará esperar a que llegue su pedido a su domicilio. ¡Gracias por confiar en
-                    Zisify!
+
+                <p class="text-[11px] text-[#716A7D] leading-relaxed pt-2 border-t border-[#31204F]/60">
+                    Puede verificar sus puntos obtenidos por su compra en el 
+                    <a routerLink="/zisify" fragment="points" class="text-[#C30364] hover:underline font-semibold">Programa de Puntos</a> 
+                    y hacer seguimiento en su 
+                    <a routerLink="/orders" class="text-[#C30364] hover:underline font-semibold">Historial de Pedidos</a>.
                 </p>
             </div>
 

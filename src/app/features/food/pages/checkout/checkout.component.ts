@@ -58,6 +58,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     isLoadingSummary = false;
     isProcessingOrder = false;
     copied = false; // Estado para feedback de copiado
+    showExampleImage = false; // Control de visibilidad de la imagen ejemplo
+
 
     // Opciones de pago
     paymentMethods = Object.values(PaymentMethod);
