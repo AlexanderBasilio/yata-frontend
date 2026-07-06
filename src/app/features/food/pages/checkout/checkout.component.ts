@@ -400,17 +400,16 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
     }
 
-    yapeCopied = false;
-    async copyNumberAndOpenYape() {
+    celularCopied = false;
+    async copyCelular() {
         try {
             await navigator.clipboard.writeText('963434580');
-            this.yapeCopied = true;
+            this.celularCopied = true;
             this.cdr.detectChanges();
             setTimeout(() => {
-                this.yapeCopied = false;
+                this.celularCopied = false;
                 this.cdr.detectChanges();
             }, 3000);
-            window.open('https://www.yape.com.pe/', '_blank');
         } catch (err) {
             console.error('Error al copiar celular:', err);
             alert('No se pudo copiar el número automáticamente. El número es 963434580');

@@ -24,6 +24,11 @@ export class OrderHistoryComponent implements OnInit {
   operationNumber = signal<string>('');
   isReporting = signal(false);
 
+  // Para el modal de la Guía de Pago
+  showGuideModal = signal(false);
+  activeGuideOrder = signal<OrderResponse | null>(null);
+  showExampleImage = signal(false);
+
   ngOnInit() {
     this.loadOrders();
   }
@@ -45,20 +50,22 @@ export class OrderHistoryComponent implements OnInit {
   getStatusConfig(status: OrderStatus) {
     switch (status) {
       case 'PENDING_PAYMENT':
-        return { label: 'Falta pagar', color: 'text-warning', bg: 'bg-warning/20', action: true };
+        return { label: 'Falta pagar', color: 'text-amber-400', bg: 'bg-amber-500/20', action: true };
       case 'WAITING_APPROVAL':
-        return { label: 'Pago en revisión', color: 'text-info', bg: 'bg-info/20', action: false };
+        return { label: 'Pago en revisión', color: 'text-sky-400', bg: 'bg-sky-500/20', action: false };
       case 'PAYMENT_CONFIRMED':
-        return { label: 'Pago verificado', color: 'text-success', bg: 'bg-success/20', action: false };
+        return { label: 'Pago verificado', color: 'text-emerald-400', bg: 'bg-emerald-500/20', action: false };
       case 'PREPARING':
         return { label: 'En preparación', color: 'text-[#C30364]', bg: 'bg-[#C30364]/20', action: false };
       case 'ON_THE_WAY':
         return { label: 'En camino', color: 'text-[#C30364]', bg: 'bg-[#C30364]/20', action: false };
+      case 'READY_FOR_PICKUP':
+        return { label: 'Listo para recoger', color: 'text-[#9D96A8]', bg: 'bg-[#31204F]', action: false };
       case 'DELIVERED':
         return { label: 'Entregado', color: 'text-[#9D96A8]', bg: 'bg-[#31204F]', action: false };
       case 'CANCELLED':
       case 'REJECTED_BY_RESTAURANT':
-        return { label: 'Cancelado', color: 'text-error', bg: 'bg-error/20', action: false };
+        return { label: 'Cancelado', color: 'text-rose-400', bg: 'bg-rose-500/20', action: false };
       default:
         return { label: 'Creado', color: 'text-[#9D96A8]', bg: 'bg-[#31204F]', action: false };
     }
@@ -99,19 +106,30 @@ export class OrderHistoryComponent implements OnInit {
       });
   }
 
+  openGuide(order: OrderResponse) {
+    this.activeGuideOrder.set(order);
+    this.showGuideModal.set(true);
+    this.showExampleImage.set(false);
+  }
+
+  closeGuide() {
+    this.showGuideModal.set(false);
+    this.activeGuideOrder.set(null);
+    this.showExampleImage.set(false);
+  }
+
   goBack() {
     this.router.navigate(['/home']);
   }
 
   yapeCopiedOrderCode: string | null = null;
-  async copyNumberAndOpenYape(orderCode: string) {
+  async copyCelular(orderCode: string) {
     try {
       await navigator.clipboard.writeText('963434580');
       this.yapeCopiedOrderCode = orderCode;
       setTimeout(() => {
         this.yapeCopiedOrderCode = null;
       }, 3000);
-      window.open('https://www.yape.com.pe/', '_blank');
     } catch (err) {
       console.error('Error al copiar celular:', err);
       alert('No se pudo copiar el número automáticamente. El número es 963434580');

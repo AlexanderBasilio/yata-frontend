@@ -54,15 +54,22 @@
 
             @if (getStatusConfig(order.status).action) {
               <!-- Botón de Pago con Yape -->
-              <button (click)="copyNumberAndOpenYape(order.orderCode)" 
+              <button (click)="copyCelular(order.orderCode)" 
                   class="w-full mt-2 bg-[#C30364] hover:bg-[#E8368A] text-white py-3 rounded-xl font-bold text-sm transition-all shadow-[0_4px_15px_rgba(195,3,100,0.3)] flex items-center justify-center gap-2">
-                  <span class="text-base">📱</span>
-                  <span>{{ yapeCopiedOrderCode === order.orderCode ? '¡Celular Copiado! Abriendo Yape...' : 'Copiar Celular y Abrir Yape' }}</span>
+                  <span class="text-base">📋</span>
+                  <span>{{ yapeCopiedOrderCode === order.orderCode ? '¡Celular Copiado!' : 'Copiar Celular' }}</span>
               </button>
 
               <button (click)="openPaymentReport(order)" class="w-full mt-2 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-xl font-bold text-sm hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
                 Enviar Nro de operacion
               </button>
+
+              <!-- Enlace Guía de Pago -->
+              <div class="text-center mt-3">
+                <button (click)="openGuide(order)" class="text-xs text-[#FAF8FB]/85 hover:text-[#C30364] underline transition-colors inline-flex items-center gap-1">
+                  ❓ ¿Cómo pagar? Ver Guía de Pago
+                </button>
+              </div>
             }
           </div>
         }
@@ -98,6 +105,80 @@
           } @else {
             Confirmar Pago
           }
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Modal para la Guía de Pago -->
+  @if (showGuideModal() && activeGuideOrder()) {
+    <div class="fixed inset-0 bg-[#0D0518]/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div class="bg-[#221638] border border-[#31204F] rounded-3xl p-6 w-full max-w-md shadow-2xl relative animate-slide-up max-h-[90vh] overflow-y-auto">
+        
+        <button (click)="closeGuide()" class="absolute top-4 right-4 text-[#9D96A8] hover:text-[#FAF8FB]">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+
+        <h3 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">Guía de Pago</h3>
+        
+        <!-- Advertencia / Nivel de cuenta -->
+        <div class="bg-[#2A081C] p-3.5 rounded-xl border border-[#C30364]/30 text-left text-xs text-[#FAF8FB] leading-relaxed flex gap-2 items-start mb-4">
+          <span class="text-base">⚠️</span>
+          <p>
+            El nivel actual de tu cuenta no te permite realizar pagos contra entrega, por lo que deberás realizar el pago de manera anticipada a través de nuestra cuenta de Yape.
+          </p>
+        </div>
+
+        <div class="text-left space-y-4 text-xs sm:text-sm text-[#9D96A8]">
+          <ol class="space-y-3.5 list-decimal list-inside">
+            <li class="leading-relaxed">
+              Para obtener el número de nuestra cuenta en Yape solo debe darle click al botón: <strong class="text-[#FAF8FB]">“Copiar Celular”</strong> y el número se habrá guardado automáticamente.
+            </li>
+            <li class="leading-relaxed">
+              Abra su cuenta en Yape y pegue el número obtenido en el paso anterior.
+            </li>
+            <li class="leading-relaxed">
+              Verifique el monto antes de pagar: <strong class="text-[#C30364]">S/ {{ activeGuideOrder()?.totalAmount | number:'1.2-2' }}</strong>.
+            </li>
+            <li class="leading-relaxed">
+              Una vez realizado el pago, anote el número de la operación. Tiene 8 dígitos y aparece en la imagen del comprobante.
+              <button type="button" (click)="showExampleImage.set(!showExampleImage())" class="text-[#C30364] hover:text-[#E8368A] hover:underline font-bold focus:outline-none transition-colors inline-flex items-center gap-0.5 ml-1">
+                Ver ejemplo
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform" [class.rotate-180]="showExampleImage()" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              <!-- Imagen Ejemplo Toggled -->
+              <div *ngIf="showExampleImage()" class="mt-2 p-1 bg-[#0D0518] border border-[#31204F] rounded-lg overflow-hidden animate-fade-in">
+                <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778957921/interface-assets/nro-operacion-ejemplo.png" 
+                     alt="Ejemplo número de operación Yape" 
+                     class="max-w-full h-auto rounded border border-[#31204F] mx-auto">
+              </div>
+            </li>
+            <li class="leading-relaxed">
+              Ingrese a la sección 
+              <strong class="text-[#FAF8FB] inline-flex items-center gap-1 bg-[#1A0A2E] px-1.5 py-0.5 rounded border border-[#31204F]">
+                mis pedidos 
+                <svg class="w-3.5 h-3.5 text-[#C30364]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </strong>, presione el botón <strong class="text-white">“Enviar Nro de Operación”</strong>.
+            </li>
+            <li class="leading-relaxed">
+              Copie ahí el Nro de Operación y presione <strong class="text-[#FAF8FB]">“Confirmar Pago”</strong>.
+            </li>
+          </ol>
+          
+          <div class="h-px bg-[#31204F] w-full my-3"></div>
+          
+          <p class="text-xs text-[#16A34A] font-medium leading-relaxed">
+            ✨ ¡Listo, su pedido ha sido confirmado! Con eso ya solo le quedará esperar a que llegue su pedido a su domicilio. ¡Gracias por confiar en Zisify!
+          </p>
+        </div>
+
+        <button (click)="closeGuide()" class="mt-6 w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-xl font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
+          Entendido
         </button>
       </div>
     </div>

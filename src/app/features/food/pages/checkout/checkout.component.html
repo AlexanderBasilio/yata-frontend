@@ -252,14 +252,25 @@
                 </div>
             </div>
 
+            <!-- Advertencia / Nivel de cuenta -->
+            <div class="bg-[#2A081C] p-4 rounded-xl border border-[#C30364]/40 text-left text-xs sm:text-sm text-[#FAF8FB] leading-relaxed flex gap-2.5 items-start">
+                <span class="text-lg">⚠️</span>
+                <p>
+                    El nivel actual de tu cuenta no te permite realizar pagos contra entrega, por lo que deberás realizar el pago de manera anticipada a través de nuestra cuenta de Yape.
+                </p>
+            </div>
+
             <!-- Instrucciones -->
             <div class="bg-[#1A0A2E] p-5 rounded-xl border border-[#31204F] text-left space-y-4">
                 <p class="font-bold text-[#FAF8FB] flex items-center gap-2 border-b border-[#31204F] pb-2 text-sm">
-                    <span>💡</span> Pasos para completar tu compra:
+                    <span>📋</span> Pasos para realizar tu pago:
                 </p>
-                <ol class="space-y-3.5 text-xs sm:text-sm text-[#9D96A8] list-decimal list-inside">
+                <ol class="space-y-4 text-xs sm:text-sm text-[#9D96A8] list-decimal list-inside">
                     <li class="leading-relaxed">
-                        Realice el pago del pedido a nuestra cuenta en Yape. Puede ingresar a través del botón en la parte inferior: <strong>“Copiar Celular y Abrir Yape”</strong>.
+                        Para obtener el número de nuestra cuenta en Yape solo debe darle click al botón en la parte inferior: <strong class="text-[#FAF8FB]">“Copiar Celular”</strong> y el número se habrá guardado automáticamente.
+                    </li>
+                    <li class="leading-relaxed">
+                        Abra su cuenta en Yape y pegue el número obtenido en el paso anterior.
                     </li>
                     <li class="leading-relaxed">
                         Verifique el monto antes de pagar: <strong class="text-[#C30364] text-base">S/ {{ (confirmedOrder?.totalAmount || orderSummary?.totalAmount || 38.50) | number:'1.2-2' }}</strong>.
@@ -287,8 +298,10 @@
                             <svg class="w-3.5 h-3.5 text-[#C30364]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
-                        </strong> 
-                        y registre ahí el Nro de Operación de su pago.
+                        </strong>, presione el botón <strong class="text-white">“Enviar Nro de Operación”</strong>.
+                    </li>
+                    <li class="leading-relaxed">
+                        Copie ahí el Nro de Operación y presione <strong class="text-[#FAF8FB]">“Confirmar Pago”</strong>.
                     </li>
                 </ol>
                 
@@ -307,10 +320,10 @@
             </div>
 
             <!-- Botón de Pago con Yape -->
-            <button (click)="copyNumberAndOpenYape()" 
+            <button (click)="copyCelular()" 
                 class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white py-4 rounded-xl font-bold text-base transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] flex items-center justify-center gap-2">
-                <span class="text-xl">📱</span>
-                <span>{{ yapeCopied ? '¡Celular Copiado! Abriendo Yape...' : 'Copiar Celular y Abrir Yape' }}</span>
+                <span class="text-xl">📋</span>
+                <span>{{ celularCopied ? '¡Celular Copiado!' : 'Copiar Celular' }}</span>
             </button>
         </div>
 

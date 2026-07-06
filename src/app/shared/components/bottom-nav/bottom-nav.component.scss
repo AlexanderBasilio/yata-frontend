@@ -1,14 +1,45 @@
 @keyframes soft-blink {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 4px 15px rgba(195, 3, 100, 0.5);
     transform: scale(1);
   }
+
   50% {
     box-shadow: 0 4px 25px rgba(195, 3, 100, 0.8), 0 0 15px rgba(195, 3, 100, 0.6);
     transform: scale(1.08);
   }
 }
 
+@keyframes vibrate {
+
+  0%,
+  100% {
+    transform: scale(1) translate(0, 0) rotate(0);
+  }
+
+  2% {
+    transform: scale(1.08) translate(-1px, 1px) rotate(-1deg);
+  }
+
+  4% {
+    transform: scale(1.08) translate(1px, -1px) rotate(1deg);
+  }
+
+  6% {
+    transform: scale(1.08) translate(-1px, -1px) rotate(-1deg);
+  }
+
+  8% {
+    transform: scale(1.08) translate(1px, 1px) rotate(1deg);
+  }
+
+  10% {
+    transform: scale(1.08) translate(0, 0) rotate(0);
+  }
+}
+
 .animate-soft-blink {
-  animation: soft-blink 2s infinite ease-in-out;
+  animation: soft-blink 2s infinite ease-in-out, vibrate 3s infinite ease-in-out;
 }
