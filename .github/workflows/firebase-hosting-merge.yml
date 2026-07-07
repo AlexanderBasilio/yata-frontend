@@ -16,6 +16,7 @@ jobs:
           node-version: '20'
       - run: npm install
       - run: npm install -g @angular/cli
+      - run: node inject-token.js
       - run: ng build --configuration production
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

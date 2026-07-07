@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import mapboxgl from 'mapbox-gl';
 import { environment } from '../../../../../environments/environment';
 import { FoodOrderService } from '../../../../core/services/food-order/food-order.service';
+import { AuthService } from '../../../../core/services/auth/auth.service';
 import {
     CheckoutRequest,
     LocationRequest,
@@ -31,6 +32,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private fb = inject(FormBuilder);
     private router = inject(Router);
     private orderService = inject(FoodOrderService);
+    private authService = inject(AuthService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
 
@@ -81,7 +83,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         // 2. Formulario de Detalles Personales y Pago
         this.detailsForm = this.fb.group({
             clientName: ['', [Validators.required, Validators.minLength(2)]],
-            clientPhoneNumber: ['', [Validators.required, Validators.pattern(/^[0-9]{9}$/)]],
+            clientPhoneNumber: ['', [Validators.required, Validators.pattern(/^\+519[0-9]{8}$/)]],
             deliveryInstructions: [''],
             isOver18: [false, Validators.requiredTrue],
             paymentMethod: [PaymentMethod.MANUAL_TRANSFER, Validators.required]
@@ -90,6 +92,33 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         // Actualizar signal de nombre cuando cambie el input
         this.detailsForm.get('clientName')?.valueChanges.subscribe(val => {
             this.clientName.set(val);
+        });
+
+        // Forzar prefijo +51 en el celular y auto-formatear longitud
+        this.detailsForm.get('clientPhoneNumber')?.valueChanges.subscribe(val => {
+            if (val) {
+                // Quitar cualquier carácter que no sea '+' o número
+                let cleanVal = val.replace(/[^\d+]/g, '');
+                
+                // Si no empieza con '+51', lo corregimos
+                if (!cleanVal.startsWith('+51')) {
+                    if (cleanVal.startsWith('51')) {
+                        cleanVal = '+' + cleanVal;
+                    } else {
+                        const digits = cleanVal.replace(/\D/g, '');
+                        cleanVal = '+51' + digits;
+                    }
+                }
+                
+                // Limitar longitud a 12 caracteres (+51 + 9 dígitos)
+                if (cleanVal.length > 12) {
+                    cleanVal = cleanVal.substring(0, 12);
+                }
+                
+                if (cleanVal !== val) {
+                    this.detailsForm.get('clientPhoneNumber')?.setValue(cleanVal, { emitEvent: false });
+                }
+            }
         });
     }
 
@@ -108,6 +137,29 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         if (!this.cartId) {
             alert('No hay un carrito activo');
             this.router.navigate(['/food/catalog']);
+            return;
+        }
+
+        // Cargar datos de usuario de Platform proactivamente al iniciar
+        const userId = this.authService.getUserId();
+        if (userId) {
+            this.authService.getProfile(userId).subscribe({
+                next: (user) => {
+                    if (user) {
+                        const clientNameConcatenado = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                        if (!this.detailsForm.get('clientName')?.value) {
+                            this.detailsForm.patchValue({ clientName: clientNameConcatenado });
+                        }
+                        if (!this.detailsForm.get('clientPhoneNumber')?.value) {
+                            this.detailsForm.patchValue({ clientPhoneNumber: user.phoneNumber || '' });
+                        }
+                        this.cdr.detectChanges();
+                    }
+                },
+                error: (err) => {
+                    console.error('❌ Error cargando perfil de Platform en ngOnInit:', err);
+                }
+            });
         }
     }
 
@@ -300,11 +352,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     calculateSummary() {
         const loc = this.locationForm.value;
         const locationReq: LocationRequest = {
-            address: loc.address + (loc.reference ? ` (${loc.reference})` : ''),
+            address: loc.address,
             latitude: Number(loc.latitude.toFixed(8)),
             longitude: Number(loc.longitude.toFixed(8)),
             city: loc.city || 'Huancayo',
-            region: loc.region || 'Junin'
+            region: loc.region || 'Junin',
+            reference: loc.reference || ''
         };
 
         if (!this.cartId) return;
@@ -313,6 +366,26 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             cartId: this.cartId,
             location: locationReq // Usamos 'location' como vimos en el DTO
         };
+
+        // Cargar/actualizar datos del usuario de Platform en paralelo
+        const userId = this.authService.getUserId();
+        if (userId) {
+            this.authService.getProfile(userId).subscribe({
+                next: (user) => {
+                    if (user) {
+                        const clientNameConcatenado = `${user.firstName || ''} ${user.lastName || ''}`.trim();
+                        if (!this.detailsForm.get('clientName')?.value) {
+                            this.detailsForm.patchValue({ clientName: clientNameConcatenado });
+                        }
+                        if (!this.detailsForm.get('clientPhoneNumber')?.value) {
+                            this.detailsForm.patchValue({ clientPhoneNumber: user.phoneNumber || '' });
+                        }
+                        this.cdr.detectChanges();
+                    }
+                },
+                error: (err) => console.error('❌ Error cargando perfil en calculateSummary:', err)
+            });
+        }
 
         console.log('🚀 Enviando solicitud de resumen:', JSON.stringify(request, null, 2));
 
@@ -355,11 +428,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             deliveryInstructions: formVal.deliveryInstructions,
             paymentMethod: formVal.paymentMethod,
             locationRequest: {
-                address: locVal.address + (locVal.reference ? ` (${locVal.reference})` : ''),
+                address: locVal.address,
                 latitude: Number(locVal.latitude.toFixed(8)),
                 longitude: Number(locVal.longitude.toFixed(8)),
                 city: locVal.city || 'Huancayo',
-                region: locVal.region || 'Junin'
+                region: locVal.region || 'Junin',
+                reference: locVal.reference || ''
             }
         };
 

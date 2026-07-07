@@ -24,6 +24,7 @@ export interface LocationRequest {
     longitude: number;
     city?: string;
     region?: string;
+    reference?: string;
 }
 
 export interface LocationResponse {
@@ -32,6 +33,7 @@ export interface LocationResponse {
     region?: string;
     latitude: number;
     longitude: number;
+    reference?: string;
 }
 
 export interface CheckoutRequest {

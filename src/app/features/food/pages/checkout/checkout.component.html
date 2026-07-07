@@ -116,10 +116,10 @@
 
                 <div>
                     <label class="block text-sm font-medium text-[#9D96A8] mb-1">Teléfono / Celular</label>
-                    <input type="tel" formControlName="clientPhoneNumber" placeholder="999 999 999"
+                    <input type="tel" formControlName="clientPhoneNumber" placeholder="+51999000123"
                         class="w-full p-3 bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-lg focus:ring-1 focus:ring-[#C30364] focus:border-[#C30364] placeholder-[#52465E]">
                     <p *ngIf="detailsForm.get('clientPhoneNumber')?.touched && detailsForm.get('clientPhoneNumber')?.invalid"
-                        class="text-[#DC2626] text-xs mt-1">Número inválido (9 dígitos)</p>
+                        class="text-[#DC2626] text-xs mt-1">Número inválido (Debe ser +51 y 9 dígitos de celular, ej: +51999000123)</p>
                 </div>
 
                 <div>
