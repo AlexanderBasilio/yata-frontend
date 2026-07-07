@@ -17,7 +17,6 @@ jobs:
       - run: npm install
       - run: npm install -g @angular/cli
       - run: node inject-token.js
-      - run: ng build --configuration production
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
