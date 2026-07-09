@@ -53,11 +53,20 @@ export interface CheckoutRequest {
     userId?: string; // Opcional
 }
 
+export interface AppliedDiscount {
+    type: string;
+    displayName: string;
+    amount: number;
+    code?: string | null;
+}
+
 export interface OrderSummaryResponse {
     validatedSubtotal: number;
     deliveryFee: number;
     serviceFee: number;
     totalAmount: number;
+    discountAmount?: number;
+    appliedDiscounts?: AppliedDiscount[];
     estimatedTime?: string;
 }
 
@@ -68,6 +77,8 @@ export interface OrderResponse {
     deliveryFee: number;
     serviceFee: number;
     totalAmount: number;
+    discountAmount?: number;
+    appliedDiscounts?: AppliedDiscount[];
 
     status: OrderStatus;
     paymentStatus: string;

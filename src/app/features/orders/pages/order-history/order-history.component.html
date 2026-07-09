@@ -45,8 +45,19 @@
               </div>
             </div>
 
-            <div class="border-t border-[#31204F] pt-3 mb-3">
-              <p class="text-sm font-semibold text-[#FAF8FB] flex justify-between">
+            <div class="border-t border-[#31204F] pt-3 mb-3 space-y-1">
+              @if (order.discountAmount && order.discountAmount > 0) {
+                <div class="text-xs text-[#E8368A] flex justify-between font-semibold">
+                  <span>Descuento:</span>
+                  <span>-S/ {{ order.discountAmount.toFixed(2) }}</span>
+                </div>
+                @if (order.appliedDiscounts && order.appliedDiscounts.length > 0) {
+                  <div class="text-[11px] text-[#9D96A8] italic pl-1 pb-1">
+                    Motivo: {{ order.appliedDiscounts[0].displayName }}
+                  </div>
+                }
+              }
+              <p class="text-sm font-semibold text-[#FAF8FB] flex justify-between pt-1 border-t border-[#31204F]/50">
                 <span>Total:</span>
                 <span class="text-[#C30364]">S/ {{ order.totalAmount.toFixed(2) }}</span>
               </p>

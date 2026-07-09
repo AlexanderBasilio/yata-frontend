@@ -1,9 +1,18 @@
+export interface AppliedDiscount {
+    type: string;
+    displayName: string;
+    amount: number;
+    code?: string | null;
+}
+
 export interface OrderResponse {
     orderId: string;
     orderCode: string;
     subtotalAmount: number;
     deliveryFee: number;
     serviceFee: number;
+    discountAmount?: number;
+    appliedDiscounts?: AppliedDiscount[];
     totalAmount: number;
     currency: string;
     status: OrderStatus;
