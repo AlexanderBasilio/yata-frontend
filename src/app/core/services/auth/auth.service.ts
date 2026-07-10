@@ -86,4 +86,15 @@ export class AuthService {
         localStorage.removeItem(this.USER_ID_KEY);
         this.currentUser$.next(null);
     }
+
+    getLoyaltyAccount(userId: string): Observable<LoyaltyAccount> {
+        return this.http.get<LoyaltyAccount>(`${this.platformUrl}/api/v1/loyalty/customer/${userId}`);
+    }
+}
+
+export interface LoyaltyAccount {
+    walletPoints: number;
+    totalXp: number;
+    currentLevelCode: string;
+    activePath: string;
 }

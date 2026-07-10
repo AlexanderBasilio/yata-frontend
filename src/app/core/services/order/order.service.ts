@@ -36,4 +36,9 @@ export class OrderService {
   createOrder(request: CreateOrderRequest): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}`, request);
   }
+
+  confirmReceipt(orderCode: string): Observable<void> {
+    const portalBase = environment.portalUrl.replace('/api/v1', '/api/portal/customer/orders');
+    return this.http.post<void>(`${portalBase}/${orderCode}/confirm`, {});
+  }
 }

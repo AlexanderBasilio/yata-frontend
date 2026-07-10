@@ -13,6 +13,7 @@ export interface OrderResponse {
     serviceFee: number;
     discountAmount?: number;
     appliedDiscounts?: AppliedDiscount[];
+    estimatedLoyaltyPoints?: number;
     totalAmount: number;
     currency: string;
     status: OrderStatus;
@@ -49,6 +50,8 @@ export type OrderStatus =
     'READY_FOR_PICKUP' |
     'ON_THE_WAY' |
     'DELIVERED' |
+    'CONFIRMED_BY_CLIENT' |
+    'CONFIRMED_BY_SYSTEM' |
     'CANCELLED' |
     'REJECTED_BY_RESTAURANT';
 

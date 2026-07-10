@@ -29,6 +29,44 @@ export class OrderHistoryComponent implements OnInit {
   activeGuideOrder = signal<OrderResponse | null>(null);
   showExampleImage = signal(false);
 
+  // Para la confirmación de recepción y gamificación
+  isConfirmingReceipt = signal<string | null>(null);
+  showLoyaltySuccessModal = signal<boolean>(false);
+  earnedPoints = signal<number>(0);
+  earnedXp = signal<number>(0);
+
+  confirmOrderReceipt(order: OrderResponse) {
+    if (!order || !order.orderCode) return;
+    this.isConfirmingReceipt.set(order.orderCode);
+
+    this.orderService.confirmReceipt(order.orderCode).subscribe({
+      next: () => {
+        const points = order.estimatedLoyaltyPoints || Math.round((order.subtotalAmount || 0) * 10);
+        const xp = points * 10;
+        this.earnedPoints.set(points);
+        this.earnedXp.set(xp);
+
+        this.showLoyaltySuccessModal.set(true);
+
+        // Actualizar el estado local
+        this.orders.update(orders =>
+          orders.map(o => o.orderCode === order.orderCode ? { ...o, status: 'CONFIRMED_BY_CLIENT' as any } : o)
+        );
+
+        this.isConfirmingReceipt.set(null);
+      },
+      error: (error) => {
+        console.error('Error al confirmar recepción de la orden:', error);
+        alert('Hubo un error al confirmar la recepción. Por favor, intenta de nuevo.');
+        this.isConfirmingReceipt.set(null);
+      }
+    });
+  }
+
+  closeLoyaltySuccessModal() {
+    this.showLoyaltySuccessModal.set(false);
+  }
+
   ngOnInit() {
     this.loadOrders();
   }
@@ -63,6 +101,9 @@ export class OrderHistoryComponent implements OnInit {
         return { label: 'Listo para recoger', color: 'text-[#9D96A8]', bg: 'bg-[#31204F]', action: false };
       case 'DELIVERED':
         return { label: 'Entregado', color: 'text-[#9D96A8]', bg: 'bg-[#31204F]', action: false };
+      case 'CONFIRMED_BY_CLIENT':
+      case 'CONFIRMED_BY_SYSTEM':
+        return { label: 'Recibido', color: 'text-emerald-400', bg: 'bg-emerald-500/20', action: false };
       case 'CANCELLED':
       case 'REJECTED_BY_RESTAURANT':
         return { label: 'Cancelado', color: 'text-rose-400', bg: 'bg-rose-500/20', action: false };

@@ -1,71 +1,68 @@
 <div class="min-h-screen bg-[#0D0518] font-sans pb-24 text-[#FAF8FB] space-y-0 relative">
 
-    <!-- PRÓXIMAMENTE OVERLAY -->
-    <div class="absolute inset-0 bg-[#0D0518]/70 backdrop-blur-[8px] z-40 flex flex-col items-center justify-center px-6 text-center select-none">
-        <div class="max-w-sm bg-[#221638]/90 border border-[#31204F] p-8 rounded-[28px] shadow-[0_12px_40px_rgba(195,3,100,0.25)] relative overflow-hidden flex flex-col items-center">
-            <!-- Glow background decorator -->
-            <div class="absolute -top-16 -right-16 w-32 h-32 bg-[#C30364] rounded-full blur-[60px] opacity-35"></div>
-            <div class="absolute -bottom-16 -left-16 w-32 h-32 bg-[#5A3D88] rounded-full blur-[60px] opacity-25"></div>
+  <!-- Header / Level -->
+  <div
+      class="relative bg-gradient-to-b from-[#221638] to-[#1A0A2E] shadow-xl w-full mx-auto px-6 pt-12 pb-8 rounded-b-[32px]">
+      <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-20"></div>
+      <!-- User Info & Level -->
+      <div class="flex items-center gap-4 relative z-10">
+          <div class="relative">
+              <div class="w-16 h-16 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#C30364] p-1 flex items-center justify-center">
+                  @if (loyaltyAccount.activePath === 'SOL' || (loyaltyAccount.activePath === 'NONE' && selectedGender === 'chico')) {
+                      <span class="text-4xl">👦</span>
+                  } @else if (loyaltyAccount.activePath === 'LUNA' || (loyaltyAccount.activePath === 'NONE' && selectedGender === 'chica')) {
+                      <span class="text-4xl">👧</span>
+                  } @else {
+                      <span class="text-4xl">👤</span>
+                  }
+              </div>
+              <div
+                  class="absolute -bottom-2 lg:-bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
+                  Nv. {{ levelNumber }}
+              </div>
+          </div>
+          <div class="flex-1">
+              <h2 class="text-xl font-bold font-['Epilogue']">{{ customerName }}</h2>
+              <p class="text-xs text-[#9D96A8]">{{ levelName }} • Guerrero de Zisify</p>
+          </div>
+          <button (click)="logout()"
+              class="bg-transparent border border-[#C30364] text-[#C30364] text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-[#C30364]/10 transition-colors">
+              Cerrar Sesión
+          </button>
+      </div>
 
-            <div class="w-16 h-16 rounded-full bg-gradient-cta flex items-center justify-center text-3xl mb-4 shadow-[0_4px_20px_rgba(195,3,100,0.4)]">
-                👤
-            </div>
-            
-            <h3 class="text-xl font-bold font-['Inknut_Antiqua'] text-white mb-3">Próximamente</h3>
-            <p class="text-sm text-[#9D96A8] leading-relaxed mb-6 font-['Epilogue']">
-                Próximamente podrás personalizar tu perfil y tener mayor control y rastreo de tus pedidos. ¡Estamos preparando avatares y recompensas épicas!
-            </p>
-            
-            <div class="flex flex-col gap-3 w-full">
-                <a routerLink="/home" class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-white text-xs font-bold py-3 rounded-xl shadow-[0_4px_15px_rgba(195,3,100,0.4)] hover:shadow-[0_6px_25px_rgba(195,3,100,0.6)] transition-all">
-                    Volver al Inicio
-                </a>
-                <button (click)="logout()" class="w-full bg-transparent border border-[#C30364] text-[#C30364] hover:bg-[#C30364]/10 text-xs font-bold py-3 rounded-xl transition-all">
-                    Cerrar Sesión
-                </button>
-            </div>
-        </div>
-    </div>
+      <!-- Gender selector for NONE path -->
+      @if (loyaltyAccount.activePath === 'NONE') {
+          <div class="mt-5 bg-[#1A0A2E]/70 border border-[#31204F] rounded-2xl p-3 flex items-center justify-between relative z-10">
+              <span class="text-[10px] text-[#9D96A8] font-bold uppercase tracking-wider">Elegir Avatar Local:</span>
+              <div class="flex gap-1.5">
+                  <button (click)="setGender('neutral')" [class]="selectedGender === 'neutral' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
+                      Neutro 👤
+                  </button>
+                  <button (click)="setGender('chico')" [class]="selectedGender === 'chico' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
+                      Sol 👦
+                  </button>
+                  <button (click)="setGender('chica')" [class]="selectedGender === 'chica' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
+                      Luna 👧
+                  </button>
+              </div>
+          </div>
+      }
 
-    <!-- Header / Level -->
-    <div
-        class="relative bg-gradient-to-b from-[#221638] to-[#1A0A2E] shadow-xl w-full mx-auto px-6 pt-12 pb-8 rounded-b-[32px]">
-        <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-20"></div>
-        <!-- User Info & Level -->
-        <div class="flex items-center gap-4 relative z-10">
-            <div class="relative">
-                <div class="w-16 h-16 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#C30364] p-1">
-                    <img src="https://ui-avatars.com/api/?name={{customerName}}&background=1A0A2E&color=fff&font-size=0.4"
-                        alt="User Avatar" class="w-full h-full rounded-full object-cover">
-                </div>
-                <div
-                    class="absolute -bottom-2 lg:-bottom-2 left-1/2 -translate-x-1/2 bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-lg whitespace-nowrap">
-                    Nv. 13
-                </div>
-            </div>
-            <div class="flex-1">
-                <h2 class="text-xl font-bold font-['Epilogue']">{{ customerName }}</h2>
-                <p class="text-xs text-[#9D96A8]">{{ level }} • Guerrero del Sabor</p>
-            </div>
-            <button
-                class="bg-transparent border border-[#5A3D88] text-[#5A3D88] text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-[rgba(195,3,100,0.08)] transition-colors">
-                Editar
-            </button>
-        </div>
-
-        <!-- Exp Bar -->
-        <div class="mt-8 relative z-10">
-            <div class="flex justify-between text-[10px] text-[#9D96A8] mb-1 font-medium">
-                <span>EXP: 8,800 / 10,000</span>
-                <span>Nv. 13 - Hatun Apu</span>
-            </div>
-            <div class="w-full h-1.5 bg-[#31204F] rounded-full overflow-hidden">
-                <div
-                    class="h-full bg-gradient-to-r from-[#C30364] to-[#E8368A] w-[88%] shadow-[0_0_10px_rgba(195,3,100,0.8)] rounded-full">
-                </div>
-            </div>
-        </div>
-    </div>
+      <!-- Exp Bar -->
+      <div class="mt-5 relative z-10">
+          <div class="flex justify-between text-[10px] text-[#9D96A8] mb-1 font-medium">
+              <span>EXP: {{ currentXpInLevel | number }} / 1,000</span>
+              <span>Nv. {{ levelNumber }} - {{ levelName }}</span>
+          </div>
+          <div class="w-full h-1.5 bg-[#31204F] rounded-full overflow-hidden">
+              <div
+                  class="h-full bg-gradient-to-r from-[#C30364] to-[#E8368A] shadow-[0_0_10px_rgba(195,3,100,0.8)] rounded-full transition-all duration-500"
+                  [style.width.%]="xpProgressPercentage">
+              </div>
+          </div>
+      </div>
+  </div>
 
     <!-- Main Content Area -->
     <div class="px-6 space-y-6 mt-6">
@@ -81,26 +78,23 @@
                 </svg>
             </div>
 
-            <p class="text-[10px] text-[#9D96A8] tracking-widest uppercase mb-1 font-bold">Inti Points</p>
-            <h3 class="text-3xl font-black mb-1">14.230</h3>
-            <p class="text-xs text-[#E8368A] font-medium">+480 esta semana - canjea por descuentos</p>
+            <p class="text-[10px] text-[#9D96A8] tracking-widest uppercase mb-1 font-bold">Puntos Zisify</p>
+            <h3 class="text-3xl font-black mb-1">{{ pointsCount | number }}</h3>
+            <p class="text-xs text-[#E8368A] font-medium">Consolidados al confirmar la recepción de tus pedidos</p>
 
             <!-- Badge Levels -->
             <div class="flex gap-2 mt-4 relative z-10">
-                <div
-                    class="bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1 transition-all">
+                <div [class]="pointsCount < 1000 ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-bold transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
                     <p class="text-[10px] font-bold">Hatun Runa</p>
-                    <p class="text-[8px] opacity-70">0-9k</p>
+                    <p class="text-[8px] opacity-70">0-999 pts</p>
                 </div>
-                <div
-                    class="bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] transform scale-105 border border-[#F59E0B]/50 transition-all">
-                    <p class="text-[10px] font-black">Sapa Inca</p>
-                    <p class="text-[8px] font-bold opacity-80">10-20k</p>
+                <div [class]="(pointsCount >= 1000 && pointsCount < 5000) ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-black transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
+                    <p class="text-[10px]">Sapa Inca</p>
+                    <p class="text-[8px] opacity-80">1,000-4,999 pts</p>
                 </div>
-                <div
-                    class="bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1 transition-all">
+                <div [class]="pointsCount >= 5000 ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-bold transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
                     <p class="text-[10px] font-bold">Willaq Umu</p>
-                    <p class="text-[8px] opacity-70">20k+</p>
+                    <p class="text-[8px] opacity-70">5,000+ pts</p>
                 </div>
             </div>
         </div>
@@ -117,32 +111,34 @@
 
                 <!-- Path Steps -->
                 <div class="flex gap-4 items-center mt-8 min-w-max pb-2 px-2">
-                    <div class="flex flex-col items-center gap-1.5 opacity-40">
+                    <div [class]="pointsCount < 1000 ? 'opacity-100 scale-105' : 'opacity-40'" class="flex flex-col items-center gap-1.5 transition-all">
                         <div
-                            class="w-10 h-10 rounded-full bg-[#1A0A2E] flex items-center justify-center border border-[#C30364]">
+                            [class]="pointsCount < 1000 ? 'bg-white border-2 border-[#E8368A] shadow-[0_0_15px_rgba(195,3,100,0.5)]' : 'bg-[#1A0A2E] border border-[#C30364]'"
+                            class="w-10 h-10 rounded-full flex items-center justify-center">
                             <span class="text-sm">🏓</span>
                         </div>
-                        <span class="text-[9px] text-center w-12 font-medium">Hatun Runa</span>
+                        <span [class]="pointsCount < 1000 ? 'text-[#E8368A] font-bold' : ''" class="text-[9px] text-center w-12 font-medium">Hatun Runa</span>
                     </div>
                     <div class="w-2 h-[1px] bg-[#31204F]"></div>
 
                     <!-- Current active (sun) -->
-                    <div class="flex flex-col items-center gap-1.5">
+                    <div [class]="(pointsCount >= 1000 && pointsCount < 5000) ? 'opacity-100 scale-105' : 'opacity-40'" class="flex flex-col items-center gap-1.5 transition-all">
                         <div
-                            class="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-[#E8368A] shadow-[0_0_15px_rgba(195,3,100,0.5)]">
+                            [class]="(pointsCount >= 1000 && pointsCount < 5000) ? 'bg-white border-2 border-[#E8368A] shadow-[0_0_15px_rgba(195,3,100,0.5)]' : 'bg-[#1A0A2E] border border-[#31204F]'"
+                            class="w-10 h-10 rounded-full flex items-center justify-center">
                             <span class="text-sm">☀️</span>
                         </div>
-                        <span class="text-[9px] text-[#E8368A] font-bold text-center w-12 tracking-wide">Sapa
-                            Inca</span>
+                        <span [class]="(pointsCount >= 1000 && pointsCount < 5000) ? 'text-[#E8368A] font-bold' : ''" class="text-[9px] text-center w-12 font-medium">Sapa Inca</span>
                     </div>
 
                     <div class="w-2 h-[1px] bg-[#31204F]"></div>
-                    <div class="flex flex-col items-center gap-1.5 opacity-30">
+                    <div [class]="pointsCount >= 5000 ? 'opacity-100 scale-105' : 'opacity-40'" class="flex flex-col items-center gap-1.5 transition-all">
                         <div
-                            class="w-10 h-10 rounded-full bg-[#1A0A2E] flex items-center justify-center border border-[#31204F]">
+                            [class]="pointsCount >= 5000 ? 'bg-white border-2 border-[#E8368A] shadow-[0_0_15px_rgba(195,3,100,0.5)]' : 'bg-[#1A0A2E] border border-[#31204F]'"
+                            class="w-10 h-10 rounded-full flex items-center justify-center">
                             <span class="text-sm">🏭</span>
                         </div>
-                        <span class="text-[9px] text-center w-12 font-medium">Willaq Umu</span>
+                        <span [class]="pointsCount >= 5000 ? 'text-[#E8368A] font-bold' : ''" class="text-[9px] text-center w-12 font-medium">Willaq Umu</span>
                     </div>
 
                     <div class="w-2 h-[1px] bg-[#31204F]"></div>

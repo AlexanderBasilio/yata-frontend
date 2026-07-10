@@ -263,6 +263,14 @@
                 </div>
             </div>
 
+            <!-- Banner de Gamificación / Puntos Estimados -->
+            <div class="bg-gradient-to-br from-[#1E1B4B] to-[#311042] p-4 rounded-xl border border-[#5A3D88] text-left text-xs sm:text-sm text-[#FAF8FB] leading-relaxed flex gap-3 items-center shadow-[0_4px_15px_rgba(90,61,136,0.3)]">
+                <span class="text-2xl animate-bounce">🪙</span>
+                <p>
+                    💡 ¡Felicidades! Vas a acumular <strong class="text-[#E8368A] text-base">{{ confirmedOrder?.estimatedLoyaltyPoints || ((confirmedOrder?.subtotalAmount || 0) * 10 | number:'1.0-0') }}</strong> puntos Zisify por esta compra. Los puntos se abonarán a tu perfil tan pronto como confirmes la recepción de tu pedido.
+                </p>
+            </div>
+
             <!-- Advertencia / Nivel de cuenta -->
             <div class="bg-[#2A081C] p-4 rounded-xl border border-[#C30364]/40 text-left text-xs sm:text-sm text-[#FAF8FB] leading-relaxed flex gap-2.5 items-start">
                 <span class="text-lg">⚠️</span>

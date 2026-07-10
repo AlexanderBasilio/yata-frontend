@@ -15,6 +15,8 @@ export enum OrderStatus {
     READY_FOR_PICKUP = 'READY_FOR_PICKUP',
     IN_DELIVERY = 'IN_DELIVERY',
     DELIVERED = 'DELIVERED',
+    CONFIRMED_BY_CLIENT = 'CONFIRMED_BY_CLIENT',
+    CONFIRMED_BY_SYSTEM = 'CONFIRMED_BY_SYSTEM',
     CANCELLED = 'CANCELLED'
 }
 
@@ -79,6 +81,7 @@ export interface OrderResponse {
     totalAmount: number;
     discountAmount?: number;
     appliedDiscounts?: AppliedDiscount[];
+    estimatedLoyaltyPoints?: number;
 
     status: OrderStatus;
     paymentStatus: string;
