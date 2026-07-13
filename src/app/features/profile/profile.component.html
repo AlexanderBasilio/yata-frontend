@@ -8,9 +8,9 @@
       <div class="flex items-center gap-4 relative z-10">
           <div class="relative">
               <div class="w-16 h-16 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#C30364] p-1 flex items-center justify-center">
-                  @if (loyaltyAccount.activePath === 'SOL' || (loyaltyAccount.activePath === 'NONE' && selectedGender === 'chico')) {
+                  @if (loyaltyAccount.identityPath === 'KALLPA') {
                       <span class="text-4xl">👦</span>
-                  } @else if (loyaltyAccount.activePath === 'LUNA' || (loyaltyAccount.activePath === 'NONE' && selectedGender === 'chica')) {
+                  } @else if (loyaltyAccount.identityPath === 'SAMI') {
                       <span class="text-4xl">👧</span>
                   } @else {
                       <span class="text-4xl">👤</span>
@@ -23,7 +23,7 @@
           </div>
           <div class="flex-1">
               <h2 class="text-xl font-bold font-['Epilogue']">{{ customerName }}</h2>
-              <p class="text-xs text-[#9D96A8]">{{ levelName }} • Guerrero de Zisify</p>
+              <p class="text-xs text-[#9D96A8]">{{ levelName }} • Guardián de Zisify</p>
           </div>
           <button (click)="logout()"
               class="bg-transparent border border-[#C30364] text-[#C30364] text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-[#C30364]/10 transition-colors">
@@ -31,29 +31,11 @@
           </button>
       </div>
 
-      <!-- Gender selector for NONE path -->
-      @if (loyaltyAccount.activePath === 'NONE') {
-          <div class="mt-5 bg-[#1A0A2E]/70 border border-[#31204F] rounded-2xl p-3 flex items-center justify-between relative z-10">
-              <span class="text-[10px] text-[#9D96A8] font-bold uppercase tracking-wider">Elegir Avatar Local:</span>
-              <div class="flex gap-1.5">
-                  <button (click)="setGender('neutral')" [class]="selectedGender === 'neutral' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
-                      Neutro 👤
-                  </button>
-                  <button (click)="setGender('chico')" [class]="selectedGender === 'chico' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
-                      Sol 👦
-                  </button>
-                  <button (click)="setGender('chica')" [class]="selectedGender === 'chica' ? 'bg-[#C30364] text-white shadow-[0_2px_8px_rgba(195,3,100,0.4)]' : 'bg-[#221638] text-[#9D96A8] border border-[#31204F]/60'" class="px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1">
-                      Luna 👧
-                  </button>
-              </div>
-          </div>
-      }
-
       <!-- Exp Bar -->
-      <div class="mt-5 relative z-10">
+      <div class="mt-6 relative z-10">
           <div class="flex justify-between text-[10px] text-[#9D96A8] mb-1 font-medium">
-              <span>EXP: {{ currentXpInLevel | number }} / 1,000</span>
-              <span>Nv. {{ levelNumber }} - {{ levelName }}</span>
+              <span>EXP: {{ loyaltyAccount.totalXp | number }} / {{ loyaltyAccount.xpRequiredForNextLevel | number }}</span>
+              <span>Progreso Nv. {{ levelNumber }}</span>
           </div>
           <div class="w-full h-1.5 bg-[#31204F] rounded-full overflow-hidden">
               <div
@@ -67,7 +49,45 @@
     <!-- Main Content Area -->
     <div class="px-6 space-y-6 mt-6">
 
-        <!-- Card: Inti Points -->
+        <!-- Card: Elige tu Camino Místico (Kallpa o Sami) -->
+        @if (loyaltyAccount.identityPath === 'NONE') {
+            <div class="bg-gradient-to-br from-[#291642] to-[#120524] border-2 border-[#C30364]/60 rounded-3xl p-6 shadow-[0_8px_30px_rgba(195,3,100,0.3)] relative overflow-hidden animate-scale-in">
+                <!-- Background sparks or glow -->
+                <div class="absolute -top-12 -right-12 w-24 h-24 bg-[#C30364] rounded-full blur-[50px] opacity-40"></div>
+                <div class="absolute -bottom-12 -left-12 w-24 h-24 bg-[#E8368A] rounded-full blur-[50px] opacity-25"></div>
+                
+                <h3 class="text-base font-black font-['Epilogue'] text-white mb-2 flex items-center gap-2">
+                    ✨ Elige tu Senda Ancestral
+                </h3>
+                <p class="text-xs text-[#9D96A8] leading-relaxed mb-5">
+                    Para iniciar tu viaje evolutivo en Zisify, elige a tu Guardián. Esta elección definirá la estética visual de tu avatar a lo largo de tu progreso. Ambas rutas comparten los mismos beneficios comerciales y mecánicas RPG.
+                </p>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Path KALLPA -->
+                    <button (click)="choosePath('KALLPA')" class="bg-[#1A0A2E] hover:bg-[#25123E] border border-[#31204F] hover:border-[#C30364]/60 p-4 rounded-2xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105 active:scale-95 group">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#D97706] to-[#F59E0B] flex items-center justify-center text-4xl mb-3 shadow-[0_4px_15px_rgba(217,119,6,0.3)] group-hover:scale-110 transition-transform">
+                            👦
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-1">Ruta KALLPA</h4>
+                        <span class="text-[9px] text-[#D97706] font-bold uppercase tracking-wider">Estética Fuerza</span>
+                        <p class="text-[9px] text-[#9D96A8] mt-2 leading-tight">Rasgos y vestimentas masculinas del Imperio.</p>
+                    </button>
+
+                    <!-- Path SAMI -->
+                    <button (click)="choosePath('SAMI')" class="bg-[#1A0A2E] hover:bg-[#25123E] border border-[#31204F] hover:border-[#E8368A]/60 p-4 rounded-2xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105 active:scale-95 group">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#E8368A] to-[#C30364] flex items-center justify-center text-4xl mb-3 shadow-[0_4px_15px_rgba(232,54,138,0.3)] group-hover:scale-110 transition-transform">
+                            👧
+                        </div>
+                        <h4 class="text-sm font-bold text-white mb-1">Ruta SAMI</h4>
+                        <span class="text-[9px] text-[#E8368A] font-bold uppercase tracking-wider">Estética Fluidez</span>
+                        <p class="text-[9px] text-[#9D96A8] mt-2 leading-tight">Rasgos y vestimentas femeninas del Imperio.</p>
+                    </button>
+                </div>
+            </div>
+        }
+
+        <!-- Card: Zisicoins -->
         <div
             class="bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[16px] p-5 shadow-lg relative overflow-hidden">
             <!-- Decorator Sun Icon -->
@@ -78,7 +98,7 @@
                 </svg>
             </div>
 
-            <p class="text-[10px] text-[#9D96A8] tracking-widest uppercase mb-1 font-bold">Puntos Zisify</p>
+            <p class="text-[10px] text-[#9D96A8] tracking-widest uppercase mb-1 font-bold">Zisicoins</p>
             <h3 class="text-3xl font-black mb-1">{{ pointsCount | number }}</h3>
             <p class="text-xs text-[#E8368A] font-medium">Consolidados al confirmar la recepción de tus pedidos</p>
 
@@ -86,15 +106,15 @@
             <div class="flex gap-2 mt-4 relative z-10">
                 <div [class]="pointsCount < 1000 ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-bold transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
                     <p class="text-[10px] font-bold">Hatun Runa</p>
-                    <p class="text-[8px] opacity-70">0-999 pts</p>
+                    <p class="text-[8px] opacity-70">0-999 zc</p>
                 </div>
                 <div [class]="(pointsCount >= 1000 && pointsCount < 5000) ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-black transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
                     <p class="text-[10px]">Sapa Inca</p>
-                    <p class="text-[8px] opacity-80">1,000-4,999 pts</p>
+                    <p class="text-[8px] opacity-80">1,000-4,999 zc</p>
                 </div>
                 <div [class]="pointsCount >= 5000 ? 'bg-gradient-to-r from-[#D97706] to-[#F59E0B] text-[#1A0A2E] rounded-lg px-2 py-2 text-center flex-1 shadow-[0_0_15px_rgba(217,119,6,0.3)] border border-[#F59E0B]/50 font-bold transform scale-105' : 'bg-[#1A0A2E] text-[#9D96A8] border border-[#31204F] rounded-lg px-2 py-2 text-center flex-1'" class="transition-all">
                     <p class="text-[10px] font-bold">Willaq Umu</p>
-                    <p class="text-[8px] opacity-70">5,000+ pts</p>
+                    <p class="text-[8px] opacity-70">5,000+ zc</p>
                 </div>
             </div>
         </div>
@@ -150,6 +170,45 @@
                         <span class="text-[9px] text-center w-12 font-medium">Inti Mismo</span>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Section: Colección de Bendiciones (Deidades) -->
+        <div class="mt-8">
+            <div class="flex justify-between items-center mb-3 px-1">
+                <h4 class="text-[10px] text-[#9D96A8] tracking-widest uppercase font-bold">Colección de Bendiciones</h4>
+                <!-- Reset testing simulator button -->
+                <button (click)="resetSimulation()" class="text-[9px] text-[#C30364] hover:underline font-bold transition-all">
+                    🔄 Reiniciar Simulación
+                </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+                @for (deity of unlockedDeities; track deity.code) {
+                    <div class="bg-[#221638] border border-[#C30364]/40 rounded-2xl p-4 flex flex-col justify-between relative overflow-hidden shadow-md">
+                        <div class="absolute -top-6 -right-6 w-12 h-12 bg-[#C30364]/20 rounded-full blur-[20px]"></div>
+                        
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-2xl">{{ deity.icon }}</span>
+                            <div>
+                                <h5 class="text-xs font-bold text-white leading-tight">{{ deity.name }}</h5>
+                                <span class="text-[8px] text-[#9D96A8] uppercase tracking-wider font-semibold">
+                                    {{ deity.category === 'PEQUENO' ? 'Espíritu' : deity.category === 'MEDIO' ? 'Guardián' : 'Gran Deidad' }}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-[#FAF8FB]/80 leading-relaxed mb-2">{{ deity.description }}</p>
+                        <div class="bg-[#1A0A2E] p-2 rounded-xl border border-[#31204F]/60">
+                            <p class="text-[9px] text-[#E8368A] font-bold">Activo: {{ deity.benefit }}</p>
+                        </div>
+                    </div>
+                } @empty {
+                    <div class="col-span-2 bg-[#221638]/50 border border-[#31204F] rounded-2xl p-6 text-center">
+                        <p class="text-xs text-[#9D96A8] leading-relaxed">
+                            Aún no posees deidades ancestrales en tu colección. ¡Alcanza los niveles hitos (múltiplos de 4) para recibir y elegir bendiciones divinas!
+                        </p>
+                    </div>
+                }
             </div>
         </div>
 
@@ -386,4 +445,53 @@
         </div>
 
     </div>
+
+    <!-- Modal de Elección de Deidad Ancestral (Hito de nivel) -->
+    @if (isChoiceAvailable) {
+        <div class="fixed inset-0 bg-[#0D0518]/95 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in">
+            <div class="bg-[#221638] border-2 border-[#C30364] rounded-3xl p-6 w-full max-w-md shadow-[0_0_35px_rgba(195,3,100,0.5)] relative overflow-hidden animate-scale-in text-center">
+                
+                <!-- Sparkles background decorator -->
+                <div class="absolute -top-16 -right-16 w-32 h-32 bg-[#C30364] rounded-full blur-[60px] opacity-45"></div>
+                <div class="absolute -bottom-16 -left-16 w-32 h-32 bg-[#5A3D88] rounded-full blur-[60px] opacity-25"></div>
+
+                <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-[#D97706] to-[#F59E0B] flex items-center justify-center text-3xl mb-3 shadow-[0_4px_20px_rgba(217,119,6,0.4)] animate-bounce">
+                    ✨
+                </div>
+
+                <h3 class="text-lg font-black text-white mb-1">¡Nuevo Hito de Nivel {{ levelNumber }}!</h3>
+                <p class="text-xs text-[#9D96A8] leading-relaxed mb-5">
+                    Los dioses del Imperio han escuchado tu progreso. Elige una de las 3 bendiciones ancestrales disponibles. Esta bendición te otorgará un beneficio comercial permanente.
+                </p>
+
+                <!-- Choices List -->
+                <div class="space-y-3 mb-6 max-h-[280px] overflow-y-auto pr-1">
+                    @for (deity of choices; track deity.code) {
+                        <button (click)="selectDeity(deity)" class="w-full bg-[#1A0A2E] hover:bg-[#2A1642] border border-[#31204F] hover:border-[#C30364] p-3 rounded-2xl flex items-center gap-3 text-left transition-all duration-300 transform hover:scale-[1.02] active:scale-95 group">
+                            <span class="text-3xl p-1 bg-[#221638] rounded-xl border border-[#31204F] group-hover:scale-110 transition-transform">
+                                {{ deity.icon }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-black text-white truncate">{{ deity.name }}</h4>
+                                    <span class="text-[8px] text-[#D97706] font-bold uppercase tracking-wider">
+                                        {{ deity.category === 'PEQUENO' ? 'Espíritu' : deity.category === 'MEDIO' ? 'Guardián' : 'Grande' }}
+                                    </span>
+                                </div>
+                                <p class="text-[9px] text-[#9D96A8] truncate mt-0.5">{{ deity.description }}</p>
+                                <p class="text-[9px] text-[#E8368A] font-bold mt-1 bg-[#221638]/60 px-2 py-0.5 rounded border border-[#31204F]/40 inline-block">
+                                    Beneficio: {{ deity.benefit }}
+                                </p>
+                            </div>
+                        </button>
+                    }
+                </div>
+
+                <p class="text-[9px] text-[#5A3D88] font-bold">
+                    Las bendiciones descartadas volverán al pool para futuros hitos.
+                </p>
+            </div>
+        </div>
+    }
+
 </div>

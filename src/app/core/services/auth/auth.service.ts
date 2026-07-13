@@ -87,14 +87,38 @@ export class AuthService {
         this.currentUser$.next(null);
     }
 
-    getLoyaltyAccount(userId: string): Observable<LoyaltyAccount> {
-        return this.http.get<LoyaltyAccount>(`${this.platformUrl}/api/v1/loyalty/customer/${userId}`);
+    getMyLoyaltyStatus(): Observable<LoyaltyAccountResponse> {
+        const url = environment.portalUrl.replace('/api/v1', '/api/portal/customer/loyalty/my-status');
+        return this.http.get<LoyaltyAccountResponse>(url);
+    }
+
+    chooseGuardianPath(path: 'KALLPA' | 'SAMI'): Observable<void> {
+        const url = environment.portalUrl.replace('/api/v1', '/api/portal/customer/loyalty/choose-path');
+        return this.http.post<void>(`${url}?path=${path}`, {});
+    }
+
+    chooseDeity(code: string): Observable<void> {
+        const url = environment.portalUrl.replace('/api/v1', '/api/portal/customer/loyalty/choose-deity');
+        return this.http.post<void>(`${url}?code=${code}`, {});
     }
 }
 
-export interface LoyaltyAccount {
-    walletPoints: number;
-    totalXp: number;
-    currentLevelCode: string;
-    activePath: string;
+export interface DeityOption {
+    code: string;
+    name: string;
+    description: string;
+    benefit: string;
+    category: 'PEQUENO' | 'MEDIO' | 'GRANDE';
+    icon: string;
+}
+
+export interface LoyaltyAccountResponse {
+    zisiCoins: number;       // Moneda virtual
+    totalXp: number;            // Progreso del Guardián
+    currentLevel: number;    // Nivel calculado dinámicamente en base al XP
+    identityPath: 'KALLPA' | 'SAMI' | 'NONE';     // "KALLPA", "SAMI" o "NONE"
+    xpRequiredForCurrentLevel: number; // XP donde inició este nivel
+    xpRequiredForNextLevel: number;    // XP necesaria para pasar al siguiente nivel
+    isChoiceAvailable?: boolean;
+    choices?: DeityOption[];
 }
