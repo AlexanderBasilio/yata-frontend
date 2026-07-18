@@ -23,7 +23,10 @@ export interface Restaurant {
   minimumOrder: number;
   isActive: boolean;
 
-  // ✅ NUEVO: schedule (opcional por ahora)
+  // Control de Horarios y Cierre de Emergencia
+  isTemporarilyClosed: boolean;
+  isOpen: boolean;
+
   schedule?: RestaurantSchedule;
 }
 
@@ -35,8 +38,14 @@ export interface SpecialtyItem {
 
 // ✅ NUEVO: Interfaz para el horario del restaurante
 export interface RestaurantSchedule {
-  // Por ahora lo dejamos simple, tu backend lo definirá mejor
-  [key: string]: any;
+  isOpen24Hours: boolean;
+  schedule: {
+    [key: string]: {
+      openTime: string;
+      closeTime: string;
+      isOpenThisDay: boolean;
+    }
+  }
 }
 
 export interface Dish {
@@ -84,12 +93,13 @@ export interface DishModifierOption {
   isAvailable: boolean;
 }
 
-// ✅ CAMBIADO: RequiredSelection (sin cambios mayores)
+// ✅ CAMBIADO: RequiredSelection
 export interface RequiredSelection {
   id: string;
   title: string;
   minSelections: number;
   maxSelections: number;
+  isAvailable: boolean; // ← NUEVO: Disponibilidad del grupo entero de obligatorios
   options: SelectionOption[];
 }
 

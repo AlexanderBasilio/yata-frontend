@@ -88,10 +88,10 @@
               [class.bg-[#1A0A2E]]="!isRequiredSelected(selection.id, option.id)">
 
               <div class="flex items-center gap-3">
-                <input type="radio" [name]="'selection-' + selection.id"
+                <input [type]="selection.maxSelections > 1 ? 'checkbox' : 'radio'" [name]="'selection-' + selection.id"
                   [disabled]="!option.isAvailable"
                   [checked]="isRequiredSelected(selection.id, option.id)"
-                  (change)="selectRequired(selection.id, option.id)" class="w-5 h-5 text-[#C30364] bg-[#1A0A2E] border-[#31204F] focus:ring-[#C30364] disabled:opacity-50">
+                  (change)="selectRequired(selection, option.id)" class="w-5 h-5 text-[#C30364] bg-[#1A0A2E] border-[#31204F] focus:ring-[#C30364] disabled:opacity-50">
 
                 <div>
                   <p class="text-sm font-semibold text-[#FAF8FB]">

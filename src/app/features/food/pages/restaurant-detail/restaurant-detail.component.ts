@@ -103,6 +103,11 @@ export class RestaurantDetailComponent implements OnInit {
     this.isLoadingRestaurant.set(true);
     this.restaurantService.getRestaurantById(id).subscribe({
       next: (restaurant) => {
+        if (!restaurant.isOpen || restaurant.isTemporarilyClosed) {
+          alert('Este restaurante se encuentra cerrado en este momento.');
+          this.router.navigate(['/food/catalog']);
+          return;
+        }
         this.restaurant.set(restaurant);
         this.isLoadingRestaurant.set(false);
       },

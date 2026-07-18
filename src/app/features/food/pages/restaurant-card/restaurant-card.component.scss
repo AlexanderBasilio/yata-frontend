@@ -2,6 +2,15 @@
   &:active {
     transform: scale(0.98);
   }
+  
+  &.restaurant-closed {
+    filter: grayscale(0.8) opacity(0.7);
+    cursor: not-allowed !important;
+    
+    &:active {
+      transform: none;
+    }
+  }
 }
 
 .card-image {

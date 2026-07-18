@@ -16,8 +16,23 @@ export class DishModalComponent {
   close = output<void>();
   addToCart = output<AddToCartRequest>();
 
-  modifiers = computed(() => this.dish().modifiers || []);
-  requiredSelections = computed(() => this.dish().requiredSelections || []);
+  modifiers = computed(() => {
+    return (this.dish().modifiers || [])
+      .filter(m => m.isAvailable !== false)
+      .map(m => ({
+        ...m,
+        options: (m.options || []).filter(o => o.isAvailable !== false)
+      }));
+  });
+
+  requiredSelections = computed(() => {
+    return (this.dish().requiredSelections || [])
+      .filter(s => s.isAvailable !== false)
+      .map(s => ({
+        ...s,
+        options: (s.options || []).filter(o => o.isAvailable !== false)
+      }));
+  });
 
   // Cantidad del plato principal
   quantity = signal(1);
@@ -26,7 +41,7 @@ export class DishModalComponent {
   selectedModifierOptions = signal<Map<string, number>>(new Map());
 
   // Selecciones requeridas (ej: bebida, entrada)
-  selectedRequired = signal<Map<string, string>>(new Map()); // selectionId -> optionId
+  selectedRequired = signal<Map<string, string[]>>(new Map()); // selectionId -> array of optionIds
 
   // Instrucciones especiales
   specialInstructions = signal('');
@@ -38,7 +53,7 @@ export class DishModalComponent {
     // Sumar opciones de modificadores seleccionadas
     this.selectedModifierOptions().forEach((qty, optionId) => {
       // Buscar la opción en todos los modifiers
-      for (const modifier of this.dish().modifiers || []) {
+      for (const modifier of this.modifiers()) {
         const option = modifier.options?.find(o => o.id === optionId);
         if (option) {
           total += option.price * qty;
@@ -48,13 +63,14 @@ export class DishModalComponent {
     });
 
     // Sumar ajustes de selecciones requeridas
-    this.selectedRequired().forEach((optionId) => {
-      for (const selection of this.dish().requiredSelections || []) {
-        const option = selection.options.find(o => o.id === optionId);
-        if (option) {
-          total += option.priceAdjustment;
-          break;
-        }
+    this.selectedRequired().forEach((optionIds) => {
+      for (const selection of this.requiredSelections()) {
+        optionIds.forEach(optionId => {
+          const option = selection.options.find(o => o.id === optionId);
+          if (option) {
+            total += option.priceAdjustment;
+          }
+        });
       }
     });
 
@@ -64,13 +80,15 @@ export class DishModalComponent {
 
   // Validación de selecciones requeridas
   canAddToCart = computed(() => {
-    const requiredSelections = this.dish().requiredSelections || [];
+    const requiredSelections = this.requiredSelections();
 
     for (const selection of requiredSelections) {
       const selected = this.selectedRequired().get(selection.id);
 
-      if (!selected && selection.minSelections > 0) {
-        return false;
+      if (selection.minSelections > 0) {
+        if (!selected || selected.length < selection.minSelections) {
+          return false;
+        }
       }
     }
 
@@ -136,15 +154,34 @@ export class DishModalComponent {
   }
 
   // Seleccionar opción requerida
-  selectRequired(selectionId: string, optionId: string) {
+  selectRequired(selection: RequiredSelection, optionId: string) {
     const current = this.selectedRequired();
-    current.set(selectionId, optionId);
+    const existing = current.get(selection.id) || [];
+    
+    if (selection.maxSelections > 1) {
+      // Si ya está seleccionada, la quitamos
+      if (existing.includes(optionId)) {
+        current.set(selection.id, existing.filter(id => id !== optionId));
+      } else {
+        // Si no está seleccionada, verificamos límite
+        if (existing.length < selection.maxSelections) {
+          current.set(selection.id, [...existing, optionId]);
+        } else {
+          alert(`Solo puedes seleccionar hasta ${selection.maxSelections} opciones.`);
+        }
+      }
+    } else {
+      // Selección única (radio button)
+      current.set(selection.id, [optionId]);
+    }
+    
     this.selectedRequired.set(new Map(current));
   }
 
   // Verificar si una opción está seleccionada
   isRequiredSelected(selectionId: string, optionId: string): boolean {
-    return this.selectedRequired().get(selectionId) === optionId;
+    const selected = this.selectedRequired().get(selectionId) || [];
+    return selected.includes(optionId);
   }
 
   // Agregar al carrito
@@ -159,7 +196,7 @@ export class DishModalComponent {
 
     this.selectedModifierOptions().forEach((qty, optionId) => {
       // Buscar la opción en todos los modifiers
-      for (const modifier of this.dish().modifiers || []) {
+      for (const modifier of this.modifiers()) {
         const option = modifier.options?.find(o => o.id === optionId);
         if (option) {
           modifiers.push({
@@ -177,16 +214,20 @@ export class DishModalComponent {
 
     // ✅ Construir required selections array con la estructura correcta
     const requiredSelections: SelectedRequired[] = [];
-    this.selectedRequired().forEach((optionId, selectionId) => {
-      const selection = this.dish().requiredSelections?.find(s => s.id === selectionId);
-      const option = selection?.options.find(o => o.id === optionId);
-      if (selection && option) {
-        requiredSelections.push({
-          requiredGroupId: selection.id,           // ← ID del grupo obligatorio
-          optionId: option.id,              // ← ID de la opción elegida
-          requiredGroupName: selection.title,      // ← Nombre del grupo
-          optionName: option.name,          // ← Nombre de la opción
-          priceAdjustment: option.priceAdjustment
+    this.selectedRequired().forEach((optionIds, selectionId) => {
+      const selection = this.requiredSelections().find(s => s.id === selectionId);
+      if (selection) {
+        optionIds.forEach(optionId => {
+          const option = selection.options.find(o => o.id === optionId);
+          if (option) {
+            requiredSelections.push({
+              requiredGroupId: selection.id,           // ← ID del grupo obligatorio
+              optionId: option.id,              // ← ID de la opción elegida
+              requiredGroupName: selection.title,      // ← Nombre del grupo
+              optionName: option.name,          // ← Nombre de la opción
+              priceAdjustment: option.priceAdjustment
+            });
+          }
         });
       }
     });

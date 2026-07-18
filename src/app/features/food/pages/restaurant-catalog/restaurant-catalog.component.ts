@@ -81,6 +81,9 @@ export class RestaurantCatalogComponent implements OnInit {
   }
 
   onRestaurantClick(restaurant: Restaurant) {
+    if (!restaurant.isOpen || restaurant.isTemporarilyClosed) {
+      return;
+    }
     this.router.navigate(['/food/restaurant', restaurant.id]);
   }
 }

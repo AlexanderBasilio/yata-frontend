@@ -1,4 +1,4 @@
-<div class="restaurant-card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+<div [class.restaurant-closed]="!restaurant().isOpen || restaurant().isTemporarilyClosed" class="restaurant-card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow relative">
 
   <!-- Imagen del restaurante -->
   <div class="card-image relative h-40 bg-gray-200">
@@ -7,6 +7,13 @@
       [alt]="restaurant().name"
       class="w-full h-full object-cover"
       loading="lazy">
+
+    <!-- Etiqueta de Cerrado -->
+    @if (!restaurant().isOpen || restaurant().isTemporarilyClosed) {
+      <div class="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-lg z-10">
+        {{ restaurant().isTemporarilyClosed ? 'Cerrado temporalmente' : 'Cerrado' }}
+      </div>
+    }
 
     <!-- Logo circular flotante -->
     <div class="restaurant-logo absolute -bottom-6 left-4 w-16 h-16 rounded-full border-4 border-white bg-white shadow-md overflow-hidden">
