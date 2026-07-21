@@ -47,15 +47,22 @@
         </a>
 
         <!-- Botón Central (Pedidos Activos/Realizados) -->
-        <a routerLink="/orders" class="relative group pointer-events-auto">
-            <div [class.animate-soft-blink]="shouldBlinkOrders()"
-                class="w-12 h-12 rounded-full bg-gradient-cta flex items-center justify-center shadow-[0_4px_15px_rgba(195,3,100,0.5)] border-2 border-[#1A0A2E] transform group-hover:scale-105 transition-all">
-                <!-- Ícono de Delivery/Pedidos -->
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
+        <a routerLink="/orders"
+            class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative group"
+            [class.text-[#C30364]]="isActive('/orders')" [class.text-[#9D96A8]]="!isActive('/orders')">
+            <div class="relative">
+                <!-- Glow constant/glowing background effect -->
+                <div class="absolute -inset-0.5 bg-[#C30364] rounded-full blur opacity-60 group-hover:opacity-100 transition duration-300"></div>
+                <div class="relative w-11 h-11 rounded-full bg-gradient-cta flex items-center justify-center shadow-[0_4px_15px_rgba(195,3,100,0.5)] border-2 border-[#1A0A2E] transform active:scale-95 transition-all">
+                    <!-- Ícono de Delivery/Pedidos -->
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </div>
             </div>
+            <span class="text-[10px] font-semibold tracking-wide"
+                [ngClass]="{'font-bold': isActive('/orders')}">Mis Pedidos</span>
         </a>
 
         <!-- Billetera -->

@@ -1,8 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth/auth.service';
-import { CustomerService } from '../../core/services/customer/customer.service';
+import { CustomerService, Address } from '../../core/services/customer/customer.service';
+import { MapboxService } from '../../core/services/location/mapbox.service';
+import mapboxgl from 'mapbox-gl';
 
 interface Category {
   id: string;
@@ -15,14 +18,15 @@ interface Category {
 @Component({
   selector: 'app-service-selector',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './service-selector.component.html',
   styleUrl: './service-selector.component.scss',
 })
-export class ServiceSelectorComponent implements OnInit {
+export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   public authService = inject(AuthService);
   private customerService = inject(CustomerService);
+  private mapboxService = inject(MapboxService);
 
   customerName = 'Zisify';
   walletBalance = '950.000';
@@ -53,12 +57,62 @@ export class ServiceSelectorComponent implements OnInit {
     { id: 'promos', name: 'Cupones', icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z', route: '/vouchers' }
   ];
 
+  // Address signals & state
+  currentAddress = signal<Address | null>(null);
+  customerAddresses = signal<Address[]>([]);
+  showAddressModal = signal(false);
+  showAddAddressModal = signal(false);
+
+  // New Address Form signals
+  newLabel = signal('Casa');
+  newStreetAddress = signal('');
+  newReference = signal('');
+  newCity = signal('HUANCAYO');
+  newLatitude = signal(-12.04637);
+  newLongitude = signal(-75.21128);
+  isSavingAddress = signal(false);
+
+  // Mapbox GL instance variables
+  private map?: mapboxgl.Map;
+  private marker?: mapboxgl.Marker;
+
   isUrl(icon: string): boolean {
     return icon.startsWith('http');
   }
 
   ngOnInit() {
     this.customerName = 'Zisify';
+    this.loadCustomerProfileAndAddresses();
+  }
+
+  ngOnDestroy() {
+    this.cleanupMap();
+  }
+
+  loadCustomerProfileAndAddresses() {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    this.customerService.getCustomerProfile(userId).subscribe({
+      next: (profile) => {
+        const addresses = profile.addresses || [];
+        this.customerAddresses.set(addresses);
+        
+        // Try getting active address from Service
+        let active = this.customerService.getActiveAddress();
+        if (!active && addresses.length > 0) {
+          active = addresses.find(a => a.isDefault) || addresses[0];
+        }
+
+        if (active) {
+          this.currentAddress.set(active);
+          this.customerService.setActiveAddress(active);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading customer profile on home selector:', err);
+      }
+    });
   }
 
   selectCategory(category: Category) {
@@ -73,5 +127,163 @@ export class ServiceSelectorComponent implements OnInit {
     } else {
       alert(`${shortcut.name} estará disponible próximamente.`);
     }
+  }
+
+  selectAddress(address: Address) {
+    this.currentAddress.set(address);
+    this.customerService.setActiveAddress(address);
+    this.showAddressModal.set(false);
+  }
+
+  openAddressModal() {
+    this.showAddressModal.set(true);
+  }
+
+  closeAddressModal() {
+    this.showAddressModal.set(false);
+  }
+
+  openAddAddressModal() {
+    this.showAddAddressModal.set(true);
+    setTimeout(() => {
+      this.initMap();
+    }, 100);
+  }
+
+  closeAddAddressModal() {
+    this.showAddAddressModal.set(false);
+    this.cleanupMap();
+  }
+
+  private cleanupMap() {
+    if (this.marker) {
+      this.marker.remove();
+      this.marker = undefined;
+    }
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
+  }
+
+  private initMap() {
+    this.cleanupMap();
+
+    // Default to Huancayo center
+    const defaultCenter: [number, number] = [-75.21128, -12.04637];
+
+    try {
+      this.map = this.mapboxService.createMap('addressMap', defaultCenter, 14);
+
+      this.map.on('load', () => {
+        this.marker = new mapboxgl.Marker({
+          draggable: true,
+          color: '#22C55E' // Green color for location marker
+        })
+        .setLngLat(defaultCenter)
+        .addTo(this.map!);
+
+        // Initial coords update
+        this.updateCoords(defaultCenter[1], defaultCenter[0]);
+
+        // Dragend handler
+        this.marker.on('dragend', () => {
+          const lngLat = this.marker!.getLngLat();
+          this.updateCoords(lngLat.lat, lngLat.lng);
+        });
+
+        // Click on map moves marker
+        this.map!.on('click', (e) => {
+          this.marker!.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+          this.updateCoords(e.lngLat.lat, e.lngLat.lng);
+        });
+      });
+    } catch (e) {
+      console.error('Error initializing map:', e);
+    }
+  }
+
+  async updateCoords(lat: number, lng: number) {
+    this.newLatitude.set(lat);
+    this.newLongitude.set(lng);
+
+    // Retrieve address using reverse geocoding
+    const location = await this.mapboxService.reverseGeocode(lng, lat);
+    if (location) {
+      this.newStreetAddress.set(location.address);
+      if (location.city) {
+        this.newCity.set(location.city.toUpperCase());
+      }
+    }
+  }
+
+  useCurrentLocation() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          this.updateCoords(lat, lng);
+          
+          if (this.map && this.marker) {
+            this.map.flyTo({ center: [lng, lat], zoom: 16 });
+            this.marker.setLngLat([lng, lat]);
+          }
+        },
+        (error) => {
+          console.error('Error fetching current location:', error);
+          alert('No se pudo acceder a tu ubicación actual. Selecciona la ubicación en el mapa.');
+        }
+      );
+    } else {
+      alert('Tu navegador no soporta geolocalización.');
+    }
+  }
+
+  saveNewAddress() {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      alert('Debes iniciar sesión para guardar direcciones.');
+      return;
+    }
+
+    if (!this.newStreetAddress().trim()) {
+      alert('Por favor ingresa la dirección.');
+      return;
+    }
+
+    this.isSavingAddress.set(true);
+
+    const newAddr: Address = {
+      label: this.newLabel(),
+      streetAddress: this.newStreetAddress().trim(),
+      reference: this.newReference().trim() || undefined,
+      city: this.newCity().toUpperCase(),
+      latitude: this.newLatitude(),
+      longitude: this.newLongitude(),
+      isDefault: true
+    };
+
+    this.customerService.addAddress(userId, newAddr).subscribe({
+      next: () => {
+        console.log('✅ Dirección agregada exitosamente desde inicio.');
+        // Reset fields
+        this.newStreetAddress.set('');
+        this.newReference.set('');
+        
+        this.showAddAddressModal.set(false);
+        this.showAddressModal.set(false);
+        this.isSavingAddress.set(false);
+
+        // Refresh customer profile and auto-select
+        this.loadCustomerProfileAndAddresses();
+      },
+      error: (err) => {
+        console.error('Error guardando dirección en inicio:', err);
+        alert('Hubo un error al registrar la dirección.');
+        this.isSavingAddress.set(false);
+      }
+    });
   }
 }

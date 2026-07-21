@@ -30,6 +30,21 @@ export class CustomerService {
     private platformUrl = environment.platformUrl;
 
     public currentCustomer$ = new BehaviorSubject<CustomerResponse | null>(null);
+    public activeAddress$ = new BehaviorSubject<Address | null>(this.getActiveAddress());
+
+    getActiveAddress(): Address | null {
+        const saved = localStorage.getItem('zisify_active_address');
+        try {
+            return saved ? JSON.parse(saved) : null;
+        } catch {
+            return null;
+        }
+    }
+
+    setActiveAddress(address: Address) {
+        localStorage.setItem('zisify_active_address', JSON.stringify(address));
+        this.activeAddress$.next(address);
+    }
 
     constructor() { }
 

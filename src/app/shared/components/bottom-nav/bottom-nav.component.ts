@@ -4,7 +4,6 @@ import { Router, RouterModule, Event, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { CartService } from '../../../core/services/cart/cart.service';
 import { FoodCartService } from '../../../core/services/food-cart/food-cart.service';
-import { OrderService } from '../../../core/services/order/order.service';
 
 @Component({
     selector: 'app-bottom-nav',
@@ -18,10 +17,8 @@ export class BottomNavComponent {
     public authService = inject(AuthService);
     public cartService = inject(CartService);
     public foodCartService = inject(FoodCartService);
-    private orderService = inject(OrderService);
 
     showNav = true;
-    hasPendingPaymentOrder = false;
 
     constructor() {
         this.router.events.subscribe((event: Event) => {
@@ -32,9 +29,6 @@ export class BottomNavComponent {
                 } else {
                     // Mostrar solo si está logueado
                     this.showNav = this.authService.isLoggedIn();
-                    if (this.showNav) {
-                        this.checkPendingPaymentOrders();
-                    }
                 }
             }
         });
@@ -42,21 +36,6 @@ export class BottomNavComponent {
 
     isActive(route: string): boolean {
         return this.router.url.includes(route);
-    }
-
-    checkPendingPaymentOrders() {
-        this.orderService.getMyOrders().subscribe({
-            next: (orders) => {
-                this.hasPendingPaymentOrder = orders.some(order => order.status === 'PENDING_PAYMENT');
-            },
-            error: (err) => {
-                console.error('Error checking pending payment orders', err);
-            }
-        });
-    }
-
-    shouldBlinkOrders(): boolean {
-        return this.hasPendingPaymentOrder && !this.router.url.includes('/orders');
     }
 
     getCartRoute(): string {
