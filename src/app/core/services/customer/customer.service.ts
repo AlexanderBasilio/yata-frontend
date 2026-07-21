@@ -4,17 +4,19 @@ import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface Address {
+    id?: number;
     label: string;
     streetAddress: string;
-    reference: string;
+    reference?: string;
     city: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
     isDefault: boolean;
+    zoneId?: string;
 }
 
 export interface CustomerResponse {
-    id: string;
+    customerId: string;
     addresses: Address[];
     preferences: string[];
     isVip: boolean;

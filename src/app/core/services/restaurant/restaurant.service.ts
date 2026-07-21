@@ -19,11 +19,11 @@ export class RestaurantService {
   private dishApiUrl = `${environment.restaurantServiceUrl}/api/dishes`; // ← NUEVO
 
   /**
-   * Obtener todos los restaurantes
+   * Obtener todos los restaurantes zonificados
    */
-  getAllRestaurants(): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.restaurantApiUrl, {
-      headers: { 'Content-Type': 'application/json' }
+  getAllRestaurants(customerZoneId: string): Observable<Restaurant[]> {
+    return this.http.get<Restaurant[]>(`${environment.portalUrl}/portal/catalog`, {
+      params: { customerZoneId }
     });
   }
 
@@ -35,11 +35,11 @@ export class RestaurantService {
   }
 
   /**
-   * Buscar restaurantes por especialidad
+   * Buscar restaurantes por especialidad zonificados
    */
-  searchBySpecialty(specialty: string): Observable<Restaurant[]> {
-    return this.http.get<Restaurant[]>(this.restaurantApiUrl, {
-      params: { specialty }
+  searchBySpecialty(customerZoneId: string, specialty: string): Observable<Restaurant[]> {
+    return this.http.get<Restaurant[]>(`${environment.portalUrl}/portal/catalog`, {
+      params: { customerZoneId, specialty }
     });
   }
 
