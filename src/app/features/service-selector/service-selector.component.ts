@@ -89,7 +89,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.cleanupMap();
   }
 
-  loadCustomerProfileAndAddresses() {
+  loadCustomerProfileAndAddresses(forceNewest: boolean = false) {
     const userId = this.authService.getUserId();
     if (!userId) return;
 
@@ -98,19 +98,23 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
         const addresses = profile.addresses || [];
         this.customerAddresses.set(addresses);
         
-        // Try getting active address from Service
-        let active = this.customerService.getActiveAddress();
-        if (!active && addresses.length > 0) {
+        let active = forceNewest ? null : this.customerService.getActiveAddress();
+        
+        if (forceNewest && addresses.length > 0) {
+          active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
+          console.log('🔥 [Sync Backend] Dirección seleccionada tras guardar:', active);
+        } else if (!active && addresses.length > 0) {
           active = addresses.find(a => a.isDefault) || addresses[0];
         }
 
         if (active) {
+          console.log('📍 [Estado Activo] Dirección configurada activa con zoneId:', active.zoneId || 'SIN_ZONE_ID');
           this.currentAddress.set(active);
           this.customerService.setActiveAddress(active);
         }
       },
       error: (err) => {
-        console.error('Error loading customer profile on home selector:', err);
+        console.error('❌ Error cargando perfil de cliente en inicio:', err);
       }
     });
   }
@@ -265,9 +269,25 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
       isDefault: true
     };
 
+    console.log('📍 Coordenadas seleccionadas en UI para guardar:', {
+      lat: newAddr.latitude,
+      lng: newAddr.longitude,
+      city: newAddr.city,
+      address: newAddr.streetAddress
+    });
+
     this.customerService.addAddress(userId, newAddr).subscribe({
-      next: () => {
-        console.log('✅ Dirección agregada exitosamente desde inicio.');
+      next: (response) => {
+        console.log('✅ POST Exitoso. Respuesta recibida del backend:', response);
+        
+        let savedAddrWithZone = response && response.zoneId ? response : null;
+
+        if (savedAddrWithZone) {
+          console.log('🎯 ZoneID devuelto directamente en el POST:', savedAddrWithZone.zoneId);
+          this.currentAddress.set(savedAddrWithZone);
+          this.customerService.setActiveAddress(savedAddrWithZone);
+        }
+
         // Reset fields
         this.newStreetAddress.set('');
         this.newReference.set('');
@@ -276,11 +296,11 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
         this.showAddressModal.set(false);
         this.isSavingAddress.set(false);
 
-        // Refresh customer profile and auto-select
-        this.loadCustomerProfileAndAddresses();
+        // Refresh customer profile and auto-select newly returned address (with zoneId)
+        this.loadCustomerProfileAndAddresses(true);
       },
       error: (err) => {
-        console.error('Error guardando dirección en inicio:', err);
+        console.error('❌ Error guardando dirección en inicio:', err);
         alert('Hubo un error al registrar la dirección.');
         this.isSavingAddress.set(false);
       }

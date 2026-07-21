@@ -49,13 +49,34 @@ export class CustomerService {
     constructor() { }
 
     getCustomerProfile(userId: string): Observable<CustomerResponse> {
-        return this.http.get<CustomerResponse>(`${this.platformUrl}/api/v1/customers/${userId}`).pipe(
-            tap(customer => this.currentCustomer$.next(customer))
+        const url = `${this.platformUrl}/api/v1/customers/${userId}`;
+        console.group('📡 [GET HTTP] Consultando Perfil del Cliente');
+        console.log('🌐 Endpoint URL:', url);
+        console.groupEnd();
+        return this.http.get<CustomerResponse>(url).pipe(
+            tap(customer => {
+                console.group('📥 [GET RESPONSE] Perfil recibido del Backend');
+                console.log('📦 JSON completo del perfil:', customer);
+                console.log('📍 Lista de Direcciones con ZoneId:', customer?.addresses);
+                console.groupEnd();
+                this.currentCustomer$.next(customer);
+            })
         );
     }
 
-    addAddress(userId: string, address: Address): Observable<void> {
-        return this.http.post<void>(`${this.platformUrl}/api/v1/customers/${userId}/addresses`, address);
+    addAddress(userId: string, address: Address): Observable<any> {
+        const url = `${this.platformUrl}/api/v1/customers/${userId}/addresses`;
+        console.group('🚀 [POST HTTP] Guardando Nueva Dirección en Backend');
+        console.log('🌐 Endpoint URL:', url);
+        console.log('📦 Payload JSON enviado:', JSON.stringify(address, null, 2));
+        console.groupEnd();
+        return this.http.post<any>(url, address).pipe(
+            tap(res => {
+                console.group('📥 [POST RESPONSE] Respuesta del servidor al crear dirección');
+                console.log('✅ Status 201/200 OK. Body devuelto:', res);
+                console.groupEnd();
+            })
+        );
     }
 
     updatePreferences(userId: string, preferences: string[]): Observable<CustomerResponse> {

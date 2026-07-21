@@ -35,12 +35,20 @@ export class RestaurantCatalogComponent implements OnInit {
     // Reactivamente escuchar cambios en la dirección activa del cliente
     this.customerService.activeAddress$.subscribe({
       next: (address) => {
+        console.group('📍 [Catálogo Food] Dirección activa recibida');
+        console.log('📦 Objeto dirección activo:', address);
         if (address) {
           this.currentAddress.set(address);
           if (address.zoneId) {
+            console.log('🌍 ZoneID activo detectado:', address.zoneId);
             this.customerZoneId.set(address.zoneId);
+          } else {
+            console.warn('⚠️ La dirección activa NO contiene zoneId. Usando fallback:', this.customerZoneId());
           }
+        } else {
+          console.warn('⚠️ No hay dirección activa. Usando fallback:', this.customerZoneId());
         }
+        console.groupEnd();
         this.loadRestaurants(this.customerZoneId());
       }
     });
