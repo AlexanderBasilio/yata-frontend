@@ -26,7 +26,8 @@ export class OrderService {
   }
 
   reportPayment(orderCode: string, request: PaymentReportRequest): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(`${this.apiUrl}/${orderCode}/report-payment`, request);
+    const portalBase = environment.portalUrl.replace('/api/v1', '/api/portal/customer/orders');
+    return this.http.patch<OrderResponse>(`${portalBase}/${orderCode}/report-payment`, request);
   }
 
   calculateShipping(location: { destLat: number; destLon: number }): Observable<{ shippingCost: number, currency: string }> {
