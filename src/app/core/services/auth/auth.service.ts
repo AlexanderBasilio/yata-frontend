@@ -4,11 +4,19 @@ import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface AuthResponse {
-    accessToken: string;
+    accessToken?: string;
+    token?: string;
     refreshToken: string;
-    userId: string;
-    email: string;
-    roles: string[];
+    userId?: string;
+    email?: string;
+    roles?: string[];
+    user?: {
+        id: string;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        roles?: string[];
+    };
 }
 
 export interface UserResponse {
@@ -42,8 +50,26 @@ export class AuthService {
     login(credentials: { email: string; password: string }): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${this.platformUrl}/api/v1/auth/login`, credentials).pipe(
             tap(response => {
-                this.setToken(response.accessToken);
-                this.setUserId(response.userId);
+                const token = response.token || response.accessToken;
+                const userId = response.user?.id || response.userId;
+                if (token) this.setToken(token);
+                if (userId) this.setUserId(userId);
+            })
+        );
+    }
+
+    loginWithGoogle(idToken: string, role: string = 'ROLE_CUSTOMER', fcmToken?: string): Observable<AuthResponse> {
+        const body = {
+            idToken,
+            role,
+            ...(fcmToken ? { fcmToken } : {})
+        };
+        return this.http.post<AuthResponse>(`${this.platformUrl}/api/v1/auth/google`, body).pipe(
+            tap(response => {
+                const token = response.token || response.accessToken;
+                const userId = response.user?.id || response.userId;
+                if (token) this.setToken(token);
+                if (userId) this.setUserId(userId);
             })
         );
     }
