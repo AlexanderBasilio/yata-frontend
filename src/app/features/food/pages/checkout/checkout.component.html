@@ -215,140 +215,14 @@
         </div>
 
     </div>
-    <!-- STEP 3: Éxito -->
-    <div *ngIf="currentStep === 3" class="step-content animate-fade-in text-center py-12">
-        <div class="mb-6 flex justify-center">
-            <div
-                class="w-20 h-20 bg-[#1A0A2E] border border-[#C30364] rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(195,3,100,0.4)]">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#C30364]" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-        </div>
-
-        <h2 class="text-2xl md:text-3xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">{{ greetingMessage() }}
-        </h2>
-        <p class="text-[#9D96A8] mb-8">Tu pedido ha sido registrado correctamente.</p>
-
-        <div class="max-w-md mx-auto space-y-6 text-[#9D96A8] mb-8">
-
-            <!-- Bloque de Código de Pedido -->
-            <div class="bg-[#221638] p-4 rounded-xl border border-[#31204F] relative group">
-                <p class="text-xs text-[#716A7D] uppercase tracking-wider mb-2 font-bold">Código de Pedido</p>
-                <div class="flex items-center justify-between bg-[#1A0A2E] p-3 rounded-lg border border-[#31204F]">
-                    <span class="font-mono text-lg font-bold text-[#FAF8FB] truncate select-all">{{
-                        confirmedOrder?.orderCode }}</span>
-                    <button (click)="copyCode()" class="ml-3 text-[#716A7D] hover:text-[#C30364] transition-colors"
-                        title="Copiar código">
-                        <ng-container *ngIf="!copied">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                        </ng-container>
-                        <ng-container *ngIf="copied">
-                            <span class="text-[#16A34A] font-bold text-sm flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20"
-                                    fill="currentColor">
-                                    <path fill-rule="evenodd"
-                                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                        clip-rule="evenodd" />
-                                </svg>
-                                Copiado
-                            </span>
-                        </ng-container>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Banner de Gamificación / Puntos Estimados -->
-            <div class="bg-gradient-to-br from-[#1E1B4B] to-[#311042] p-4 rounded-xl border border-[#5A3D88] text-left text-xs sm:text-sm text-[#FAF8FB] leading-relaxed flex gap-3 items-center shadow-[0_4px_15px_rgba(90,61,136,0.3)]">
-                <span class="text-2xl animate-bounce">🪙</span>
-                <p>
-                    💡 ¡Felicidades! Vas a acumular <strong class="text-[#E8368A] text-base">{{ confirmedOrder?.estimatedLoyaltyPoints || ((confirmedOrder?.subtotalAmount || 0) * 10 | number:'1.0-0') }}</strong> puntos Zisify por esta compra. Los puntos se abonarán a tu perfil tan pronto como confirmes la recepción de tu pedido.
-                </p>
-            </div>
-
-            <!-- Advertencia / Nivel de cuenta -->
-            <div class="bg-[#2A081C] p-4 rounded-xl border border-[#C30364]/40 text-left text-xs sm:text-sm text-[#FAF8FB] leading-relaxed flex gap-2.5 items-start">
-                <span class="text-lg">⚠️</span>
-                <p>
-                    El nivel actual de tu cuenta no te permite realizar pagos contra entrega, por lo que deberás realizar el pago de manera anticipada a través de nuestra cuenta de Yape.
-                </p>
-            </div>
-
-            <!-- Instrucciones -->
-            <div class="bg-[#1A0A2E] p-5 rounded-xl border border-[#31204F] text-left space-y-4">
-                <p class="font-bold text-[#FAF8FB] flex items-center gap-2 border-b border-[#31204F] pb-2 text-sm">
-                    <span>📋</span> Pasos para realizar tu pago:
-                </p>
-                <ol class="space-y-4 text-xs sm:text-sm text-[#9D96A8] list-decimal list-inside">
-                    <li class="leading-relaxed">
-                        Para obtener el número de nuestra cuenta en Yape solo debe darle click al botón en la parte inferior: <strong class="text-[#FAF8FB]">“Copiar Celular”</strong> y el número se habrá guardado automáticamente.
-                    </li>
-                    <li class="leading-relaxed">
-                        Abra su cuenta en Yape y pegue el número obtenido en el paso anterior.
-                    </li>
-                    <li class="leading-relaxed">
-                        Verifique el monto antes de pagar: <strong class="text-[#C30364] text-base">S/ {{ (confirmedOrder?.totalAmount || orderSummary?.totalAmount || 38.50) | number:'1.2-2' }}</strong>.
-                    </li>
-                    <li class="leading-relaxed">
-                        Una vez realizado el pago, anote el número de la operación. Tiene 8 dígitos y aparece en la imagen del comprobante.
-                        <button type="button" (click)="showExampleImage = !showExampleImage" class="text-[#C30364] hover:text-[#E8368A] hover:underline font-bold focus:outline-none transition-colors inline-flex items-center gap-0.5 ml-1">
-                            Ver ejemplo
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 transition-transform" [class.rotate-180]="showExampleImage" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </button>
-                        
-                        <!-- Imagen Ejemplo Toggled -->
-                        <div *ngIf="showExampleImage" class="mt-2.5 p-1 bg-[#0D0518] border border-[#31204F] rounded-lg overflow-hidden animate-fade-in">
-                            <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778957921/interface-assets/nro-operacion-ejemplo.png" 
-                                 alt="Ejemplo número de operación Yape" 
-                                 class="max-w-full h-auto rounded border border-[#31204F] mx-auto">
-                        </div>
-                    </li>
-                    <li class="leading-relaxed">
-                        Ingrese a la sección 
-                        <strong class="text-[#FAF8FB] inline-flex items-center gap-1 bg-[#221638] px-1.5 py-0.5 rounded border border-[#31204F]">
-                            mis pedidos 
-                            <svg class="w-3.5 h-3.5 text-[#C30364]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                        </strong>, presione el botón <strong class="text-white">“Enviar Nro de Operación”</strong>.
-                    </li>
-                    <li class="leading-relaxed">
-                        Copie ahí el Nro de Operación y presione <strong class="text-[#FAF8FB]">“Confirmar Pago”</strong>.
-                    </li>
-                </ol>
-                
-                <div class="h-px bg-[#31204F] w-full my-3"></div>
-                
-                <p class="text-xs text-[#16A34A] font-medium leading-relaxed">
-                    ✨ ¡Listo, su pedido ha sido confirmado! Con eso ya solo le quedará esperar a que llegue su pedido a su domicilio. ¡Gracias por confiar en Zisify!
-                </p>
-
-                <p class="text-[11px] text-[#716A7D] leading-relaxed pt-2 border-t border-[#31204F]/60">
-                    Puede verificar sus puntos obtenidos por su compra en el 
-                    <a routerLink="/zisify" fragment="points" class="text-[#C30364] hover:underline font-semibold">Programa de Puntos</a> 
-                    y hacer seguimiento en su 
-                    <a routerLink="/orders" class="text-[#C30364] hover:underline font-semibold">Historial de Pedidos</a>.
-                </p>
-            </div>
-
-            <!-- Botón de Pago con Yape -->
-            <button (click)="copyCelular()" 
-                class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white py-4 rounded-xl font-bold text-base transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] flex items-center justify-center gap-2">
-                <span class="text-xl">📋</span>
-                <span>{{ celularCopied ? '¡Celular Copiado!' : 'Copiar Celular' }}</span>
-            </button>
-        </div>
-
-        <button (click)="goHome()"
-            class="bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] px-8 py-3 rounded-xl font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all w-full max-w-xs">
-            Volver al Inicio
-        </button>
+    <!-- STEP 3: Stepper de Pago de 3 Pasos -->
+    <div *ngIf="currentStep === 3" class="step-content animate-fade-in py-4 flex justify-center">
+        <app-payment-stepper-modal
+            [orderData]="confirmedOrder"
+            [initialStep]="1"
+            [isModal]="false"
+            (close)="goHome()"
+            (paymentCompleted)="onPaymentCompleted($event)">
+        </app-payment-stepper-modal>
     </div>
 </div>

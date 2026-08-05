@@ -4,11 +4,12 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../../core/services/order/order.service';
 import { OrderResponse, OrderStatus } from '../../../../core/models/order.model';
+import { PaymentStepperModalComponent } from '../../../../shared/components/payment-stepper-modal/payment-stepper-modal.component';
 
 @Component({
   selector: 'app-order-history',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaymentStepperModalComponent],
   templateUrl: './order-history.component.html',
   styleUrl: './order-history.component.scss'
 })
@@ -19,53 +20,15 @@ export class OrderHistoryComponent implements OnInit {
   orders = signal<OrderResponse[]>([]);
   isLoading = signal(true);
 
-  // Para el modal de reporte de pago
-  reportingOrder = signal<OrderResponse | null>(null);
-  operationNumber = signal<string>('');
-  isReporting = signal(false);
-
-  // Para el modal de la Guía de Pago
-  showGuideModal = signal(false);
-  activeGuideOrder = signal<OrderResponse | null>(null);
-  showExampleImage = signal(false);
+  // Stepper Modal de Pago
+  stepperOrder = signal<OrderResponse | null>(null);
+  showPaymentStepper = signal<boolean>(false);
 
   // Para la confirmación de recepción y gamificación
   isConfirmingReceipt = signal<string | null>(null);
   showLoyaltySuccessModal = signal<boolean>(false);
   earnedPoints = signal<number>(0);
   earnedXp = signal<number>(0);
-
-  confirmOrderReceipt(order: OrderResponse) {
-    if (!order || !order.orderCode) return;
-    this.isConfirmingReceipt.set(order.orderCode);
-
-    this.orderService.confirmReceipt(order.orderCode).subscribe({
-      next: () => {
-        const points = order.estimatedLoyaltyPoints || Math.round((order.subtotalAmount || 0) * 10);
-        const xp = points * 10;
-        this.earnedPoints.set(points);
-        this.earnedXp.set(xp);
-
-        this.showLoyaltySuccessModal.set(true);
-
-        // Actualizar el estado local
-        this.orders.update(orders =>
-          orders.map(o => o.orderCode === order.orderCode ? { ...o, status: 'CONFIRMED_BY_CLIENT' as any } : o)
-        );
-
-        this.isConfirmingReceipt.set(null);
-      },
-      error: (error) => {
-        console.error('Error al confirmar recepción de la orden:', error);
-        alert('Hubo un error al confirmar la recepción. Por favor, intenta de nuevo.');
-        this.isConfirmingReceipt.set(null);
-      }
-    });
-  }
-
-  closeLoyaltySuccessModal() {
-    this.showLoyaltySuccessModal.set(false);
-  }
 
   ngOnInit() {
     this.loadOrders();
@@ -112,68 +75,58 @@ export class OrderHistoryComponent implements OnInit {
     }
   }
 
-  openPaymentReport(order: OrderResponse) {
-    this.reportingOrder.set(order);
-    this.operationNumber.set('');
+  // --- MÉTODOS STEPPER DE PAGO ---
+  openPaymentStepper(order: OrderResponse) {
+    this.stepperOrder.set(order);
+    this.showPaymentStepper.set(true);
   }
 
-  closePaymentReport() {
-    this.reportingOrder.set(null);
-    this.operationNumber.set('');
+  closePaymentStepper() {
+    this.showPaymentStepper.set(false);
+    this.stepperOrder.set(null);
   }
 
-  submitPaymentReport() {
-    const order = this.reportingOrder();
-    if (!order) return;
-
-    if (!this.operationNumber() || this.operationNumber().trim() === '') {
-      alert('Debes ingresar el número de operación');
-      return;
+  onPaymentCompleted(updatedOrder: OrderResponse) {
+    if (updatedOrder) {
+      this.orders.update(orders =>
+        orders.map(o => o.orderCode === updatedOrder.orderCode ? updatedOrder : o)
+      );
     }
-
-    this.isReporting.set(true);
-    this.orderService.reportPayment(order.orderCode, { operationNumber: this.operationNumber() })
-      .subscribe({
-        next: (updatedOrder) => {
-          this.orders.update(orders => orders.map(o => o.orderCode === updatedOrder.orderCode ? updatedOrder : o));
-          this.closePaymentReport();
-          this.isReporting.set(false);
-        },
-        error: (error) => {
-          console.error('Error reportando pago', error);
-          alert('Hubo un error al reportar el pago');
-          this.isReporting.set(false);
-        }
-      });
+    this.loadOrders();
   }
 
-  openGuide(order: OrderResponse) {
-    this.activeGuideOrder.set(order);
-    this.showGuideModal.set(true);
-    this.showExampleImage.set(false);
+  confirmOrderReceipt(order: OrderResponse) {
+    if (!order || !order.orderCode) return;
+    this.isConfirmingReceipt.set(order.orderCode);
+
+    this.orderService.confirmReceipt(order.orderCode).subscribe({
+      next: () => {
+        const points = order.estimatedLoyaltyPoints || Math.round((order.subtotalAmount || 0) * 10);
+        const xp = points * 10;
+        this.earnedPoints.set(points);
+        this.earnedXp.set(xp);
+
+        this.showLoyaltySuccessModal.set(true);
+
+        this.orders.update(orders =>
+          orders.map(o => o.orderCode === order.orderCode ? { ...o, status: 'CONFIRMED_BY_CLIENT' as any } : o)
+        );
+
+        this.isConfirmingReceipt.set(null);
+      },
+      error: (error) => {
+        console.error('Error al confirmar recepción de la orden:', error);
+        alert('Hubo un error al confirmar la recepción. Por favor, intenta de nuevo.');
+        this.isConfirmingReceipt.set(null);
+      }
+    });
   }
 
-  closeGuide() {
-    this.showGuideModal.set(false);
-    this.activeGuideOrder.set(null);
-    this.showExampleImage.set(false);
+  closeLoyaltySuccessModal() {
+    this.showLoyaltySuccessModal.set(false);
   }
 
   goBack() {
     this.router.navigate(['/home']);
-  }
-
-  yapeCopiedOrderCode: string | null = null;
-  async copyCelular(orderCode: string) {
-    try {
-      await navigator.clipboard.writeText('963434580');
-      this.yapeCopiedOrderCode = orderCode;
-      setTimeout(() => {
-        this.yapeCopiedOrderCode = null;
-      }, 3000);
-    } catch (err) {
-      console.error('Error al copiar celular:', err);
-      alert('No se pudo copiar el número automáticamente. El número es 963434580');
-    }
   }
 }

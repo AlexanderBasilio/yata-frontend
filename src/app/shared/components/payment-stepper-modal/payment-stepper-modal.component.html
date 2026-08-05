@@ -1,0 +1,206 @@
+<div [class.fixed]="isModal" [class.inset-0]="isModal" [class.bg-[#0D0518]/85]="isModal" [class.backdrop-blur-md]="isModal" [class.z-50]="isModal" [class.flex]="isModal" [class.items-center]="isModal" [class.justify-center]="isModal" [class.p-4]="isModal">
+
+  <!-- Contenedor Principal del Stepper -->
+  <div class="bg-[#1A0A2E] border border-[#31204F] rounded-3xl p-6 w-full max-w-md shadow-2xl relative overflow-hidden animate-slide-up text-[#FAF8FB]">
+
+    <!-- Botón de Cierre (X) si es modal -->
+    @if (isModal) {
+      <button (click)="closeModal()" class="absolute top-4 right-4 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors p-1 rounded-full hover:bg-[#221638] focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    }
+
+    <!-- Header & Barra de Progreso (3 Pasos) -->
+    <div class="mb-6">
+      <!-- Segmentos de barra de progreso -->
+      <div class="flex items-center gap-2 mb-3">
+        <div class="h-1.5 flex-1 rounded-full transition-all duration-300" [class.bg-gradient-to-r]="currentStep() >= 1" [class.from-[#C30364]]="currentStep() >= 1" [class.to-[#E8368A]]="currentStep() >= 1" [class.bg-[#31204F]]="currentStep() < 1"></div>
+        <div class="h-1.5 flex-1 rounded-full transition-all duration-300" [class.bg-gradient-to-r]="currentStep() >= 2" [class.from-[#C30364]]="currentStep() >= 2" [class.to-[#E8368A]]="currentStep() >= 2" [class.bg-[#31204F]]="currentStep() < 2"></div>
+        <div class="h-1.5 flex-1 rounded-full transition-all duration-300" [class.bg-gradient-to-r]="currentStep() >= 3" [class.from-[#C30364]]="currentStep() >= 3" [class.to-[#E8368A]]="currentStep() >= 3" [class.bg-[#31204F]]="currentStep() < 3"></div>
+      </div>
+
+      <!-- Subtítulo del Paso -->
+      <p class="text-xs text-[#9D96A8] font-semibold tracking-wider uppercase">Paso {{ currentStep() }} de 3</p>
+
+      <!-- Título principal según el paso -->
+      <h2 class="text-2xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mt-1">
+        @if (currentStep() === 1) {
+          Copia el número de Yape
+        } @else if (currentStep() === 2) {
+          Ingresa el número de operación
+        } @else {
+          ¡Pago registrado!
+        }
+      </h2>
+    </div>
+
+    <!-- PASO 1: Instrucciones de pago -->
+    @if (currentStep() === 1) {
+      <div class="step-content space-y-5 animate-fade-in">
+
+        <!-- Monto a Pagar Destacado -->
+        <div class="bg-[#221638] border border-[#31204F] rounded-2xl p-5 text-center shadow-inner">
+          <span class="block text-xs text-[#9D96A8] uppercase tracking-wider font-semibold mb-1">Monto a pagar</span>
+          <span class="text-3xl font-extrabold text-[#FAF8FB] tracking-tight">S/ {{ (order()?.totalAmount || 0) | number:'1.2-2' }}</span>
+        </div>
+
+        <!-- Botón Copiar número de Yape (Texto en DOM NUNCA expone el número real) -->
+        <button type="button" (click)="copyCelular()"
+          class="w-full bg-[#FAF8FB] hover:bg-[#FFF0F7] text-[#1A0A2E] py-3.5 px-4 rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2.5 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#C30364]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          <span>{{ celularCopied() ? '¡Celular Copiado!' : 'Copiar número de Yape' }}</span>
+        </button>
+
+        <!-- Acordeón: ¿Cómo se ve el comprobante? (Colapsado por defecto) -->
+        <details class="group bg-[#221638]/60 border border-[#31204F] rounded-xl p-3.5">
+          <summary class="text-xs text-[#FAF8FB] font-semibold flex justify-between items-center cursor-pointer select-none">
+            <span class="flex items-center gap-1.5">
+              <span>🖼️</span> ¿Cómo se ve el comprobante?
+            </span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#9D96A8] transition-transform group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+            </svg>
+          </summary>
+          <div class="mt-3 pt-3 border-t border-[#31204F]/60 text-center animate-fade-in">
+            <p class="text-[11px] text-[#9D96A8] mb-2">El número de operación tiene 8 dígitos y aparece en la parte inferior de tu yapeo:</p>
+            <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778957921/interface-assets/nro-operacion-ejemplo.png"
+                 alt="Ejemplo número de operación Yape"
+                 class="max-w-full h-auto rounded-lg border border-[#31204F] mx-auto shadow-md">
+          </div>
+        </details>
+
+        <!-- CTA Principal Paso 1 -->
+        <button type="button" (click)="goToStep(2)"
+          class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] flex justify-center items-center gap-2 cursor-pointer mt-2">
+          <span>Ya pagué, continuar</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+
+      </div>
+    }
+
+    <!-- PASO 2: Enviar número de operación -->
+    @if (currentStep() === 2) {
+      <div class="step-content space-y-4 animate-fade-in">
+
+        <p class="text-xs text-[#9D96A8] leading-relaxed">
+          Realiza el pago de <strong class="text-[#FAF8FB]">S/ {{ (order()?.totalAmount || 0) | number:'1.2-2' }}</strong> en tu app de Yape e ingresa aquí los 8 dígitos del número de operación.
+        </p>
+
+        <!-- Campo de texto para Número de Operación con auto-validación visual -->
+        <div class="relative">
+          <label class="block text-xs font-semibold text-[#FAF8FB] mb-1.5">Número de Operación (8 dígitos)</label>
+          <div class="relative">
+            <input type="text"
+              [ngModel]="operationNumber()"
+              (ngModelChange)="onOperationNumberChange($event)"
+              maxlength="8"
+              placeholder="Ej: 19283746"
+              class="w-full px-4 py-3.5 bg-[#221638] border text-[#FAF8FB] placeholder-[#52465E] rounded-xl text-base font-mono focus:outline-none focus:ring-2 focus:ring-[#C30364] transition-all"
+              [class.border-[#16A34A]]="isValidOperationNumber()"
+              [class.border-[#31204F]]="!isValidOperationNumber()">
+
+            <!-- Indicador visual verde de auto-validación cuando hay 8 dígitos -->
+            @if (isValidOperationNumber()) {
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 bg-[#16A34A]/20 text-[#16A34A] border border-[#16A34A]/40 px-2 py-0.5 rounded-md text-xs font-bold flex items-center gap-1 animate-scale-in">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+                8 dígitos
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Enlace para revisar instrucciones del Paso 1 si es necesario -->
+        <div class="flex justify-start">
+          <button type="button" (click)="goToStep(1)" class="text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Ver instrucciones de pago
+          </button>
+        </div>
+
+        <!-- Mensaje de Error -->
+        @if (errorMessage()) {
+          <div class="bg-[#DC2626]/10 border border-[#DC2626]/40 rounded-xl p-3 text-center">
+            <p class="text-[#DC2626] text-xs font-medium">{{ errorMessage() }}</p>
+          </div>
+        }
+
+        <!-- CTA Principal Paso 2 -->
+        <button type="button" (click)="submitPayment()" [disabled]="!isValidOperationNumber() || isSubmitting()"
+          class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex justify-center items-center gap-2 cursor-pointer mt-2">
+          @if (isSubmitting()) {
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <span>Confirmando pago...</span>
+          } @else {
+            <span>Confirmar pago</span>
+          }
+        </button>
+
+      </div>
+    }
+
+    <!-- PASO 3: Confirmación -->
+    @if (currentStep() === 3) {
+      <div class="step-content space-y-4 animate-fade-in text-center">
+
+        <!-- Checkmark de Éxito -->
+        <div class="w-16 h-16 bg-[#16A34A]/10 border border-[#16A34A]/40 text-[#16A34A] rounded-full flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(22,163,74,0.3)]">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <p class="text-xs sm:text-sm text-[#16A34A] font-semibold leading-relaxed">
+          ✨ ¡Listo, su pedido ha sido registrado correctamente! Estamos verificando su comprobante.
+        </p>
+
+        <!-- Bloque de Código de Pedido -->
+        @if (order()?.orderCode) {
+          <div class="bg-[#221638] p-3.5 rounded-xl border border-[#31204F] text-left">
+            <span class="block text-[10px] text-[#716A7D] uppercase tracking-wider font-bold mb-1">Código de Pedido</span>
+            <div class="flex items-center justify-between bg-[#1A0A2E] p-2.5 rounded-lg border border-[#31204F]">
+              <span class="font-mono text-sm font-bold text-[#FAF8FB]">{{ order()?.orderCode }}</span>
+              <button (click)="copyOrderCode()" class="text-[#716A7D] hover:text-[#C30364] text-xs font-semibold flex items-center gap-1 transition-colors">
+                <span>{{ orderCodeCopied() ? '¡Copiado!' : 'Copiar' }}</span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Bloque de Programa de Puntos (Puntos ganados) -->
+        <div class="bg-gradient-to-br from-[#1E1B4B] to-[#311042] p-3.5 rounded-xl border border-[#5A3D88] text-left text-xs text-[#FAF8FB] flex gap-2.5 items-center shadow-md">
+          <span class="text-xl">🪙</span>
+          <p class="leading-relaxed">
+            Acumularás <strong class="text-[#E8368A]">+{{ order()?.estimatedLoyaltyPoints || ((order()?.subtotalAmount || 0) * 10 | number:'1.0-0') }}</strong> puntos Zisify al recibir tu compra.
+          </p>
+        </div>
+
+        <!-- Bloque de Advertencia Informativa sobre Nivel de Cuenta y Yape (Al final de todo) -->
+        <div class="bg-[#2A081C] p-3.5 rounded-xl border border-[#C30364]/30 text-left text-xs text-[#FAF8FB] leading-relaxed flex gap-2.5 items-start">
+          <span class="text-base shrink-0">⚠️</span>
+          <p class="opacity-90">
+            El nivel actual de tu cuenta no te permite realizar pagos contra entrega, por lo que deberás realizar el pago de manera anticipada a través de nuestra cuenta de Yape.
+          </p>
+        </div>
+
+        <!-- CTA Principal Paso 3 -->
+        <button type="button" (click)="closeModal()"
+          class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] cursor-pointer mt-2">
+          Volver a Mis Pedidos
+        </button>
+
+      </div>
+    }
+
+  </div>
+</div>

@@ -16,12 +16,15 @@ import {
     OrderResponse
 } from '../../../../core/models/food-order.model';
 
+import { PaymentStepperModalComponent } from '../../../../shared/components/payment-stepper-modal/payment-stepper-modal.component';
+
 @Component({
     selector: 'app-checkout',
     standalone: true,
     imports: [
         CommonModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        PaymentStepperModalComponent
     ],
     templateUrl: './checkout.component.html',
     styleUrls: ['./checkout.component.scss']
@@ -487,6 +490,12 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         } catch (err) {
             console.error('Error al copiar celular:', err);
             alert('No se pudo copiar el número automáticamente. El número es 963434580');
+        }
+    }
+
+    onPaymentCompleted(updatedOrder: any) {
+        if (updatedOrder) {
+            this.confirmedOrder = updatedOrder;
         }
     }
 
