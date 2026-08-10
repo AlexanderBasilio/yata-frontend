@@ -1,17 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { AuthModalComponent } from '../../shared/components/auth-modal/auth-modal.component';
 
 @Component({
     selector: 'app-landing',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, RouterModule, AuthModalComponent],
     templateUrl: './landing.component.html',
     styleUrl: './landing.component.scss'
 })
-export class LandingComponent {
+export class LandingComponent implements OnInit {
+    private authService = inject(AuthService);
+
     // Cloudinary logo URL — replace with your actual URL when ready
     readonly logoUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png';
+    readonly astronautaUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786339691/astronauta-zisify-noBackground_aplw2o.png';
+
+    showAuthModal = signal<boolean>(false);
+    authModalTab = signal<'login' | 'register'>('login');
 
     stats = [
         { value: '+1k', label: 'Clientes activos' },
@@ -64,4 +72,26 @@ export class LandingComponent {
         { name: 'Nova', range: '20–50k pts', icon: '🌟', active: false },
         { name: 'Inti Mismo', range: '50k+ pts', icon: '✨', active: false },
     ];
+
+    ngOnInit(): void {
+        // Auto-modal DoorDash Style: Desplegar el modal al ingresar si no está logueado y no ha sido descartado en la sesión
+        if (!this.authService.isLoggedIn()) {
+            const dismissed = sessionStorage.getItem('zisify_auth_modal_dismissed');
+            if (!dismissed) {
+                setTimeout(() => {
+                    this.openAuthModal('login');
+                }, 600);
+            }
+        }
+    }
+
+    openAuthModal(tab: 'login' | 'register' = 'login'): void {
+        this.authModalTab.set(tab);
+        this.showAuthModal.set(true);
+    }
+
+    closeAuthModal(): void {
+        this.showAuthModal.set(false);
+        sessionStorage.setItem('zisify_auth_modal_dismissed', 'true');
+    }
 }
