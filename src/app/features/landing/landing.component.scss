@@ -25,13 +25,13 @@
 }
 
 .hero-section {
-    background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781974220/zisify-hero-section.png');
+    background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786487239/ChatGPT_Image_11_ago_2026_12_55_14_p.m._d7odgn.png');
     background-size: cover;
     background-repeat: no-repeat;
-    background-position: 35% center;
-    /* Mover a la derecha para mostrar al astronauta en móvil */
+    /* En móvil y tablet SIEMPRE mantener la posición a la izquierda para enfocar al astronauta */
+    background-position: left center;
 
-    @media (min-width: 768px) {
+    @media (min-width: 1024px) {
         background-position: center center;
     }
 }

@@ -7,13 +7,12 @@
 <!-- ─── NAVBAR ─────────────────────────────────────────────── -->
 <nav
     class="sticky top-0 z-50 bg-[rgba(26,10,46,0.90)] backdrop-blur-[12px] border-b border-[#31204F] px-6 py-4 flex items-center justify-between">
-    <!-- Logo -->
+    <!-- Logo con Texto ZISIFY en mayúsculas tipografía Inknut Antiqua Black -->
     <div class="flex items-center gap-3">
-        <img [src]="logoUrl" alt="Zisify"
-            class="h-8 w-auto object-contain"
-            onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
-        <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white tracking-wide hidden" id="logo-fallback">
-            Zisify
+        <img [src]="logoUrl" alt="Zisify Icon"
+            class="h-8 w-auto object-contain" />
+        <span class="font-['Inknut_Antiqua'] text-xl sm:text-2xl font-black text-white uppercase tracking-wider">
+            ZISIFY
         </span>
     </div>
 
@@ -45,8 +44,8 @@
 <!-- ─── HERO ──────────────────────────────────────────────── -->
 <section
     class="relative min-h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden px-6 py-20 hero-section">
-    <!-- Black overlay with transparency -->
-    <div class="absolute inset-0 bg-[#0D0518]/65 z-0"></div>
+    <!-- Overlay oscuro para reducir el brillo y maximizar legibilidad del texto -->
+    <div class="absolute inset-0 bg-[#0D0518]/70 z-0"></div>
 
     <!-- Background glows -->
     <div class="absolute inset-0 pointer-events-none z-10">
@@ -393,14 +392,14 @@
 <!-- ─── FOOTER ─────────────────────────────────────────────── -->
 <footer class="bg-[#1A0A2E] border-t border-[#31204F] px-6 py-14">
     <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 items-start">
-        <!-- Brand col -->
+        
+        <!-- Col 1: Brand (Desktop & Mobile) -->
         <div class="col-span-2 md:col-span-1">
-            <!-- Logo -->
-            <img [src]="logoUrl" alt="Zisify"
-                class="h-8 w-auto object-contain mb-4"
-                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-            <span class="font-['Inknut_Antiqua'] text-xl font-bold text-white hidden mb-4 block"
-                id="footer-logo-fallback">Zisify</span>
+            <!-- Logo con ZISIFY text -->
+            <div class="flex items-center gap-3 mb-4">
+                <img [src]="logoUrl" alt="Zisify" class="h-8 w-auto object-contain" />
+                <span class="font-['Inknut_Antiqua'] text-xl font-black text-white uppercase tracking-wider">ZISIFY</span>
+            </div>
             <p class="font-['Epilogue'] text-xs text-[#9D96A8] leading-relaxed mb-4">
                 La plataforma de delivery que te premia.<br>
                 Hecho con ❤️ en Perú.
@@ -428,71 +427,55 @@
             </div>
         </div>
 
-        <!-- Links: Plataforma -->
-        <div>
-            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Plataforma
-            </h5>
+        <!-- Col 2: Plataforma -->
+        <div class="col-span-1">
+            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Plataforma</h5>
             <ul class="space-y-2.5">
-                <li><a routerLink="/zisify" fragment="features"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a>
-                </li>
-                <li><a routerLink="/zisify" fragment="points"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a>
-                </li>
-                <li><a routerLink="/zisify" fragment="avatar"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a>
-                </li>
-                <li><a routerLink="/zisify" fragment="stats"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadística</a>
-                </li>
+                <li><a routerLink="/zisify" fragment="features" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a></li>
+                <li><a routerLink="/zisify" fragment="points" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a></li>
+                <li><a routerLink="/zisify" fragment="avatar" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a></li>
+                <li><a routerLink="/zisify" fragment="stats" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadística</a></li>
             </ul>
         </div>
 
-        <!-- Links: Empresa -->
-        <div>
+        <!-- Col 3: Empresa -->
+        <div class="col-span-1">
             <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Empresa</h5>
             <ul class="space-y-2.5">
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a>
-                </li>
+                <li><a href="#" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a></li>
                 <li class="space-y-1">
                     <span class="font-['Epilogue'] text-xs text-white font-semibold block">Únete a Zisify</span>
                     <ul class="pl-2.5 space-y-1.5 border-l border-[#31204F]">
-                        <li><a href="#"
-                                class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registra
-                                tu restaurante</a></li>
-                        <li><a href="#"
-                                class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registrarse
-                                como repartidor</a></li>
+                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registra tu restaurante</a></li>
+                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registrarse como repartidor</a></li>
                     </ul>
                 </li>
-                <li><span class="font-['Epilogue'] text-xs text-[#52465E] cursor-not-allowed">Trabaja con nosotros
-                        (Próximamente)</span></li>
+                <li><span class="font-['Epilogue'] text-xs text-[#52465E] cursor-not-allowed">Trabaja con nosotros (Próximamente)</span></li>
             </ul>
         </div>
 
-        <!-- Links: Soporte + Libro Reclamaciones -->
-        <div>
+        <!-- Col 4: Soporte en Desktop & Mobile. En Desktop contiene al Astronauta Zisify PNG debajo de Soporte -->
+        <div class="col-span-1">
             <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Soporte</h5>
             <ul class="space-y-2.5 mb-6">
-                <li><a href="#"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro
-                        de ayuda</a></li>
-                <li><a routerLink="/privacy"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a>
-                </li>
-                <li><a routerLink="/terms"
-                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos
-                        y Condiciones</a>
-                </li>
+                <li><a href="#" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro de ayuda</a></li>
+                <li><a routerLink="/privacy" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a></li>
+                <li><a routerLink="/terms" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos y Condiciones</a></li>
             </ul>
 
-            <!-- Libro de Reclamaciones -->
+            <!-- En Desktop: Astronauta Zisify PNG va AQUÍ en la columna 4 debajo de Soporte -->
+            <div class="hidden md:block pt-2">
+                <img [src]="astronautaUrl" alt="Astronauta Zisify" class="w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
+            </div>
+        </div>
+
+        <!-- Col 5: Libro de Reclamaciones en Desktop. En Mobile muestra Libro de Reclamaciones + Astronauta Zisify PNG a la derecha -->
+        <div class="col-span-1 flex flex-col justify-between space-y-4">
+            <!-- Libro de Reclamaciones (En Desktop va en la columna 5 donde estaba antes el astronauta) -->
             <div class="p-3 bg-[#221638] border border-[#31204F] rounded-2xl flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                     <span class="text-xl">📖</span>
-                    <span class="font-['Epilogue'] text-[10px] font-bold text-white uppercase tracking-wider">Libro de
-                        Reclamaciones</span>
+                    <span class="font-['Epilogue'] text-[10px] font-bold text-white uppercase tracking-wider">Libro de Reclamaciones</span>
                 </div>
                 <p class="font-['Epilogue'] text-[9px] text-[#9D96A8] leading-relaxed">
                     Conforme al Código de Protección al Consumidor, ingresa aquí tus quejas o reclamos.
@@ -502,12 +485,13 @@
                     Registrar queja o reclamo
                 </a>
             </div>
+
+            <!-- En Mobile: Astronauta Zisify PNG va AQUÍ en la columna 2 a la derecha de Soporte para llenar el hueco libre -->
+            <div class="block md:hidden pt-2 flex justify-center">
+                <img [src]="astronautaUrl" alt="Astronauta Zisify" class="w-36 sm:w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
+            </div>
         </div>
 
-        <!-- Astronauta Zisify PNG (Llena el espacio en blanco al lado de Soporte / Libro Reclamaciones) -->
-        <div class="col-span-2 md:col-span-1 flex items-center justify-center md:justify-end pt-2">
-            <img [src]="astronautaUrl" alt="Astronauta Zisify" class="w-44 sm:w-52 md:w-60 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
-        </div>
     </div>
 
     <!-- Bottom bar -->
