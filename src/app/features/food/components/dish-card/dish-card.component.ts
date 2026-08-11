@@ -12,7 +12,11 @@ import { Dish } from '../../../../core/models/restaurant.model';
 export class DishCardComponent {
   dish = input.required<Dish>();
 
-  // ✅ AGREGAR ESTOS COMPUTED SIGNALS
   modifiers = computed(() => this.dish().modifiers || []);
   requiredSelections = computed(() => this.dish().requiredSelections || []);
+
+  displayDescription = computed(() => {
+    const d = this.dish();
+    return d.ingredients || d.description || '';
+  });
 }

@@ -1,70 +1,67 @@
-<div class="dish-card bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow flex gap-3 p-3">
+<div class="dish-card bg-white rounded-3xl border border-gray-100 p-3 sm:p-4 flex flex-col justify-between h-full shadow-sm hover:shadow-md transition-all group cursor-pointer relative overflow-hidden">
 
-  <!-- Contenido del platillo (lado izquierdo) -->
-  <div class="dish-info flex-1 flex flex-col">
+  <!-- Imagen del platillo (Parte Superior) con esquinas redondeadas r-2xl -->
+  <div class="dish-image relative w-full h-36 sm:h-44 rounded-2xl overflow-hidden bg-gray-100 mb-3 shrink-0">
+    <img
+      [src]="dish().imageUrl"
+      [alt]="dish().name"
+      class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      loading="lazy">
 
-    <!-- Nombre del platillo -->
-    <h3 class="text-base font-bold text-gray-800 mb-1 line-clamp-2">
-      {{ dish().name }}
-    </h3>
-
-    <!-- Ingredientes/Descripción -->
-    <p class="text-xs text-gray-600 mb-2 line-clamp-2 flex-1">
-      {{ dish().ingredients }}
-    </p>
-
-    <!-- Precio -->
-    <div class="flex items-end justify-between mt-auto">
-      <div class="price">
-        <p class="text-lg font-bold text-gray-800">
-          S/ {{ dish().price.toFixed(2) }}
-        </p>
-      </div>
-
-      <!-- Indicadores adicionales -->
-      <div class="flex items-center gap-2 text-xs">
-        <!-- Tiene modificadores opcionales -->
-        @if (modifiers().length > 0) {
-          <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded-full font-semibold">
-            + Extras
-          </span>
-        }
-
-        <!-- Tiene selecciones requeridas -->
-        @if (requiredSelections().length > 0) {
-          <span class="bg-green-50 text-green-700 px-2 py-1 rounded-full font-semibold">
-            ✓ Incluye
-          </span>
-        }
-      </div>
-    </div>
-
-    <!-- No disponible overlay -->
+    <!-- Overlay No disponible -->
     @if (!dish().isAvailable) {
-      <div class="mt-2">
-        <span class="text-xs text-red-600 font-semibold bg-red-50 px-2 py-1 rounded">
+      <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center">
+        <span class="text-xs font-bold text-white bg-red-600 px-2.5 py-1 rounded-full shadow-md">
           No disponible
         </span>
       </div>
     }
   </div>
 
-  <!-- Imagen del platillo (lado derecho) -->
-  <div class="dish-image relative w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
-    <img
-      [src]="dish().imageUrl"
-      [alt]="dish().name"
-      class="w-full h-full object-cover"
-      loading="lazy">
-
-    <!-- Overlay si no está disponible -->
-    @if (!dish().isAvailable) {
-      <div class="absolute inset-0 bg-gray-900/50 flex items-center justify-center">
-        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-        </svg>
+  <!-- Info del Platillo -->
+  <div class="dish-info flex-1 flex flex-col justify-between">
+    <div>
+      <!-- Fila Nombre y Precio con Contenedor #C30364 -->
+      <div class="flex items-start justify-between gap-2 mb-1.5">
+        <h3 class="text-sm sm:text-base font-bold text-gray-900 line-clamp-1 leading-snug">
+          {{ dish().name }}
+        </h3>
+        <div class="price-badge bg-[#C30364] text-white font-bold text-xs sm:text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm shrink-0">
+          S/ {{ dish().price.toFixed(2) }}
+        </div>
       </div>
-    }
+
+      <!-- Descripción / Ingredientes del Platillo (como se muestra en la imagen 3) -->
+      <p class="text-[11px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
+        {{ displayDescription() || 'Delicioso platillo listo para disfrutar.' }}
+      </p>
+
+      <!-- Estados / Badges dentro de botones pill (Más vendido, Extras, Incluye) -->
+      <div class="flex flex-wrap gap-1.5 mb-3">
+        <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full">
+          🔥 Más vendido
+        </span>
+
+        @if (modifiers().length > 0) {
+          <span class="bg-blue-50 text-blue-700 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full">
+            + Extras
+          </span>
+        }
+
+        @if (requiredSelections().length > 0) {
+          <span class="bg-emerald-50 text-emerald-700 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full">
+            ✓ Incluye
+          </span>
+        }
+      </div>
+    </div>
+
+    <!-- Botón Inferior "Más detalles" con Fondo #C30364 y Texto Blanco -->
+    <button 
+      type="button"
+      class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white font-bold py-2 sm:py-2.5 rounded-2xl text-xs sm:text-sm shadow-md transition-all active:scale-[0.98] cursor-pointer mt-auto text-center">
+      Más detalles
+    </button>
   </div>
 
 </div>

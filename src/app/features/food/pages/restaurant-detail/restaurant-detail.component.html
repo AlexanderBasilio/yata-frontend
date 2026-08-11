@@ -98,7 +98,7 @@
         {{ category }}
       </h2>
 
-      <div class="flex flex-col gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
         @for (dish of filteredDishes(); track dish.id) {
         @if (dish.category === category) {
         <app-dish-card [dish]="dish" (click)="onDishClick(dish)" />
