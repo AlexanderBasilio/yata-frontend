@@ -74,14 +74,11 @@ export class LandingComponent implements OnInit {
     ];
 
     ngOnInit(): void {
-        // Auto-modal DoorDash Style: Desplegar el modal al ingresar si no está logueado y no ha sido descartado en la sesión
+        // Auto-modal DoorDash Style: Desplegar el modal central al ingresar/actualizar si el usuario no ha iniciado sesión
         if (!this.authService.isLoggedIn()) {
-            const dismissed = sessionStorage.getItem('zisify_auth_modal_dismissed');
-            if (!dismissed) {
-                setTimeout(() => {
-                    this.openAuthModal('login');
-                }, 600);
-            }
+            setTimeout(() => {
+                this.openAuthModal('login');
+            }, 400);
         }
     }
 

@@ -7,13 +7,13 @@
       <!-- User Info & Level -->
       <div class="flex items-center gap-4 relative z-10">
           <div class="relative">
-              <div class="w-16 h-16 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#C30364] p-1 flex items-center justify-center">
+              <div class="w-16 h-16 rounded-full bg-gradient-cta overflow-hidden border-2 border-[#C30364] p-0.5 flex items-center justify-center">
                   @if (loyaltyAccount.identityPath === 'KALLPA') {
-                      <span class="text-4xl">👦</span>
+                      <img [src]="menAvatarUrl" alt="Avatar Hombre" class="w-full h-full object-cover rounded-full" />
                   } @else if (loyaltyAccount.identityPath === 'SAMI') {
-                      <span class="text-4xl">👧</span>
+                      <img [src]="womenAvatarUrl" alt="Avatar Mujer" class="w-full h-full object-cover rounded-full" />
                   } @else {
-                      <span class="text-4xl">👤</span>
+                      <img [src]="menAvatarUrl" alt="Avatar Default" class="w-full h-full object-cover rounded-full" />
                   }
               </div>
               <div
@@ -66,8 +66,8 @@
                 <div class="grid grid-cols-2 gap-4">
                     <!-- Path KALLPA -->
                     <button (click)="choosePath('KALLPA')" class="bg-[#1A0A2E] hover:bg-[#25123E] border border-[#31204F] hover:border-[#C30364]/60 p-4 rounded-2xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105 active:scale-95 group">
-                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#D97706] to-[#F59E0B] flex items-center justify-center text-4xl mb-3 shadow-[0_4px_15px_rgba(217,119,6,0.3)] group-hover:scale-110 transition-transform">
-                            👦
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#D97706] to-[#F59E0B] flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_15px_rgba(217,119,6,0.3)] group-hover:scale-110 transition-transform p-0.5">
+                            <img [src]="menAvatarUrl" alt="Ruta Kallpa" class="w-full h-full object-cover rounded-full">
                         </div>
                         <h4 class="text-sm font-bold text-white mb-1">Ruta KALLPA</h4>
                         <span class="text-[9px] text-[#D97706] font-bold uppercase tracking-wider">Estética Fuerza</span>
@@ -76,8 +76,8 @@
 
                     <!-- Path SAMI -->
                     <button (click)="choosePath('SAMI')" class="bg-[#1A0A2E] hover:bg-[#25123E] border border-[#31204F] hover:border-[#E8368A]/60 p-4 rounded-2xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105 active:scale-95 group">
-                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#E8368A] to-[#C30364] flex items-center justify-center text-4xl mb-3 shadow-[0_4px_15px_rgba(232,54,138,0.3)] group-hover:scale-110 transition-transform">
-                            👧
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-[#E8368A] to-[#C30364] flex items-center justify-center overflow-hidden mb-3 shadow-[0_4px_15px_rgba(232,54,138,0.3)] group-hover:scale-110 transition-transform p-0.5">
+                            <img [src]="womenAvatarUrl" alt="Ruta Sami" class="w-full h-full object-cover rounded-full">
                         </div>
                         <h4 class="text-sm font-bold text-white mb-1">Ruta SAMI</h4>
                         <span class="text-[9px] text-[#E8368A] font-bold uppercase tracking-wider">Estética Fluidez</span>

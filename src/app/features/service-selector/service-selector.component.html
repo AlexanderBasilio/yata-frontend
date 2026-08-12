@@ -1,11 +1,11 @@
 <div class="min-h-screen bg-[#FAF8FB] font-sans pb-36">
 
   <!-- Encabezado Curvo Zisify -->
-  <div class="bg-[#1A0A2E] pt-12 pb-16 px-6 rounded-b-[2.5rem] shadow-xl relative w-full mx-auto text-[#FAF8FB]">
+  <div class="bg-[#1A0A2E] pt-4 pb-5 px-6 rounded-b-[2rem] shadow-xl relative w-full mx-auto text-[#FAF8FB]">
     <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-20"></div>
 
     <!-- Header de Ubicación Superior -->
-    <div class="flex items-center justify-between mb-6 border-b border-white/10 pb-4 cursor-pointer relative z-10" (click)="openAddressModal()">
+    <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2.5 cursor-pointer relative z-10" (click)="openAddressModal()">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,7 +34,7 @@
     </div>
 
     <!-- User Profile & Wallet -->
-    <div class="flex justify-between items-center mb-8 relative z-10">
+    <div class="flex justify-between items-center mb-3 relative z-10">
       <div class="flex items-center gap-3">
         <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png" alt="Zisify Logo"
           class="h-8 w-auto object-contain">
@@ -47,8 +47,8 @@
           <p class="text-[9px] text-[#9D96A8] uppercase tracking-wider font-semibold">Avatar Inicial</p>
           <p class="text-xs font-bold text-white">Sapa Inca</p>
         </div>
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-[#C30364] to-[#E8368A] flex items-center justify-center text-sm shadow-[0_0_10px_rgba(195,3,100,0.5)]">
-          ☀️
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-[#C30364] to-[#E8368A] overflow-hidden border border-[#C30364] shadow-[0_0_10px_rgba(195,3,100,0.5)] flex items-center justify-center">
+          <img [src]="menAvatarUrl" alt="Avatar Inicial" class="w-full h-full object-cover">
         </div>
       </div>
     </div>
@@ -71,7 +71,7 @@
   </div>
 
   <!-- Categories -->
-  <div class="pl-6 mt-8">
+  <div class="pl-6 mt-4">
     <div class="flex overflow-x-auto gap-4 pb-4 scrollbar-hide pr-6">
       @for (cat of categories; track cat.id) {
       <button (click)="selectCategory(cat)" class="flex flex-col items-center gap-2 min-w-[70px]"

@@ -28,6 +28,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private customerService = inject(CustomerService);
   private mapboxService = inject(MapboxService);
 
+  readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
+  readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
+
   customerName = 'Zisify';
   walletBalance = '950.000';
   ordersCount = 21;

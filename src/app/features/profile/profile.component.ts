@@ -14,6 +14,9 @@ export class ProfileComponent implements OnInit {
     private router = inject(Router);
     public authService = inject(AuthService);
 
+    readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
+    readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
+
     customerName = 'Usuario Zisify';
     pointsCount = 0;
     level = 'MAKI';
