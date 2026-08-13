@@ -21,23 +21,23 @@
   <!-- Info del Platillo -->
   <div class="dish-info flex-1 flex flex-col justify-between">
     <div>
-      <!-- Fila Nombre y Precio con Contenedor #C30364 -->
-      <div class="flex items-start justify-between gap-2 mb-1.5">
-        <h3 class="text-sm sm:text-base font-bold text-gray-900 line-clamp-1 leading-snug">
-          {{ dish().name }}
-        </h3>
-        <div class="price-badge bg-[#C30364] text-white font-bold text-xs sm:text-sm px-2.5 py-1 rounded-full whitespace-nowrap shadow-sm shrink-0">
-          S/ {{ dish().price.toFixed(2) }}
-        </div>
-      </div>
+      <!-- Nombre del Platillo ocupando ancho completo (hasta 2 líneas, altura fija para tarjetas homogéneas) -->
+      <h3 class="text-xs sm:text-sm font-bold text-gray-900 line-clamp-2 h-9 sm:h-10 leading-snug mb-1">
+        {{ dish().name }}
+      </h3>
 
-      <!-- Descripción / Ingredientes del Platillo (como se muestra en la imagen 3) -->
-      <p class="text-[11px] sm:text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3">
+      <!-- Descripción / Ingredientes del Platillo (altura fija para tarjetas homogéneas) -->
+      <p class="text-[10px] sm:text-[11px] text-gray-500 line-clamp-2 h-7 sm:h-8 leading-relaxed mb-2.5">
         {{ displayDescription() || 'Delicioso platillo listo para disfrutar.' }}
       </p>
 
-      <!-- Estados / Badges dentro de botones pill (Más vendido, Extras, Incluye) -->
-      <div class="flex flex-wrap gap-1.5 mb-3">
+      <!-- Fila de Badges: Precio + Estados (Más vendido, Extras, Incluye) -->
+      <div class="flex flex-wrap items-center gap-1.5 mb-3">
+        <!-- Badge de Precio con Contenedor #C30364 al costado de la barra de estados -->
+        <span class="price-badge bg-[#C30364] text-white font-bold text-xs px-2.5 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0">
+          S/ {{ dish().price.toFixed(2) }}
+        </span>
+
         <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full">
           🔥 Más vendido
         </span>

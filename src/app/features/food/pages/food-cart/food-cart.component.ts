@@ -23,6 +23,20 @@ export class FoodCartComponent implements OnInit {
   // Computed para saber si el carrito está vacío
   isEmpty = computed(() => !this.cart() || this.cart()!.items.length === 0);
 
+  serviceOptions = [
+    { id: 'food', name: 'Comida', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png', route: '/food/catalog', available: true },
+    { id: 'liquor', name: 'Licores', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779227373/delivery-categories/licuour.png', route: '', available: false },
+    { id: 'market', name: 'Mercado', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237655/delivery-categories/market.png', route: '', available: false },
+    { id: 'courier', name: 'Couriers', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237691/delivery-categories/courier.png', route: '', available: false },
+    { id: 'pharmacy', name: 'Farmacia', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237706/delivery-categories/farmacy.png', route: '', available: false }
+  ];
+
+  selectService(service: any) {
+    if (service.available && service.route) {
+      this.router.navigate([service.route]);
+    }
+  }
+
   // ✅ ACTUALIZADO: Solo subtotal (sin deliveryFee ni serviceFee)
   subtotal = computed(() => this.cart()?.subtotal || 0);
   total = computed(() => this.subtotal()); // El total es solo el subtotal

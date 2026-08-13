@@ -83,3 +83,15 @@ h3 {
 html {
     scroll-behavior: smooth;
 }
+
+/* Ocultar barra de scroll completamente en todos los navegadores (Webkit, Firefox, IE/Edge) */
+.scrollbar-hide {
+    -ms-overflow-style: none !important;  /* IE y Edge */
+    scrollbar-width: none !important;     /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}
