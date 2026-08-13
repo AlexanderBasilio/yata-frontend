@@ -131,6 +131,15 @@ export class RestaurantDetailComponent implements OnInit {
         this.categories.set(uniqueCategories);
 
         this.isLoadingDishes.set(false);
+
+        // Auto-abrir el modal del platillo si se pasa dishId en queryParams
+        const targetDishId = this.route.snapshot.queryParamMap.get('dishId');
+        if (targetDishId) {
+          const found = dishes.find(d => d.id === targetDishId);
+          if (found) {
+            setTimeout(() => this.onDishClick(found), 150);
+          }
+        }
       },
       error: (error) => {
         console.error('Error cargando platillos:', error);

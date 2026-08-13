@@ -70,9 +70,9 @@
     </div>
   </div>
 
-  <!-- Categories -->
+  <!-- Categorías de Servicios (Iconos) -->
   <div class="pl-6 mt-4">
-    <div class="flex overflow-x-auto gap-4 pb-4 scrollbar-hide pr-6">
+    <div class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide pr-6">
       @for (cat of categories; track cat.id) {
       <button (click)="selectCategory(cat)" class="flex flex-col items-center gap-2 min-w-[70px]"
         [class.opacity-50]="!cat.available">
@@ -91,43 +91,73 @@
     </div>
   </div>
 
-  <!-- Promotions Slider -->
-  <div class="mt-6 px-6">
-    <div class="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
-      @for (promo of promotions; track promo.id) {
-      <div
-        class="min-w-[280px] w-[280px] h-[160px] rounded-3xl overflow-hidden relative shadow-lg snap-center shrink-0">
-        <img [src]="promo.image" [alt]="promo.title" class="w-full h-full object-cover">
-        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-4">
-          <h3 class="text-white font-bold text-lg leading-tight">{{ promo.title }}</h3>
+  <!-- ─── CAROUSELS HORIZONTALES DE PLATILLOS POR CATEGORÍA ─────────────────── -->
+  <div class="space-y-8 mt-6">
+    @for (carousel of categoryCarousels; track carousel.title) {
+      <section class="category-carousel-section">
+        <!-- Título de la Categoría -->
+        <div class="px-6 mb-3 flex justify-between items-end">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-[#1A0A2E] tracking-tight">
+              {{ carousel.title }}
+            </h2>
+            @if (carousel.subtitle) {
+              <p class="text-xs text-[#9D96A8] mt-0.5">{{ carousel.subtitle }}</p>
+            }
+          </div>
         </div>
-      </div>
-      }
-    </div>
-    <!-- Indicadores de slide estáticos para la UI -->
-    <div class="flex justify-center gap-1.5 mt-2">
-      @for (promo of promotions; track promo.id) {
-      <div class="w-2 h-2 rounded-full" [class.bg-[#C30364]]="$first" [class.bg-gray-300]="!$first"></div>
-      }
-    </div>
-  </div>
 
-  <!-- Shortcuts -->
-  <div class="mt-8 px-6">
-    <div class="grid grid-cols-3 gap-3">
-      @for (shortcut of shortcuts; track shortcut.id) {
-      <button (click)="clickShortcut(shortcut)"
-        class="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 active:scale-95 transition-transform w-full">
-        <div
-          class="w-10 h-10 rounded-full bg-gradient-to-br from-[#FFF0F7] to-[#FFE0EF] flex items-center justify-center text-[#C30364]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" [attr.d]="shortcut.icon"></path>
-          </svg>
+        <!-- Slider Horizontal de Cards con Scroll Invisible (Optimizado Mobile & PC) -->
+        <div class="flex gap-4 overflow-x-auto pb-4 pt-1 px-6 scrollbar-hide snap-x snap-mandatory">
+          @for (dish of carousel.items; track dish.id) {
+            <div 
+              (click)="onDishCardClick(dish)"
+              class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
+              
+              <!-- Imagen Superior con Esquinas Redondeadas -->
+              <div class="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 mb-2 shrink-0 relative">
+                <img 
+                  [src]="dish.imageUrl" 
+                  [alt]="dish.name" 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                
+                @if (dish.badge) {
+                  <span class="absolute top-2 left-2 bg-[#1A0A2E]/80 backdrop-blur-md text-[#FF6DB5] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#C30364]/40">
+                    {{ dish.badge }}
+                  </span>
+                }
+              </div>
+
+              <!-- Info & Precio con badge #C30364 -->
+              <div class="flex-1 flex flex-col justify-between">
+                <div>
+                  <div class="flex items-start justify-between gap-1.5 mb-1">
+                    <h3 class="text-xs sm:text-sm font-bold text-gray-900 line-clamp-1 leading-snug">
+                      {{ dish.name }}
+                    </h3>
+                    <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0">
+                      S/ {{ dish.price.toFixed(2) }}
+                    </span>
+                  </div>
+
+                  <p class="text-[10px] sm:text-[11px] text-gray-500 line-clamp-2 leading-relaxed mb-3">
+                    {{ dish.description }}
+                  </p>
+                </div>
+
+                <!-- Botón Inferior "Más detalles" con Fondo #C30364 -->
+                <button 
+                  type="button" 
+                  class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white font-bold py-2 rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer text-center mt-auto">
+                  Más detalles
+                </button>
+              </div>
+
+            </div>
+          }
         </div>
-        <span class="text-[10px] font-bold text-gray-700 text-center leading-tight">{{ shortcut.name }}</span>
-      </button>
-      }
-    </div>
+      </section>
+    }
   </div>
 
   <!-- Modal de Selección de Direcciones (Direcciones guardadas) -->

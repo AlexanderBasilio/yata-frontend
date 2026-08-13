@@ -15,6 +15,23 @@ interface Category {
   available: boolean;
 }
 
+export interface CarouselDishItem {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  imageUrl: string;
+  badge?: string;
+  restaurantId: string;
+  restaurantName?: string;
+}
+
+export interface CategoryCarousel {
+  title: string;
+  subtitle?: string;
+  items: CarouselDishItem[];
+}
+
 @Component({
   selector: 'app-service-selector',
   standalone: true,
@@ -31,7 +48,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
   readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
 
-  customerName = 'Zisify';
+  customerName = 'ZISIFY';
   walletBalance = '950.000';
   ordersCount = 21;
   pointsCount = 56;
@@ -45,19 +62,280 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     { id: 'pharmacy', name: 'Farmacia', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779237706/delivery-categories/farmacy.png', route: '/pharmacy', available: false }
   ];
 
-  promotions = [
-    { id: 5, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233021/interface-assets/banner-hamburguesas.png', title: 'Envío gratis en tu 1er pedido' },
-    { id: 6, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233256/interface-assets/banner-pasta.png', title: 'Referidos - Próximamente' },
-    { id: 1, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232976/interface-assets/banner-polleria.png', title: 'Pollerías - Próximamente' },
-    { id: 2, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233021/interface-assets/banner-hamburguesas.png', title: 'Hamburguesas - Próximamente' },
-    { id: 3, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779233256/interface-assets/banner-pasta.png', title: 'Pastas - Próximamente' },
-    { id: 4, image: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1779232461/interface-assets/banner-chifa.png', title: 'Chifas - Próximamente' }
-  ];
-
-  shortcuts = [
-    { id: 'last_order', name: 'Último Pedido', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', route: '/orders' },
-    { id: 'favorites', name: 'Favoritos', icon: 'M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z', route: '/favorites' },
-    { id: 'promos', name: 'Cupones', icon: 'M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z', route: '/vouchers' }
+  // ✅ 7 CATEGORÍAS SOLICITADAS CON CAROUSELS HORIZONTALES
+  categoryCarousels: CategoryCarousel[] = [
+    {
+      title: 'Prueba nuevas opciones',
+      subtitle: 'Novedades gastronómicas seleccionadas para ti',
+      items: [
+        {
+          id: 'dish-001',
+          name: 'Tacu Tacu con Lomo Saltado',
+          price: 50.60,
+          description: 'Tacu Tacu crujiente de frijoles con lomo fino salteado al wok',
+          imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',
+          badge: 'NUEVO',
+          restaurantId: 'rest-001',
+          restaurantName: 'El Rico Puerto 82'
+        },
+        {
+          id: 'dish-002',
+          name: 'Chicharrón Criollo Especial',
+          price: 38.00,
+          description: 'Chicharrón doradito con camote frito y salsa criolla de la casa',
+          imageUrl: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&q=80',
+          badge: 'RECOMENDADO',
+          restaurantId: 'rest-001',
+          restaurantName: 'El Rico Puerto 82'
+        },
+        {
+          id: 'dish-003',
+          name: 'Causa Rellena de Langostinos',
+          price: 32.50,
+          description: 'Masa de papa amarilla con langostinos frescos y salsa golf artesanal',
+          imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+          badge: 'DELUXE',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        },
+        {
+          id: 'dish-004',
+          name: 'Arroz con Mariscos Gratinado',
+          price: 42.00,
+          description: 'Arroz sazonado al pisco y salteado con mariscos mixtos del Pacífico',
+          imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80',
+          badge: 'DESTACADO',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        }
+      ]
+    },
+    {
+      title: 'Tendencia ahora',
+      subtitle: 'Los platillos más pedidos por la comunidad en vivo',
+      items: [
+        {
+          id: 'dish-101',
+          name: 'Alita King Broaster',
+          price: 10.20,
+          description: 'Alita + Papas + Arroz + Ensalada + Cremas ilimitadas',
+          imageUrl: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80',
+          badge: '🔥 TENDENCIA',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        },
+        {
+          id: 'dish-102',
+          name: 'Pierna King Crujiente',
+          price: 11.20,
+          description: 'Pierna frita crocante con receta secreta de especias',
+          imageUrl: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&q=80',
+          badge: 'TOP 1',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        },
+        {
+          id: 'dish-103',
+          name: 'Burger Royale Zisify',
+          price: 24.90,
+          description: 'Doble carne smashed, queso cheddar derretido y tocino crocante',
+          imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80',
+          badge: 'POPULAR',
+          restaurantId: 'rest-003',
+          restaurantName: 'Burger Lab'
+        },
+        {
+          id: 'dish-104',
+          name: 'Salchipapa Magna',
+          price: 18.50,
+          description: 'Papas nativas fritas, frankfurter artesanal y huevo montado',
+          imageUrl: 'https://images.unsplash.com/photo-1585109649139-366815a0d713?w=400&q=80',
+          badge: 'IMPERDIBLE',
+          restaurantId: 'rest-003',
+          restaurantName: 'Burger Lab'
+        }
+      ]
+    },
+    {
+      title: 'Vuelve a pedir',
+      subtitle: 'Tus platos favoritos de siempre listos en 1 clic',
+      items: [
+        {
+          id: 'dish-201',
+          name: '1/4 Pollo a la Brasa Tradicional',
+          price: 19.90,
+          description: 'Pollo jugoso al carbón con papas onduladas y crema de ají',
+          imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&q=80',
+          badge: 'FAVORITO',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        },
+        {
+          id: 'dish-202',
+          name: 'Ceviche Mixto Clásico',
+          price: 35.00,
+          description: 'Pesca del día con calamar, choclo desgranado y camote dulce',
+          imageUrl: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=400&q=80',
+          badge: 'REPETIR',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        },
+        {
+          id: 'dish-203',
+          name: 'Entrepierna King',
+          price: 12.50,
+          description: 'Entrepierna horneada y crujiente con papas fritas doradas',
+          imageUrl: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&q=80',
+          badge: 'FAVORITO',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        }
+      ]
+    },
+    {
+      title: 'Cerca de ti',
+      subtitle: 'Opciones de restaurantes en tu zona con delivery ultra rápido',
+      items: [
+        {
+          id: 'dish-301',
+          name: 'Chaufa de Mariscos al Wok',
+          price: 29.90,
+          description: 'Arroz chaufa salteado a fuego vivo con mariscos y cebollita china',
+          imageUrl: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=400&q=80',
+          badge: 'CERCA (15 MIN)',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        },
+        {
+          id: 'dish-302',
+          name: 'Sopa Criolla Reconfortante',
+          price: 22.00,
+          description: 'Caldo denso de res con fideos, tostadas y huevo escalfado',
+          imageUrl: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80',
+          badge: 'CALIENTE',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        },
+        {
+          id: 'dish-303',
+          name: 'Mostrito Especial Zisify',
+          price: 26.50,
+          description: '1/4 Pollo a la brasa + Arroz chaufa salteado + Papas crujientes',
+          imageUrl: 'https://images.unsplash.com/photo-1514944288352-fffac99f0bdf?w=400&q=80',
+          badge: 'SUPER COMBO',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        }
+      ]
+    },
+    {
+      title: 'Ofertas del día',
+      subtitle: 'Descuentos exclusivos y combos imperdibles hoy',
+      items: [
+        {
+          id: 'dish-401',
+          name: 'Combo Familiar Broaster',
+          price: 49.90,
+          description: '8 Piezas de pollo broaster + Papa familiar + Gaseosa 1.5L',
+          imageUrl: 'https://images.unsplash.com/photo-1569058242253-92a9c755a0ec?w=400&q=80',
+          badge: 'OFERTA -30%',
+          restaurantId: 'rest-001',
+          restaurantName: 'Broast King'
+        },
+        {
+          id: 'dish-402',
+          name: 'Dúo Hamburguesas Clásicas',
+          price: 29.90,
+          description: '2 Hamburguesas artesanales con queso + Papas familiares',
+          imageUrl: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&q=80',
+          badge: '2x1 PROMO',
+          restaurantId: 'rest-003',
+          restaurantName: 'Burger Lab'
+        },
+        {
+          id: 'dish-403',
+          name: 'Combo Marino Parrillero',
+          price: 55.00,
+          description: 'Ceviche Mixto + Chicharrón de Pescado + Arroz con Mariscos',
+          imageUrl: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=400&q=80',
+          badge: 'OFERTAZAS',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        }
+      ]
+    },
+    {
+      title: 'Los mejor calificados',
+      subtitle: 'Platos con puntuación 5.0 estrellas por clientes',
+      items: [
+        {
+          id: 'dish-501',
+          name: 'Lomo Saltado Gourmet 5.0★',
+          price: 48.00,
+          description: 'Lomo fino de res salteado con cebollas, tomates y papas nativas',
+          imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',
+          badge: '⭐ 5.0 (500+)',
+          restaurantId: 'rest-001',
+          restaurantName: 'El Rico Puerto 82'
+        },
+        {
+          id: 'dish-502',
+          name: 'Ceviche de Lenguado Puro',
+          price: 42.00,
+          description: 'Lenguado silvestre bañado en leche de tigre de ají mochero',
+          imageUrl: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=400&q=80',
+          badge: '⭐ 4.9 (320+)',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        },
+        {
+          id: 'dish-503',
+          name: 'Chicken Club Sandwich',
+          price: 21.00,
+          description: 'Triple piso con pechuga deshilachada, tocino ahumado y huevo',
+          imageUrl: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=400&q=80',
+          badge: '⭐ 4.9 (210+)',
+          restaurantId: 'rest-003',
+          restaurantName: 'Burger Lab'
+        }
+      ]
+    },
+    {
+      title: 'Para compartir',
+      subtitle: 'Porciones generosas ideales para grupo o familia',
+      items: [
+        {
+          id: 'dish-601',
+          name: 'Fuente Marina Familiar',
+          price: 79.90,
+          description: 'Ceviche Mixto + Arroz con Mariscos + Chicharrón de Pescado + Causa',
+          imageUrl: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=400&q=80',
+          badge: 'FAMILIAR (4-5 PERSONAS)',
+          restaurantId: 'rest-002',
+          restaurantName: 'La Mar Cevichería'
+        },
+        {
+          id: 'dish-602',
+          name: 'Rueda de Bocaditos Criollos',
+          price: 65.00,
+          description: 'Anticuchos + Chicharrones + Tamalitos + Tequeños crujientes',
+          imageUrl: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80',
+          badge: 'COMBO GRUPAL',
+          restaurantId: 'rest-001',
+          restaurantName: 'El Rico Puerto 82'
+        },
+        {
+          id: 'dish-603',
+          name: 'Mega Tabla de Hamburguesas',
+          price: 59.90,
+          description: '4 Mini burgers variadas + Papas nativas + 4 salsas de la casa',
+          imageUrl: 'https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=400&q=80',
+          badge: 'PARTY BOX',
+          restaurantId: 'rest-003',
+          restaurantName: 'Burger Lab'
+        }
+      ]
+    }
   ];
 
   // Address signals & state
@@ -84,7 +362,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.customerName = 'Zisify';
+    this.customerName = 'ZISIFY';
     this.loadCustomerProfileAndAddresses();
   }
 
@@ -100,9 +378,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
       next: (profile) => {
         const addresses = profile.addresses || [];
         this.customerAddresses.set(addresses);
-        
+
         let active = forceNewest ? null : this.customerService.getActiveAddress();
-        
+
         if (forceNewest && addresses.length > 0) {
           active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
           console.log('🔥 [Sync Backend] Dirección seleccionada tras guardar:', active);
@@ -128,12 +406,13 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     }
   }
 
-  clickShortcut(shortcut: any) {
-    if (shortcut.id === 'last_order') {
-      this.router.navigate([shortcut.route]);
-    } else {
-      alert(`${shortcut.name} estará disponible próximamente.`);
-    }
+  // ✅ NAVEGACIÓN DIRECTA AL PLATILLO EN EL RESTAURANTE Y APERTURA DE MODAL
+  onDishCardClick(dish: CarouselDishItem) {
+    const restId = dish.restaurantId || 'rest-001';
+    // Enrutamiento directo: primero a comida (ServiceSelector) -> restaurante -> abre modal del platillo
+    this.router.navigate(['/food/restaurant', restId], {
+      queryParams: { dishId: dish.id }
+    });
   }
 
   selectAddress(address: Address) {
@@ -187,8 +466,8 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
           draggable: true,
           color: '#22C55E' // Green color for location marker
         })
-        .setLngLat(defaultCenter)
-        .addTo(this.map!);
+          .setLngLat(defaultCenter)
+          .addTo(this.map!);
 
         // Initial coords update
         this.updateCoords(defaultCenter[1], defaultCenter[0]);
@@ -230,9 +509,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
         (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
-          
+
           this.updateCoords(lat, lng);
-          
+
           if (this.map && this.marker) {
             this.map.flyTo({ center: [lng, lat], zoom: 16 });
             this.marker.setLngLat([lng, lat]);
@@ -282,7 +561,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.customerService.addAddress(userId, newAddr).subscribe({
       next: (response) => {
         console.log('✅ POST Exitoso. Respuesta recibida del backend:', response);
-        
+
         let savedAddrWithZone = response && response.zoneId ? response : null;
 
         if (savedAddrWithZone) {
@@ -294,7 +573,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
         // Reset fields
         this.newStreetAddress.set('');
         this.newReference.set('');
-        
+
         this.showAddAddressModal.set(false);
         this.showAddressModal.set(false);
         this.isSavingAddress.set(false);
