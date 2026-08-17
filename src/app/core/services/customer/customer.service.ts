@@ -73,7 +73,38 @@ export class CustomerService {
         return this.http.post<any>(url, address).pipe(
             tap(res => {
                 console.group('📥 [POST RESPONSE] Respuesta del servidor al crear dirección');
-                console.log('✅ Status 201/200 OK. Body devuelto:', res);
+                console.log('✅ Status 201 Created. Body devuelto:', res);
+                console.groupEnd();
+            })
+        );
+    }
+
+    updateAddress(userId: string, addressId: number, address: Address): Observable<any> {
+        const url = `${this.platformUrl}/api/v1/customers/${userId}/addresses/${addressId}`;
+        console.group('🚀 [PUT HTTP] Actualizando Dirección Existente en Backend');
+        console.log('🌐 Endpoint URL:', url);
+        console.log('🔑 Address ID:', addressId);
+        console.log('📦 Payload JSON enviado:', JSON.stringify(address, null, 2));
+        console.groupEnd();
+        return this.http.put<any>(url, address).pipe(
+            tap(res => {
+                console.group('📥 [PUT RESPONSE] Respuesta del servidor al editar dirección');
+                console.log('✅ Status 200 OK. Body devuelto:', res);
+                console.groupEnd();
+            })
+        );
+    }
+
+    deleteAddress(userId: string, addressId: number): Observable<any> {
+        const url = `${this.platformUrl}/api/v1/customers/${userId}/addresses/${addressId}`;
+        console.group('🗑️ [DELETE HTTP] Eliminando Dirección en Backend');
+        console.log('🌐 Endpoint URL:', url);
+        console.log('🔑 Address ID a eliminar:', addressId);
+        console.groupEnd();
+        return this.http.delete<any>(url).pipe(
+            tap(res => {
+                console.group('📥 [DELETE RESPONSE] Respuesta del servidor al eliminar dirección');
+                console.log('✅ Status 204 No Content / OK');
                 console.groupEnd();
             })
         );

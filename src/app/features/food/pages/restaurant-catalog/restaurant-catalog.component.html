@@ -137,30 +137,63 @@
             </div>
           } @else {
             <div class="space-y-3">
-              @for (addr of customerAddresses(); track addr.streetAddress) {
+              @for (addr of customerAddresses(); track (addr.id || addr.streetAddress)) {
                 <div 
                   (click)="selectAddress(addr)"
-                  class="flex items-center justify-between p-4 border rounded-2xl cursor-pointer transition-all hover:bg-gray-50 animate-fade-in"
-                  [class.border-green-500]="currentAddress()?.streetAddress === addr.streetAddress"
-                  [class.border-gray-200]="currentAddress()?.streetAddress !== addr.streetAddress">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                  class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer transition-all hover:bg-gray-50 animate-fade-in group relative"
+                  [class.border-green-500]="currentAddress()?.id === addr.id || currentAddress()?.streetAddress === addr.streetAddress"
+                  [class.border-gray-200]="currentAddress()?.id !== addr.id && currentAddress()?.streetAddress !== addr.streetAddress">
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 shrink-0">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
                       </svg>
                     </div>
-                    <div>
-                      <p class="font-bold text-gray-800">{{ addr.label }}</p>
-                      <p class="text-xs text-gray-500">{{ addr.streetAddress }}, {{ addr.city }}</p>
+                    <div class="truncate pr-2">
+                      <div class="flex items-center gap-2">
+                        <p class="font-bold text-gray-800 text-sm truncate">{{ addr.label }}</p>
+                        @if (addr.isDefault) {
+                          <span class="text-[9px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded-md">Principal</span>
+                        }
+                      </div>
+                      <p class="text-xs text-gray-500 truncate">{{ addr.streetAddress }}, {{ addr.city }}</p>
+                      @if (addr.reference) {
+                        <p class="text-[10px] text-gray-400 truncate">Ref: {{ addr.reference }}</p>
+                      }
                     </div>
                   </div>
-                  @if (currentAddress()?.streetAddress === addr.streetAddress) {
-                    <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white">
+
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <!-- Botón Editar ✏️ -->
+                    <button 
+                      type="button"
+                      (click)="openEditAddressModal(addr, $event)"
+                      title="Editar Dirección"
+                      class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
-                    </div>
-                  }
+                    </button>
+
+                    <!-- Botón Eliminar 🗑️ -->
+                    <button 
+                      type="button"
+                      (click)="deleteAddress(addr, $event)"
+                      title="Eliminar Dirección"
+                      class="w-8 h-8 rounded-full bg-red-50 text-red-600 hover:bg-red-100 flex items-center justify-center transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+
+                    @if (currentAddress()?.id === addr.id || currentAddress()?.streetAddress === addr.streetAddress) {
+                      <div class="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white ml-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                    }
+                  </div>
                 </div>
               }
             </div>
@@ -187,7 +220,7 @@
     </div>
   }
 
-  <!-- Modal de Registro de Nueva Dirección (Con Mapa Mapbox) -->
+  <!-- Modal de Registro / Edición de Dirección (Con Mapa Mapbox) -->
   @if (showAddAddressModal()) {
     <div class="fixed inset-0 bg-[#0D0518]/80 backdrop-blur-sm z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white rounded-t-3xl sm:rounded-3xl w-full h-[92vh] sm:h-auto sm:max-h-[90vh] sm:max-w-md p-5 shadow-2xl flex flex-col overflow-hidden">
@@ -200,7 +233,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
               </svg>
             </button>
-            <h2 class="text-lg font-bold text-gray-800">Nueva Dirección</h2>
+            <h2 class="text-lg font-bold text-gray-800">
+              {{ editingAddressId() ? 'Editar Dirección' : 'Nueva Dirección' }}
+            </h2>
           </div>
         </div>
 
@@ -293,7 +328,7 @@
               @if (isSavingAddress()) {
                 <span class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
               } @else {
-                Guardar Dirección
+                {{ editingAddressId() ? 'Guardar Cambios' : 'Guardar Dirección' }}
               }
             </button>
           </div>

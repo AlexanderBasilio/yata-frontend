@@ -37,6 +37,7 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
   customerZoneId = signal<string>('HYO_GRID_120_84'); // Default fallback
   showAddressModal = signal(false);
   showAddAddressModal = signal(false);
+  editingAddressId = signal<number | null>(null);
 
   // New Address Form signals
   newLabel = signal('Casa');
@@ -191,15 +192,65 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
   }
 
   openAddAddressModal() {
+    this.editingAddressId.set(null);
+    this.newLabel.set('Casa');
+    this.newStreetAddress.set('');
+    this.newReference.set('');
+    this.newCity.set('HUANCAYO');
+    this.newLatitude.set(-12.04637);
+    this.newLongitude.set(-75.21128);
     this.showAddAddressModal.set(true);
     setTimeout(() => {
       this.initMap();
     }, 100);
   }
 
+  openEditAddressModal(address: Address, event?: MouseEvent) {
+    event?.stopPropagation();
+    if (!address.id) return;
+
+    this.editingAddressId.set(address.id);
+    this.newLabel.set(address.label || 'Casa');
+    this.newStreetAddress.set(address.streetAddress || '');
+    this.newReference.set(address.reference || '');
+    this.newCity.set(address.city || 'HUANCAYO');
+    this.newLatitude.set(address.latitude || -12.04637);
+    this.newLongitude.set(address.longitude || -75.21128);
+    this.showAddAddressModal.set(true);
+    setTimeout(() => {
+      this.initMap(address.latitude, address.longitude);
+    }, 100);
+  }
+
   closeAddAddressModal() {
     this.showAddAddressModal.set(false);
+    this.editingAddressId.set(null);
     this.cleanupMap();
+  }
+
+  deleteAddress(address: Address, event?: MouseEvent) {
+    event?.stopPropagation();
+    const userId = this.authService.getUserId();
+    if (!userId || !address.id) return;
+
+    const confirmDelete = confirm(`¿Estás seguro de eliminar la dirección "${address.label}" (${address.streetAddress})?`);
+    if (!confirmDelete) return;
+
+    this.customerService.deleteAddress(userId, address.id).subscribe({
+      next: () => {
+        console.log('✅ [Catalog DELETE HTTP Exitoso] Dirección eliminada');
+        
+        if (this.currentAddress()?.id === address.id) {
+          localStorage.removeItem('zisify_active_address');
+        }
+
+        this.loadCustomerProfileAndAddresses(true);
+      },
+      error: (err) => {
+        console.error('❌ Error eliminando dirección en catálogo:', err);
+        alert('Hubo un error al eliminar la dirección.');
+      }
+    });
   }
 
   private cleanupMap() {
@@ -213,14 +264,15 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
     }
   }
 
-  private initMap() {
+  private initMap(initialLat?: number, initialLng?: number) {
     this.cleanupMap();
 
-    // Default to Huancayo center
-    const defaultCenter: [number, number] = [-75.21128, -12.04637];
+    const lat = initialLat || -12.04637;
+    const lng = initialLng || -75.21128;
+    const defaultCenter: [number, number] = [lng, lat];
 
     try {
-      this.map = this.mapboxService.createMap('addressCatalogMap', defaultCenter, 14);
+      this.map = this.mapboxService.createMap('addressCatalogMap', defaultCenter, 15);
 
       this.map.on('load', () => {
         this.marker = new mapboxgl.Marker({
@@ -230,16 +282,14 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
         .setLngLat(defaultCenter)
         .addTo(this.map!);
 
-        // Initial coords update
-        this.updateCoords(defaultCenter[1], defaultCenter[0]);
+        this.newLatitude.set(lat);
+        this.newLongitude.set(lng);
 
-        // Dragend handler
         this.marker.on('dragend', () => {
           const lngLat = this.marker!.getLngLat();
           this.updateCoords(lngLat.lat, lngLat.lng);
         });
 
-        // Click on map moves marker
         this.map!.on('click', (e) => {
           this.marker!.setLngLat([e.lngLat.lng, e.lngLat.lat]);
           this.updateCoords(e.lngLat.lat, e.lngLat.lng);
@@ -301,7 +351,7 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
 
     this.isSavingAddress.set(true);
 
-    const newAddr: Address = {
+    const addressData: Address = {
       label: this.newLabel(),
       streetAddress: this.newStreetAddress().trim(),
       reference: this.newReference().trim() || undefined,
@@ -311,40 +361,63 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
       isDefault: true
     };
 
-    console.log('📍 [Catalog] Coordenadas seleccionadas para guardar:', {
-      lat: newAddr.latitude,
-      lng: newAddr.longitude,
-      city: newAddr.city,
-      address: newAddr.streetAddress
-    });
+    const addressId = this.editingAddressId();
 
-    this.customerService.addAddress(userId, newAddr).subscribe({
-      next: (response) => {
-        console.log('✅ [Catalog] POST Exitoso:', response);
-        
-        let savedAddrWithZone = response && response.zoneId ? response : null;
+    if (addressId) {
+      console.log('📍 [Catalog PUT] Editando dirección ID:', addressId);
+      this.customerService.updateAddress(userId, addressId, addressData).subscribe({
+        next: (response) => {
+          console.log('✅ [Catalog PUT] Exitoso:', response);
+          
+          let savedAddrWithZone = response && response.zoneId ? response : null;
 
-        if (savedAddrWithZone) {
-          console.log('🎯 [Catalog] ZoneID devuelto directamente:', savedAddrWithZone.zoneId);
-          this.currentAddress.set(savedAddrWithZone);
-          this.customerService.setActiveAddress(savedAddrWithZone);
+          if (savedAddrWithZone) {
+            this.currentAddress.set(savedAddrWithZone);
+            this.customerService.setActiveAddress(savedAddrWithZone);
+          }
+
+          this.newStreetAddress.set('');
+          this.newReference.set('');
+          this.editingAddressId.set(null);
+          this.showAddAddressModal.set(false);
+          this.showAddressModal.set(false);
+          this.isSavingAddress.set(false);
+
+          this.loadCustomerProfileAndAddresses(true);
+        },
+        error: (err) => {
+          console.error('❌ Error editando dirección en catálogo:', err);
+          alert('Hubo un error al actualizar la dirección.');
+          this.isSavingAddress.set(false);
         }
+      });
+    } else {
+      console.log('📍 [Catalog POST] Creando nueva dirección');
+      this.customerService.addAddress(userId, addressData).subscribe({
+        next: (response) => {
+          console.log('✅ [Catalog POST] Exitoso:', response);
+          
+          let savedAddrWithZone = response && response.zoneId ? response : null;
 
-        this.newStreetAddress.set('');
-        this.newReference.set('');
-        
-        this.showAddAddressModal.set(false);
-        this.showAddressModal.set(false);
-        this.isSavingAddress.set(false);
+          if (savedAddrWithZone) {
+            this.currentAddress.set(savedAddrWithZone);
+            this.customerService.setActiveAddress(savedAddrWithZone);
+          }
 
-        // Refresh and auto-select
-        this.loadCustomerProfileAndAddresses(true);
-      },
-      error: (err) => {
-        console.error('❌ Error guardando dirección en catálogo:', err);
-        alert('Hubo un error al registrar la dirección.');
-        this.isSavingAddress.set(false);
-      }
-    });
+          this.newStreetAddress.set('');
+          this.newReference.set('');
+          this.showAddAddressModal.set(false);
+          this.showAddressModal.set(false);
+          this.isSavingAddress.set(false);
+
+          this.loadCustomerProfileAndAddresses(true);
+        },
+        error: (err) => {
+          console.error('❌ Error guardando dirección en catálogo:', err);
+          alert('Hubo un error al registrar la dirección.');
+          this.isSavingAddress.set(false);
+        }
+      });
+    }
   }
 }
