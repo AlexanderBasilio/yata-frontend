@@ -32,32 +32,59 @@ export class ProfileComponent implements OnInit {
     maxMonthlyOrders = computed(() => {
         const orders = this.monthlyOrders();
         if (!orders || orders.length === 0) return 1;
-        return Math.max(...orders.map(o => o.orders), 1);
+        const max = Math.max(...orders.map(o => o.orders || 0));
+        return max > 0 ? max : 1;
+    });
+
+    totalMonthlyOrdersCount = computed(() => {
+        const orders = this.monthlyOrders();
+        if (!orders || orders.length === 0) return 0;
+        return orders.reduce((sum, item) => sum + (item.orders || 0), 0);
+    });
+
+    favoriteDishesList = computed(() => {
+        const stats = this.profileStats();
+        if (stats && stats.favoriteDishes && stats.favoriteDishes.length > 0) {
+            return stats.favoriteDishes;
+        }
+        return [
+            { name: 'Chaufa de Cerdo', ordersCount: 1 }
+        ];
     });
 
     currentFavoriteDish = computed(() => {
+        const list = this.favoriteDishesList();
+        if (!list || list.length === 0) return null;
+        const index = Math.abs(this.activeDishIndex()) % list.length;
+        return list[index];
+    });
+
+    favoriteCategoriesList = computed(() => {
         const stats = this.profileStats();
-        if (!stats || !stats.favoriteDishes || stats.favoriteDishes.length === 0) return null;
-        const index = this.activeDishIndex() % stats.favoriteDishes.length;
-        return stats.favoriteDishes[index];
+        if (stats && stats.favoriteCategories && stats.favoriteCategories.length > 0) {
+            return stats.favoriteCategories;
+        }
+        return [
+            { category: 'Chifa y Fusión', percentage: 100 }
+        ];
     });
 
     conicGradientStyle = computed(() => {
-        const stats = this.profileStats();
-        if (!stats || !stats.favoriteCategories || stats.favoriteCategories.length === 0) {
-            return 'background: conic-gradient(#8B5CF6 0% 43%, #F59E0B 43% 71%, #E8368A 71% 94%, #64748B 94% 100%)';
-        }
-
-        const colors = ['#8B5CF6', '#F59E0B', '#E8368A', '#06B6D4', '#64748B'];
+        const list = this.favoriteCategoriesList();
+        const colors = ['#C30364', '#8B5CF6', '#F59E0B', '#06B6D4', '#64748B'];
         let currentPct = 0;
         const stops: string[] = [];
 
-        stats.favoriteCategories.forEach((cat, idx) => {
-            const nextPct = currentPct + cat.percentage;
+        list.forEach((cat, idx) => {
+            const nextPct = Math.min(100, currentPct + cat.percentage);
             const color = colors[idx % colors.length];
             stops.push(`${color} ${currentPct.toFixed(1)}% ${nextPct.toFixed(1)}%`);
             currentPct = nextPct;
         });
+
+        if (currentPct < 100) {
+            stops.push(`#31204F ${currentPct.toFixed(1)}% 100%`);
+        }
 
         return `background: conic-gradient(${stops.join(', ')})`;
     });
@@ -153,8 +180,15 @@ export class ProfileComponent implements OnInit {
     }
 
     getCategoryColor(index: number): string {
-        const colors = ['#8B5CF6', '#F59E0B', '#E8368A', '#06B6D4', '#64748B'];
+        const colors = ['#C30364', '#8B5CF6', '#F59E0B', '#06B6D4', '#64748B'];
         return colors[index % colors.length];
+    }
+
+    getBarHeightPercentage(orders: number): number {
+        if (!orders || orders === 0) return 6;
+        const max = this.maxMonthlyOrders();
+        const pct = (orders / max) * 100;
+        return Math.max(16, Math.min(100, pct));
     }
 
     loadUnlockedDeities() {
