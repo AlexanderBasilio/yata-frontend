@@ -33,6 +33,42 @@ export interface CustomerProfileStatsResponse {
   favoriteCategories: FavoriteCategory[];
 }
 
+export interface ContactInfoDto {
+  email: string;
+  phoneNumber: string;
+  phoneVerified: boolean;
+  memberSince: string;
+  membershipSeniority: string;
+}
+
+export interface CustomerAddressDto {
+  id?: number;
+  label: string;
+  streetAddress: string;
+  reference?: string;
+  city: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault: boolean;
+  zoneId?: string;
+}
+
+export interface AddressRequest {
+  label: string;
+  streetAddress: string;
+  reference?: string;
+  city: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault: boolean;
+  zoneId?: string;
+}
+
+export interface CustomerPersonalInfoResponse {
+  contactInfo: ContactInfoDto;
+  addresses: CustomerAddressDto[];
+}
+
 export interface MonthlyOrdersResponse {
   month: string; // e.g. "2026-03"
   orders: number;
@@ -96,6 +132,90 @@ export class CustomerAnalyticsService {
     );
   }
 
+  /**
+   * GET /api/portal/customer/profile/personal-info
+   * Devuelve información de contacto y direcciones del cliente.
+   */
+  getPersonalInfo(): Observable<CustomerPersonalInfoResponse> {
+    const url = `${this.portalBaseUrl}/api/portal/customer/profile/personal-info`;
+    console.group('👤 [GET HTTP] Consultando Información Personal y Direcciones');
+    console.log('🌐 Endpoint URL:', url);
+    console.groupEnd();
+
+    return this.http.get<CustomerPersonalInfoResponse>(url).pipe(
+      tap(res => {
+        console.group('📥 [GET RESPONSE] Información personal recibida');
+        console.log('📦 JSON:', res);
+        console.groupEnd();
+      }),
+      catchError(err => {
+        console.warn('⚠️ No se pudo obtener info personal del portal, usando fallback:', err);
+        return of(this.getMockPersonalInfo());
+      })
+    );
+  }
+
+  /**
+   * POST /api/portal/customer/profile/addresses
+   * Registra una nueva dirección en el portal.
+   */
+  addAddress(request: AddressRequest): Observable<any> {
+    const url = `${this.portalBaseUrl}/api/portal/customer/profile/addresses`;
+    console.group('🏠 [POST HTTP] Guardando Nueva Dirección en Portal');
+    console.log('🌐 Endpoint URL:', url);
+    console.log('📦 Payload JSON:', request);
+    console.groupEnd();
+
+    return this.http.post<any>(url, request).pipe(
+      tap(res => {
+        console.group('📥 [POST RESPONSE] Dirección creada en portal');
+        console.log('✅ Status 201 Created:', res);
+        console.groupEnd();
+      })
+    );
+  }
+
+  /**
+   * PUT /api/portal/customer/profile/addresses/{addressId}
+   * Edita una dirección existente en el portal.
+   */
+  updateAddress(addressId: number, request: AddressRequest): Observable<any> {
+    const url = `${this.portalBaseUrl}/api/portal/customer/profile/addresses/${addressId}`;
+    console.group('🏠 [PUT HTTP] Editando Dirección en Portal');
+    console.log('🌐 Endpoint URL:', url);
+    console.log('🔑 Address ID:', addressId);
+    console.log('📦 Payload JSON:', request);
+    console.groupEnd();
+
+    return this.http.put<any>(url, request).pipe(
+      tap(res => {
+        console.group('📥 [PUT RESPONSE] Dirección actualizada en portal');
+        console.log('✅ Status 200 OK:', res);
+        console.groupEnd();
+      })
+    );
+  }
+
+  /**
+   * DELETE /api/portal/customer/profile/addresses/{addressId}
+   * Elimina una dirección en el portal.
+   */
+  deleteAddress(addressId: number): Observable<any> {
+    const url = `${this.portalBaseUrl}/api/portal/customer/profile/addresses/${addressId}`;
+    console.group('🗑️ [DELETE HTTP] Eliminando Dirección en Portal');
+    console.log('🌐 Endpoint URL:', url);
+    console.log('🔑 Address ID:', addressId);
+    console.groupEnd();
+
+    return this.http.delete<any>(url).pipe(
+      tap(res => {
+        console.group('📥 [DELETE RESPONSE] Dirección eliminada en portal');
+        console.log('✅ Status 204 No Content:', res);
+        console.groupEnd();
+      })
+    );
+  }
+
   // Fallback seguro con los datos exactos del contrato
   private getMockStats(): CustomerProfileStatsResponse {
     return {
@@ -133,5 +253,52 @@ export class CustomerAnalyticsService {
       { month: '2026-07', orders: 22 },
       { month: '2026-08', orders: 12 }
     ];
+  }
+
+  private getMockPersonalInfo(): CustomerPersonalInfoResponse {
+    return {
+      contactInfo: {
+        email: 'minaya13m.s@gmail.com',
+        phoneNumber: '+51 987 654 321',
+        phoneVerified: true,
+        memberSince: 'Enero 2026',
+        membershipSeniority: 'Antigüedad'
+      },
+      addresses: [
+        {
+          id: 101,
+          label: 'Casa',
+          streetAddress: 'Av. Benavides 1240',
+          reference: 'Apto 402',
+          city: 'Miraflores',
+          latitude: -12.1211,
+          longitude: -77.0298,
+          isDefault: true,
+          zoneId: 'miraflores-zone-1'
+        },
+        {
+          id: 102,
+          label: 'Trabajo',
+          streetAddress: 'Jr. de la Unión 300',
+          reference: 'Oficina 501',
+          city: 'Cercado de Lima',
+          latitude: -12.0453,
+          longitude: -77.0311,
+          isDefault: false,
+          zoneId: 'lima-centro-zone-2'
+        },
+        {
+          id: 103,
+          label: 'Gym',
+          streetAddress: 'Av. Larco 740',
+          reference: 'Piso 2',
+          city: 'Miraflores',
+          latitude: -12.1255,
+          longitude: -77.0288,
+          isDefault: false,
+          zoneId: 'miraflores-zone-2'
+        }
+      ]
+    };
   }
 }

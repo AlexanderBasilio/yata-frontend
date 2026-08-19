@@ -39,6 +39,14 @@ body {
     background-color: var(--color-zisify-white);
 }
 
+.font-epilogue {
+    font-family: 'Epilogue', var(--font-epilogue), system-ui, -apple-system, sans-serif !important;
+}
+
+.font-inknut {
+    font-family: 'Inknut Antiqua', var(--font-inknut), serif !important;
+}
+
 h1,
 h2,
 h3 {

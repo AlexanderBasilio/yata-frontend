@@ -1,20 +1,31 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, LoyaltyAccountResponse, DeityOption } from '../../core/services/auth/auth.service';
-import { CustomerAnalyticsService, CustomerProfileStatsResponse, MonthlyOrdersResponse } from '../../core/services/customer/customer-analytics.service';
+import { 
+    CustomerAnalyticsService, 
+    CustomerProfileStatsResponse, 
+    MonthlyOrdersResponse, 
+    CustomerPersonalInfoResponse, 
+    CustomerAddressDto, 
+    AddressRequest 
+} from '../../core/services/customer/customer-analytics.service';
+import { MapboxService } from '../../core/services/location/mapbox.service';
+import mapboxgl from 'mapbox-gl';
 
 @Component({
     selector: 'app-profile',
     standalone: true,
-    imports: [CommonModule, RouterModule],
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './profile.component.html',
     styleUrl: './profile.component.scss'
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
     private router = inject(Router);
     public authService = inject(AuthService);
     public analyticsService = inject(CustomerAnalyticsService);
+    private mapboxService = inject(MapboxService);
 
     readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
     readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
@@ -22,6 +33,26 @@ export class ProfileComponent implements OnInit {
     customerName = 'Usuario Zisify';
     pointsCount = 0;
     level = 'MAKI';
+
+    // Personal Info & Addresses Signals
+    personalInfo = signal<CustomerPersonalInfoResponse | null>(null);
+    contactInfo = computed(() => this.personalInfo()?.contactInfo || null);
+    addresses = computed(() => this.personalInfo()?.addresses || []);
+
+    // Address Modal & Mapbox signals
+    showAddAddressModal = signal(false);
+    editingAddressId = signal<number | null>(null);
+    newLabel = signal('Casa');
+    newStreetAddress = signal('');
+    newReference = signal('');
+    newCity = signal('MIRAFLORES');
+    newLatitude = signal(-12.1211);
+    newLongitude = signal(-77.0298);
+    newIsDefault = signal(false);
+    isSavingAddress = signal(false);
+
+    private map?: mapboxgl.Map;
+    private marker?: mapboxgl.Marker;
 
     // Analytics Signals
     profileStats = signal<CustomerProfileStatsResponse | null>(null);
@@ -145,6 +176,21 @@ export class ProfileComponent implements OnInit {
         this.loadUnlockedDeities();
         this.loadLoyaltyStatus();
         this.loadAnalyticsData();
+        this.loadPersonalInfo();
+    }
+
+    ngOnDestroy() {
+        this.cleanupMap();
+    }
+
+    loadPersonalInfo() {
+        this.analyticsService.getPersonalInfo().subscribe({
+            next: (info) => {
+                if (info) {
+                    this.personalInfo.set(info);
+                }
+            }
+        });
     }
 
     loadAnalyticsData() {
@@ -163,6 +209,211 @@ export class ProfileComponent implements OnInit {
                 }
             }
         });
+    }
+
+    // Modal & Address Management Methods
+    openAddAddressModal() {
+        this.editingAddressId.set(null);
+        this.newLabel.set('Casa');
+        this.newStreetAddress.set('');
+        this.newReference.set('');
+        this.newCity.set('MIRAFLORES');
+        this.newIsDefault.set(this.addresses().length === 0);
+        this.showAddAddressModal.set(true);
+
+        setTimeout(() => {
+            this.initMap(-12.1211, -77.0298);
+        }, 150);
+    }
+
+    openEditAddressModal(address: CustomerAddressDto) {
+        this.editingAddressId.set(address.id || null);
+        this.newLabel.set(address.label || 'Casa');
+        this.newStreetAddress.set(address.streetAddress || '');
+        this.newReference.set(address.reference || '');
+        this.newCity.set(address.city || 'MIRAFLORES');
+        this.newIsDefault.set(address.isDefault || false);
+        this.showAddAddressModal.set(true);
+
+        const lat = address.latitude || -12.1211;
+        const lng = address.longitude || -77.0298;
+
+        setTimeout(() => {
+            this.initMap(lat, lng);
+        }, 150);
+    }
+
+    closeAddAddressModal() {
+        this.showAddAddressModal.set(false);
+        this.editingAddressId.set(null);
+        this.cleanupMap();
+    }
+
+    deleteAddress(address: CustomerAddressDto) {
+        if (!address.id) return;
+        const confirmDelete = confirm(`¿Estás seguro de que deseas eliminar la dirección "${address.label}"?`);
+        if (!confirmDelete) return;
+
+        this.analyticsService.deleteAddress(address.id).subscribe({
+            next: () => {
+                this.loadPersonalInfo();
+            },
+            error: (err) => {
+                console.error('Error eliminando dirección:', err);
+                // Si falla en backend, actualizar el estado local
+                const current = this.personalInfo();
+                if (current) {
+                    this.personalInfo.set({
+                        ...current,
+                        addresses: current.addresses.filter(a => a.id !== address.id)
+                    });
+                }
+            }
+        });
+    }
+
+    saveAddress() {
+        if (!this.newStreetAddress().trim()) {
+            alert('Por favor ingresa la dirección de entrega.');
+            return;
+        }
+
+        this.isSavingAddress.set(true);
+
+        const payload: AddressRequest = {
+            label: this.newLabel(),
+            streetAddress: this.newStreetAddress(),
+            reference: this.newReference(),
+            city: this.newCity(),
+            latitude: this.newLatitude(),
+            longitude: this.newLongitude(),
+            isDefault: this.newIsDefault(),
+            zoneId: `zone-${this.newCity().toLowerCase().replace(/\s+/g, '-')}`
+        };
+
+        const editId = this.editingAddressId();
+        const request$ = editId 
+            ? this.analyticsService.updateAddress(editId, payload)
+            : this.analyticsService.addAddress(payload);
+
+        request$.subscribe({
+            next: () => {
+                this.isSavingAddress.set(false);
+                this.closeAddAddressModal();
+                this.loadPersonalInfo();
+            },
+            error: (err) => {
+                console.warn('⚠️ Guardado en portal con fallback local:', err);
+                this.isSavingAddress.set(false);
+                // Fallback reactivo local
+                const current = this.personalInfo();
+                if (current) {
+                    let updatedAddresses = [...current.addresses];
+                    if (editId) {
+                        updatedAddresses = updatedAddresses.map(a => a.id === editId ? { ...payload, id: editId } : a);
+                    } else {
+                        updatedAddresses.push({ ...payload, id: Date.now() });
+                    }
+                    this.personalInfo.set({
+                        ...current,
+                        addresses: updatedAddresses
+                    });
+                }
+                this.closeAddAddressModal();
+            }
+        });
+    }
+
+    private cleanupMap() {
+        if (this.marker) {
+            this.marker.remove();
+            this.marker = undefined;
+        }
+        if (this.map) {
+            this.map.remove();
+            this.map = undefined;
+        }
+    }
+
+    private initMap(initialLat?: number, initialLng?: number) {
+        this.cleanupMap();
+
+        const lat = initialLat || -12.1211;
+        const lng = initialLng || -77.0298;
+        const defaultCenter: [number, number] = [lng, lat];
+
+        try {
+            this.map = this.mapboxService.createMap('profileAddressMap', defaultCenter, 15);
+
+            this.map.on('load', () => {
+                this.marker = new mapboxgl.Marker({
+                    draggable: true,
+                    color: '#C30364'
+                })
+                    .setLngLat(defaultCenter)
+                    .addTo(this.map!);
+
+                this.newLatitude.set(lat);
+                this.newLongitude.set(lng);
+
+                this.marker.on('dragend', () => {
+                    const lngLat = this.marker!.getLngLat();
+                    this.updateCoords(lngLat.lat, lngLat.lng);
+                });
+
+                this.map!.on('click', (e) => {
+                    this.marker!.setLngLat([e.lngLat.lng, e.lngLat.lat]);
+                    this.updateCoords(e.lngLat.lat, e.lngLat.lng);
+                });
+            });
+        } catch (e) {
+            console.error('Error inicializando mapa Mapbox en perfil:', e);
+        }
+    }
+
+    async updateCoords(lat: number, lng: number) {
+        this.newLatitude.set(lat);
+        this.newLongitude.set(lng);
+
+        const location = await this.mapboxService.reverseGeocode(lng, lat);
+        if (location) {
+            this.newStreetAddress.set(location.address);
+            if (location.city) {
+                this.newCity.set(location.city.toUpperCase());
+            }
+        }
+    }
+
+    useCurrentLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    this.updateCoords(lat, lng);
+
+                    if (this.map && this.marker) {
+                        this.map.flyTo({ center: [lng, lat], zoom: 16 });
+                        this.marker.setLngLat([lng, lat]);
+                    }
+                },
+                (error) => {
+                    console.error('Error obteniendo ubicación actual:', error);
+                    alert('No se pudo acceder a tu ubicación actual. Selecciona el punto en el mapa.');
+                }
+            );
+        } else {
+            alert('Tu navegador no soporta geolocalización.');
+        }
+    }
+
+    getAddressIcon(label: string): string {
+        const l = (label || '').toLowerCase();
+        if (l.includes('casa') || l.includes('home')) return '🏠';
+        if (l.includes('trabajo') || l.includes('oficina') || l.includes('work')) return '🏢';
+        if (l.includes('gym') || l.includes('gimnasio') || l.includes('deporte')) return '🏃';
+        return '📍';
     }
 
     selectFavoriteDish(index: number) {
