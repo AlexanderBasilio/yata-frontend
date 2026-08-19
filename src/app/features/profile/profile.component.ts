@@ -1,7 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, LoyaltyAccountResponse, DeityOption } from '../../core/services/auth/auth.service';
+import { CustomerAnalyticsService, CustomerProfileStatsResponse, MonthlyOrdersResponse } from '../../core/services/customer/customer-analytics.service';
 
 @Component({
     selector: 'app-profile',
@@ -13,6 +14,7 @@ import { AuthService, LoyaltyAccountResponse, DeityOption } from '../../core/ser
 export class ProfileComponent implements OnInit {
     private router = inject(Router);
     public authService = inject(AuthService);
+    public analyticsService = inject(CustomerAnalyticsService);
 
     readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
     readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
@@ -20,6 +22,45 @@ export class ProfileComponent implements OnInit {
     customerName = 'Usuario Zisify';
     pointsCount = 0;
     level = 'MAKI';
+
+    // Analytics Signals
+    profileStats = signal<CustomerProfileStatsResponse | null>(null);
+    monthlyOrders = signal<MonthlyOrdersResponse[]>([]);
+    activeDishIndex = signal<number>(0);
+
+    // Dynamic computations for charts & carousel
+    maxMonthlyOrders = computed(() => {
+        const orders = this.monthlyOrders();
+        if (!orders || orders.length === 0) return 1;
+        return Math.max(...orders.map(o => o.orders), 1);
+    });
+
+    currentFavoriteDish = computed(() => {
+        const stats = this.profileStats();
+        if (!stats || !stats.favoriteDishes || stats.favoriteDishes.length === 0) return null;
+        const index = this.activeDishIndex() % stats.favoriteDishes.length;
+        return stats.favoriteDishes[index];
+    });
+
+    conicGradientStyle = computed(() => {
+        const stats = this.profileStats();
+        if (!stats || !stats.favoriteCategories || stats.favoriteCategories.length === 0) {
+            return 'background: conic-gradient(#8B5CF6 0% 43%, #F59E0B 43% 71%, #E8368A 71% 94%, #64748B 94% 100%)';
+        }
+
+        const colors = ['#8B5CF6', '#F59E0B', '#E8368A', '#06B6D4', '#64748B'];
+        let currentPct = 0;
+        const stops: string[] = [];
+
+        stats.favoriteCategories.forEach((cat, idx) => {
+            const nextPct = currentPct + cat.percentage;
+            const color = colors[idx % colors.length];
+            stops.push(`${color} ${currentPct.toFixed(1)}% ${nextPct.toFixed(1)}%`);
+            currentPct = nextPct;
+        });
+
+        return `background: conic-gradient(${stops.join(', ')})`;
+    });
 
     // Gamification properties
     loyaltyAccount: LoyaltyAccountResponse = {
@@ -58,7 +99,7 @@ export class ProfileComponent implements OnInit {
         { code: 'ILLAPA', name: "Illapa (El Rayo)", description: "Señor de los cielos y tormentas.", benefit: "Descuentos en sopas y bebidas calientes si llueve.", category: 'GRANDE', icon: '⚡' }
     ];
 
-    // Activity Stats
+    // Activity Stats (Fallbacks)
     totalOrders = 87;
     monthlySpending = 2340;
     averageRating = 4.8;
@@ -76,6 +117,44 @@ export class ProfileComponent implements OnInit {
 
         this.loadUnlockedDeities();
         this.loadLoyaltyStatus();
+        this.loadAnalyticsData();
+    }
+
+    loadAnalyticsData() {
+        this.analyticsService.getProfileStats().subscribe({
+            next: (stats) => {
+                if (stats) {
+                    this.profileStats.set(stats);
+                }
+            }
+        });
+
+        this.analyticsService.getMonthlyOrders(6).subscribe({
+            next: (orders) => {
+                if (orders && orders.length > 0) {
+                    this.monthlyOrders.set(orders);
+                }
+            }
+        });
+    }
+
+    selectFavoriteDish(index: number) {
+        this.activeDishIndex.set(index);
+    }
+
+    getMonthAbbreviation(monthStr: string): string {
+        if (!monthStr) return '';
+        // monthStr is formatted e.g. "2026-03"
+        const parts = monthStr.split('-');
+        if (parts.length < 2) return monthStr;
+        const monthNum = parseInt(parts[1], 10);
+        const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Set', 'Oct', 'Nov', 'Dic'];
+        return monthNames[(monthNum - 1) % 12] || monthStr;
+    }
+
+    getCategoryColor(index: number): string {
+        const colors = ['#8B5CF6', '#F59E0B', '#E8368A', '#06B6D4', '#64748B'];
+        return colors[index % colors.length];
     }
 
     loadUnlockedDeities() {
