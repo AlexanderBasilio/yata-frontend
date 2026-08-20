@@ -5,6 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { CustomerService, Address } from '../../core/services/customer/customer.service';
 import { MapboxService } from '../../core/services/location/mapbox.service';
+import { 
+  PortalCatalogService, 
+  HomeShortcutSectionsResponse, 
+  RestaurantSummaryResponse, 
+  DishHomeSummaryResponse 
+} from '../../core/services/restaurant/portal-catalog.service';
 import mapboxgl from 'mapbox-gl';
 
 interface Category {
@@ -44,6 +50,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private customerService = inject(CustomerService);
   private mapboxService = inject(MapboxService);
+  private portalCatalogService = inject(PortalCatalogService);
 
   readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
   readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
@@ -53,6 +60,10 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   ordersCount = 21;
   pointsCount = 56;
   referidosCount = 3;
+
+  // Home Shortcuts Signal (4 Secciones: Cerca de ti, Prueba nuevas opciones, Tendencias, Vuelve a pedir)
+  homeShortcuts = signal<HomeShortcutSectionsResponse | null>(null);
+  isLoadingShortcuts = signal(false);
 
   categories: Category[] = [
     { id: 'food', name: 'Comida', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png', route: '/food/catalog', available: true },
@@ -365,15 +376,39 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.customerName = 'ZISIFY';
     this.loadCustomerProfileAndAddresses();
+    this.loadHomeShortcuts();
   }
 
   ngOnDestroy() {
     this.cleanupMap();
   }
 
+  loadHomeShortcuts() {
+    const activeAddr = this.currentAddress() || this.customerService.getActiveAddress();
+    const zoneId = activeAddr?.zoneId || 'HYO_GRID_120_84';
+    const userId = this.authService.getUserId() || undefined;
+
+    this.isLoadingShortcuts.set(true);
+    this.portalCatalogService.getHomeShortcuts(zoneId, userId).subscribe({
+      next: (data) => {
+        if (data) {
+          this.homeShortcuts.set(data);
+        }
+        this.isLoadingShortcuts.set(false);
+      },
+      error: (err) => {
+        console.error('❌ Error cargando atajos de inicio (home-shortcuts):', err);
+        this.isLoadingShortcuts.set(false);
+      }
+    });
+  }
+
   loadCustomerProfileAndAddresses(forceNewest: boolean = false) {
     const userId = this.authService.getUserId();
-    if (!userId) return;
+    if (!userId) {
+      this.loadHomeShortcuts();
+      return;
+    }
 
     this.customerService.getCustomerProfile(userId).subscribe({
       next: (profile) => {
@@ -394,9 +429,12 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
           this.currentAddress.set(active);
           this.customerService.setActiveAddress(active);
         }
+
+        this.loadHomeShortcuts();
       },
       error: (err) => {
         console.error('❌ Error cargando perfil de cliente en inicio:', err);
+        this.loadHomeShortcuts();
       }
     });
   }
@@ -407,19 +445,40 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ✅ NAVEGACIÓN DIRECTA AL PLATILLO EN EL RESTAURANTE Y APERTURA DE MODAL
-  onDishCardClick(dish: CarouselDishItem) {
+  // ✅ NAVEGACIÓN A RESTAURANTE (Secciones: Cerca de ti, Prueba nuevas opciones)
+  onRestaurantCardClick(restaurant: RestaurantSummaryResponse) {
+    if (!restaurant.id) return;
+    this.router.navigate(['/food/restaurant', restaurant.id]);
+  }
+
+  // ✅ NAVEGACIÓN DIRECTA AL PLATILLO EN EL RESTAURANTE Y APERTURA DE MODAL (Secciones: Vuelve a pedir, Tendencias)
+  onDishCardClick(dish: DishHomeSummaryResponse | CarouselDishItem) {
     const restId = dish.restaurantId || 'rest-001';
-    // Enrutamiento directo: primero a comida (ServiceSelector) -> restaurante -> abre modal del platillo
+    // Enrutamiento directo: restaurante -> abre modal del platillo
     this.router.navigate(['/food/restaurant', restId], {
       queryParams: { dishId: dish.id }
     });
+  }
+
+  getRestaurantBadge(rest: RestaurantSummaryResponse, sectionType: 'nearby' | 'newOptions'): string {
+    if (sectionType === 'nearby') {
+      return `CERCA (${rest.preparationTime || 15} MIN)`;
+    }
+    return 'NUEVO';
+  }
+
+  getDishBadge(dish: DishHomeSummaryResponse, sectionType: 'reorder' | 'trending'): string {
+    if (sectionType === 'reorder') {
+      return 'FAVORITO';
+    }
+    return '🔥 TENDENCIA';
   }
 
   selectAddress(address: Address) {
     this.currentAddress.set(address);
     this.customerService.setActiveAddress(address);
     this.showAddressModal.set(false);
+    this.loadHomeShortcuts();
   }
 
   openAddressModal() {
