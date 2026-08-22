@@ -145,7 +145,8 @@ export class FoodCartComponent implements OnInit {
       return;
     }
 
-    // TODO: Navegar a la página de checkout/orden
+    // Limpiamos cualquier rastro de pedido previo antes de iniciar checkout
+    localStorage.removeItem('yata_confirmed_order');
     this.router.navigate(['/food/checkout']);
   }
 

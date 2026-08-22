@@ -126,16 +126,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        // Recuperar estado de pedido confirmado si existe (para persistencia)
-        const savedOrder = localStorage.getItem('yata_confirmed_order');
-        if (savedOrder) {
-            this.confirmedOrder = JSON.parse(savedOrder);
-            if (this.confirmedOrder) {
-                this.clientName.set(this.confirmedOrder.clientName);
-                this.currentStep = 3;
-                return; // Si hay pedido confirmado, saltamos validaciones de carrito
-            }
-        }
+        this.cartId = localStorage.getItem('yata_cart_id');
+        // Siempre limpiamos estados previos para que un nuevo checkout empiece limpio en el Paso 1
+        localStorage.removeItem('yata_confirmed_order');
+        this.currentStep = 1;
+        this.confirmedOrder = null;
 
         if (!this.cartId) {
             alert('No hay un carrito activo');
@@ -177,6 +172,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         if (this.map) {
             this.map.remove();
         }
+        localStorage.removeItem('yata_confirmed_order');
     }
 
     // --- MAPBOX LOGIC ---
@@ -442,9 +438,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
         this.orderService.confirmOrder(request).subscribe({
             next: (res) => {
-                // Éxito: Guardamos en localstorage y pasamos al paso 3
+                // Éxito: Establecemos el pedido confirmado y pasamos al paso 3
                 this.confirmedOrder = res;
-                localStorage.setItem('yata_confirmed_order', JSON.stringify(res));
+                localStorage.removeItem('yata_confirmed_order');
 
                 // Limpiamos el carrito local para evitar que se use de nuevo
                 localStorage.removeItem('yata_cart_id');
@@ -454,8 +450,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                 this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error(err);
-                alert('Error al crear el pedido.');
+                console.error('❌ Error creando pedido:', err);
+                alert('Error al crear el pedido: ' + (err?.error?.message || 'Revisa los datos e intenta nuevamente'));
                 this.isProcessingOrder = false;
             }
         });
@@ -497,11 +493,14 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         if (updatedOrder) {
             this.confirmedOrder = updatedOrder;
         }
+        localStorage.removeItem('yata_confirmed_order');
+        localStorage.removeItem('yata_cart_id');
     }
 
     goHome() {
-        // Limpiamos la orden guardada al salir explícitamente, para permitir nuevas compras
+        // Limpiamos cualquier rastro de la orden anterior y vamos al historial de pedidos
         localStorage.removeItem('yata_confirmed_order');
-        this.router.navigate(['/food']);
+        localStorage.removeItem('yata_cart_id');
+        this.router.navigate(['/orders']);
     }
 }
