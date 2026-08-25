@@ -55,6 +55,10 @@ export interface Dish {
   description: string;
   ingredients: string;
   price: number;
+  listPrice?: number; // 🎯 NUEVO: Precio tachado
+  defaultPackagingFee?: number; // 🎯 NUEVO: Costo por táper
+  defaultCutleryFee?: number; // 🎯 NUEVO: Costo por cubiertos
+  allowCutleryRequest?: boolean; // 🎯 NUEVO: Si restaurante ofrece cubiertos
   imageUrl: string;
   category: string;
   isAvailable: boolean;
@@ -68,6 +72,7 @@ export interface DishSummary {
   id: string;
   name: string;
   price: number;
+  listPrice?: number; // 🎯 NUEVO: Para mostrar "S/ 25.00" tachado en el menú
   imageUrl: string;
   isAvailable: boolean; // Backend usa isAvailable
   category: string;

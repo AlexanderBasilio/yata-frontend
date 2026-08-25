@@ -27,20 +27,32 @@
         {{ dish().name }}
       </h2>
 
-      <p class="text-base text-[#9D96A8] mb-4">
-        {{ dish().description }}
-      </p>
+      @if (dish().description) {
+        <div class="mb-4">
+          <p class="text-xs font-bold text-[#FAF8FB] mb-1">Descripción del plato</p>
+          <p class="text-sm text-[#9D96A8] leading-relaxed">
+            {{ dish().description }}
+          </p>
+        </div>
+      }
 
-      <p class="text-sm text-[#716A7D] mb-4">
-        <strong class="text-[#FAF8FB]">Ingredientes:</strong> {{ dish().ingredients }}
-      </p>
-
-      <!-- Precio base -->
+      <!-- Precio unitario y costo de tápers -->
       <div class="bg-[#1A0A2E] rounded-xl p-4 mb-6 border border-[#31204F]">
-        <p class="text-sm text-[#9D96A8]">Precio base</p>
+        <p class="text-xs text-[#9D96A8] font-medium">Precio unitario (sin adicionales)</p>
         <p class="text-2xl font-bold text-[#C30364]">
           S/ {{ dish().price.toFixed(2) }}
         </p>
+
+        <!-- Detalle de tápers / empaque -->
+        @if ((dish().defaultPackagingFee || 0) > 0) {
+          <p class="text-xs text-[#9D96A8] mt-2 pt-2 border-t border-[#31204F]">
+            Costo adicional por tápers/empaque: <strong class="text-[#FAF8FB]">S/ {{ dish().defaultPackagingFee!.toFixed(2) }}</strong>
+          </p>
+        } @else {
+          <p class="text-xs text-[#16A34A] mt-2 pt-2 border-t border-[#31204F]">
+            Los tápers vienen incluídos en el precio unitario
+          </p>
+        }
       </div>
 
       <!-- Contador de cantidad del plato principal -->
@@ -195,6 +207,28 @@
           {{ specialInstructions().length }}/200
         </p>
       </div>
+
+      <!-- Sección de Cubiertos (si el restaurante ofrece cubiertos) -->
+      @if (dish().allowCutleryRequest) {
+        <div class="cutlery-section bg-[#1A0A2E] border border-[#31204F] rounded-xl p-4 mb-6">
+          <label class="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" 
+                   [checked]="includeCutlery()" 
+                   (change)="includeCutlery.set(!includeCutlery())"
+                   class="w-5 h-5 accent-[#C30364] rounded cursor-pointer">
+            <span class="text-sm font-semibold text-[#FAF8FB]">
+              @if ((dish().defaultCutleryFee || 0) > 0) {
+                ¿Deseas incluir cubiertos? (+S/ {{ dish().defaultCutleryFee!.toFixed(2) }})
+              } @else {
+                Solicitar cubiertos desechables (no tiene costo adicional).
+              }
+            </span>
+          </label>
+          <p class="text-[11px] text-[#716A7D] mt-2 italic leading-relaxed">
+            * Le sugerimos solicitar cubiertos desechables solo en casos que sean estrictamente necesarios. Ayúdanos a cuidar el medio ambiente.
+          </p>
+        </div>
+      }
 
     </div>
 

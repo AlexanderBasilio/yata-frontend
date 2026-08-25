@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { FoodCart, AddToCartRequest } from '../../models/food-cart.model';
+import { FoodCart, AddToCartRequest, UpdateCartItemRequest } from '../../models/food-cart.model';
 
 @Injectable({
   providedIn: 'root'
@@ -93,10 +93,10 @@ export class FoodCartService {
     );
   }
 
-  // Actualizar cantidad de un item
-  updateItemQuantity(itemId: string, quantity: number): Observable<FoodCart> {
+  // Actualizar item (cantidad, cubiertos, etc.)
+  updateItem(itemId: string, request: UpdateCartItemRequest): Observable<FoodCart> {
     return this.http.put<FoodCart>(`${this.foodCartApiUrl}/items/${itemId}`,
-      { quantity },
+      request,
       { headers: this.getHeaders() }
     ).pipe(
       map(cart => {
@@ -110,10 +110,15 @@ export class FoodCartService {
         this.totalItems.set(count);
       }),
       catchError((error: HttpErrorResponse) => {
-        console.error('❌ Error actualizando cantidad:', error);
+        console.error('❌ Error actualizando item del carrito:', error);
         return throwError(() => error);
       })
     );
+  }
+
+  // Actualizar cantidad de un item
+  updateItemQuantity(itemId: string, quantity: number, includeCutlery?: boolean): Observable<FoodCart> {
+    return this.updateItem(itemId, { quantity, includeCutlery });
   }
 
   // Eliminar un item del carrito

@@ -18,6 +18,9 @@ export interface FoodCartItem {
   dishImageUrl: string;
   basePrice: number;
   quantity: number;
+  packagingFee?: number; // 🎯 NUEVO: Costo de tápers
+  includeCutlery?: boolean; // 🎯 NUEVO: Si incluye cubiertos
+  cutleryFee?: number; // 🎯 NUEVO: Costo de cubiertos
   modifiers: SelectedModifier[];
   requiredSelections: SelectedRequired[];
   itemTotal: number;
@@ -50,9 +53,19 @@ export interface AddToCartRequest {
   dishImageUrl: string;
   basePrice: number;
   quantity: number;
+  includeCutlery?: boolean; // 🎯 NUEVO: Si el cliente marcó "Incluir cubiertos"
   modifiers: SelectedModifier[];
   requiredSelections: SelectedRequired[];
   specialInstructions?: string;
   restaurantId: string;
   restaurantName: string;
+}
+
+// 🎯 NUEVO: Para editar un item en el carrito (UpdateItemRequest)
+export interface UpdateCartItemRequest {
+  quantity?: number;
+  includeCutlery?: boolean;
+  modifiers?: SelectedModifier[];
+  requiredSelections?: SelectedRequired[];
+  specialInstructions?: string;
 }

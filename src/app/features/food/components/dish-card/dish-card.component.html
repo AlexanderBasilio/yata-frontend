@@ -32,7 +32,7 @@
       </p>
 
       <!-- Fila de Badges: Precio + Estados (Más vendido, Extras, Incluye) -->
-      <div class="flex flex-wrap items-center gap-1.5 mb-3">
+      <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
         <!-- Badge de Precio con Contenedor #C30364 al costado de la barra de estados -->
         <span class="price-badge bg-[#C30364] text-white font-bold text-xs px-2.5 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0">
           S/ {{ dish().price.toFixed(2) }}
@@ -54,6 +54,20 @@
           </span>
         }
       </div>
+
+      <!-- Descuento y Precio de Lista Tachado (si listPrice > price) -->
+      @if (dish().listPrice && dish().listPrice! > dish().price) {
+        <div class="flex items-center gap-1.5 mb-2.5 text-[11px]">
+          <span class="font-bold text-[#16A34A] bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
+            {{ (((dish().listPrice! - dish().price) / dish().listPrice!) * 100) | number:'1.0-0' }}% OFF
+          </span>
+          <span class="text-gray-400 line-through font-medium">
+            S/ {{ dish().listPrice! | number:'1.2-2' }}
+          </span>
+        </div>
+      } @else {
+        <div class="mb-2"></div>
+      }
     </div>
 
     <!-- Botón Inferior "Más detalles" con Fondo #C30364 y Texto Blanco -->

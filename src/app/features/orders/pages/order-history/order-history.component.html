@@ -16,23 +16,82 @@
   </nav>
 
   <div class="max-w-md mx-auto px-4 py-6">
+    <!-- Pestañas / Toggle de Estado de Órdenes -->
+    <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide text-xs font-semibold">
+      <button (click)="selectedTab.set('ALL')"
+        class="px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer"
+        [class.bg-gradient-to-r]="selectedTab() === 'ALL'"
+        [class.from-[#C30364]]="selectedTab() === 'ALL'"
+        [class.to-[#E8368A]]="selectedTab() === 'ALL'"
+        [class.text-white]="selectedTab() === 'ALL'"
+        [class.shadow-md]="selectedTab() === 'ALL'"
+        [class.bg-[#1A0A2E]]="selectedTab() !== 'ALL'"
+        [class.text-[#9D96A8]]="selectedTab() !== 'ALL'"
+        [class.border]="selectedTab() !== 'ALL'"
+        [class.border-[#31204F]]="selectedTab() !== 'ALL'">
+        Todos
+      </button>
+
+      <button (click)="selectedTab.set('PAYMENT_CONFIRMED')"
+        class="px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer"
+        [class.bg-gradient-to-r]="selectedTab() === 'PAYMENT_CONFIRMED'"
+        [class.from-[#C30364]]="selectedTab() === 'PAYMENT_CONFIRMED'"
+        [class.to-[#E8368A]]="selectedTab() === 'PAYMENT_CONFIRMED'"
+        [class.text-white]="selectedTab() === 'PAYMENT_CONFIRMED'"
+        [class.shadow-md]="selectedTab() === 'PAYMENT_CONFIRMED'"
+        [class.bg-[#1A0A2E]]="selectedTab() !== 'PAYMENT_CONFIRMED'"
+        [class.text-[#9D96A8]]="selectedTab() !== 'PAYMENT_CONFIRMED'"
+        [class.border]="selectedTab() !== 'PAYMENT_CONFIRMED'"
+        [class.border-[#31204F]]="selectedTab() !== 'PAYMENT_CONFIRMED'">
+        Nuevos
+      </button>
+
+      <button (click)="selectedTab.set('PREPARING')"
+        class="px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer"
+        [class.bg-gradient-to-r]="selectedTab() === 'PREPARING'"
+        [class.from-[#C30364]]="selectedTab() === 'PREPARING'"
+        [class.to-[#E8368A]]="selectedTab() === 'PREPARING'"
+        [class.text-white]="selectedTab() === 'PREPARING'"
+        [class.shadow-md]="selectedTab() === 'PREPARING'"
+        [class.bg-[#1A0A2E]]="selectedTab() !== 'PREPARING'"
+        [class.text-[#9D96A8]]="selectedTab() !== 'PREPARING'"
+        [class.border]="selectedTab() !== 'PREPARING'"
+        [class.border-[#31204F]]="selectedTab() !== 'PREPARING'">
+        Cocinando
+      </button>
+
+      <button (click)="selectedTab.set('READY_FOR_PICKUP')"
+        class="px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer"
+        [class.bg-gradient-to-r]="selectedTab() === 'READY_FOR_PICKUP'"
+        [class.from-[#C30364]]="selectedTab() === 'READY_FOR_PICKUP'"
+        [class.to-[#E8368A]]="selectedTab() === 'READY_FOR_PICKUP'"
+        [class.text-white]="selectedTab() === 'READY_FOR_PICKUP'"
+        [class.shadow-md]="selectedTab() === 'READY_FOR_PICKUP'"
+        [class.bg-[#1A0A2E]]="selectedTab() !== 'READY_FOR_PICKUP'"
+        [class.text-[#9D96A8]]="selectedTab() !== 'READY_FOR_PICKUP'"
+        [class.border]="selectedTab() !== 'READY_FOR_PICKUP'"
+        [class.border-[#31204F]]="selectedTab() !== 'READY_FOR_PICKUP'">
+        Listo para Recoger
+      </button>
+    </div>
+
     @if (isLoading()) {
       <div class="flex justify-center items-center py-20">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#C30364]"></div>
       </div>
-    } @else if (orders().length === 0) {
-      <div class="text-center py-20 bg-[#221638] rounded-[24px] border border-[#31204F] mt-10 p-8 shadow-lg">
+    } @else if (filteredOrders().length === 0) {
+      <div class="text-center py-20 bg-[#221638] rounded-[24px] border border-[#31204F] mt-6 p-8 shadow-lg">
         <div class="mb-4">
           <svg class="w-20 h-20 mx-auto text-[#5A3D88]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
           </svg>
         </div>
-        <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">No tienes pedidos</h2>
-        <p class="text-[#9D96A8]">¡Aún no has realizado ninguna compra!</p>
+        <h2 class="text-xl font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-2">No hay pedidos</h2>
+        <p class="text-[#9D96A8]">No se encontraron pedidos en esta categoría.</p>
       </div>
     } @else {
       <div class="space-y-4">
-        @for (order of orders(); track order.orderId) {
+        @for (order of filteredOrders(); track order.orderId) {
           <div class="bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-2xl shadow-lg p-5">
             <div class="flex justify-between items-start mb-4">
               <div>

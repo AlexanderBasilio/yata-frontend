@@ -266,7 +266,7 @@
                     {{ dish.description || 'Platillo destacado preparado al instante' }}
                   </p>
 
-                  <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                  <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
                     <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue">
                       S/ {{ dish.price | number:'1.2-2' }}
                     </span>
@@ -275,6 +275,20 @@
                       🔥 Más vendido
                     </span>
                   </div>
+
+                  <!-- Descuento y Precio de Lista Tachado (si listPrice > price) -->
+                  @if (dish.listPrice && dish.listPrice > dish.price) {
+                    <div class="flex items-center gap-1.5 mb-2.5 font-epilogue text-[10px]">
+                      <span class="font-bold text-[#16A34A] bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
+                        {{ (((dish.listPrice - dish.price) / dish.listPrice) * 100) | number:'1.0-0' }}% OFF
+                      </span>
+                      <span class="text-gray-400 line-through font-medium">
+                        S/ {{ dish.listPrice | number:'1.2-2' }}
+                      </span>
+                    </div>
+                  } @else {
+                    <div class="mb-2"></div>
+                  }
                 </div>
 
                 <button 
@@ -329,7 +343,7 @@
                     {{ dish.description || 'Tus platillos favoritos a un solo tap' }}
                   </p>
 
-                  <div class="flex flex-wrap items-center gap-1.5 mb-3">
+                  <div class="flex flex-wrap items-center gap-1.5 mb-1.5">
                     <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue">
                       S/ {{ dish.price | number:'1.2-2' }}
                     </span>
@@ -338,6 +352,20 @@
                       🔥 Más vendido
                     </span>
                   </div>
+
+                  <!-- Descuento y Precio de Lista Tachado (si listPrice > price) -->
+                  @if (dish.listPrice && dish.listPrice > dish.price) {
+                    <div class="flex items-center gap-1.5 mb-2.5 font-epilogue text-[10px]">
+                      <span class="font-bold text-[#16A34A] bg-emerald-50 px-1.5 py-0.5 rounded text-[10px]">
+                        {{ (((dish.listPrice - dish.price) / dish.listPrice) * 100) | number:'1.0-0' }}% OFF
+                      </span>
+                      <span class="text-gray-400 line-through font-medium">
+                        S/ {{ dish.listPrice | number:'1.2-2' }}
+                      </span>
+                    </div>
+                  } @else {
+                    <div class="mb-2"></div>
+                  }
                 </div>
 
                 <button 

@@ -71,7 +71,7 @@
               {{ cart()!.restaurantName }}
             </h2>
             <p class="text-sm text-[#9D96A8]">
-              {{ cart()!.items.length }} {{ cart()!.items.length === 1 ? 'platillo' : 'platillos' }}
+              {{ cart()!.items.length }} {{ cart()!.items.length === 1 ? 'tipo de platillo' : 'tipos de platillos' }}
             </p>
           </div>
           <button (click)="goToRestaurant()" class="text-sm text-[#C30364] font-semibold hover:underline">
@@ -83,103 +83,250 @@
         @for (item of cart()!.items; track item.id) {
         <div class="cart-item bg-gradient-to-br from-[#221638] to-[#1A0A2E] border border-[#31204F] rounded-[16px] shadow-lg p-4 relative" [class.opacity-50]="isUpdating()">
 
-          <div class="flex gap-4">
-            <!-- Imagen del platillo -->
-            <div class="item-image w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-[#1A0A2E] border border-[#31204F]">
-              <img [src]="item.dishImageUrl" [alt]="item.dishName" class="w-full h-full object-cover">
-            </div>
+          <!-- Acciones de cabecera: Expandir / Colapsar y Eliminar -->
+          <div class="absolute top-3 right-3 flex items-center gap-2 z-10">
+            <!-- Botón desplegar / colapsar -->
+            <button (click)="toggleExpand(item.id)" 
+              [title]="isExpanded(item.id) ? 'Colapsar detalles' : 'Ver detalle estructurado'"
+              class="w-8 h-8 text-[#FAF8FB] bg-[#1A0A2E] border border-[#31204F] hover:bg-[#31204F] rounded-full flex items-center justify-center transition-colors">
+              <svg class="w-4 h-4 transition-transform duration-200" [class.rotate-180]="isExpanded(item.id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
 
-            <!-- Info del item -->
-            <div class="flex-1">
-              <h3 class="text-base font-bold text-[#FAF8FB] mb-1">
-                {{ item.dishName }}
-              </h3>
-
-              <!-- ✅ MEJORADO: Mostrar modificadores y selecciones por separado -->
-              @if (hasCustomizations(item)) {
-              <div class="text-xs text-[#9D96A8] mb-2 space-y-1">
-                <!-- Modificadores (extras) -->
-                @if (item.modifiers && item.modifiers.length > 0) {
-                <div class="flex items-start gap-1">
-                  <span class="font-semibold text-[#C30364]">Extras:</span>
-                  <span>
-                    @for (mod of item.modifiers; track mod.modifierId; let last = $last) {
-                    <span>
-                      {{ mod.modifierName }}
-                      @if (mod.quantity > 1) {
-                      <span class="text-[#716A7D]">(x{{ mod.quantity }})</span>
-                      }
-                      @if (!last) {<span>, </span>}
-                    </span>
-                    }
-                  </span>
-                </div>
-                }
-
-                <!-- Selecciones requeridas -->
-                @if (item.requiredSelections && item.requiredSelections.length > 0) {
-                <div class="flex items-start gap-1">
-                  <span class="font-semibold text-[#16A34A]">Incluye:</span>
-                  <span>
-                    @for (req of item.requiredSelections; track req.optionId; let last = $last) {
-                    <span>
-                      {{ req.optionName }}
-                      @if (!last) {<span>, </span>}
-                    </span>
-                    }
-                  </span>
-                </div>
-                }
-              </div>
-              }
-
-              <!-- Instrucciones especiales -->
-              @if (item.specialInstructions) {
-              <p class="text-xs text-[#9D96A8] italic mb-2 bg-[#1A0A2E] border border-[#31204F] px-2 py-1 rounded">
-                💬 "{{ item.specialInstructions }}"
-              </p>
-              }
-
-              <!-- Precio y controles -->
-              <div class="flex items-center justify-between mt-2">
-                <!-- Precio -->
-                <div>
-                  <p class="text-sm text-[#716A7D]">
-                    S/ {{ item.basePrice.toFixed(2) }} c/u
-                  </p>
-                  <p class="text-lg font-bold text-[#C30364]">
-                    S/ {{ item.itemTotal.toFixed(2) }}
-                  </p>
-                </div>
-
-                <!-- Controles de cantidad -->
-                <div class="flex items-center gap-3">
-                  <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
-                    class="w-8 h-8 bg-[#1A0A2E] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                    −
-                  </button>
-
-                  <span class="text-lg font-bold text-[#FAF8FB] w-8 text-center">
-                    {{ item.quantity }}
-                  </span>
-
-                  <button (click)="increaseQuantity(item)" [disabled]="isUpdating()"
-                    class="w-8 h-8 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold hover:shadow-[0_4px_15px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50">
-                    +
-                  </button>
-                </div>
-              </div>
-            </div>
+            <!-- Botón eliminar -->
+            <button (click)="removeItem(item.id)" [disabled]="isUpdating()"
+              title="Eliminar plato"
+              class="w-8 h-8 text-[#DC2626] bg-[#1A0A2E] border border-[#31204F] hover:bg-[#DC2626] hover:text-[#FAF8FB] rounded-full flex items-center justify-center transition-colors disabled:opacity-50">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
           </div>
 
-          <!-- Botón eliminar -->
-          <button (click)="removeItem(item.id)" [disabled]="isUpdating()"
-            class="absolute top-3 right-3 w-8 h-8 text-[#DC2626] bg-[#1A0A2E] border border-[#31204F] hover:bg-[#DC2626] hover:text-[#FAF8FB] rounded-full flex items-center justify-center transition-colors disabled:opacity-50">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
+          <!-- PRIMERA VISTA (COMPACTA) -->
+          @if (!isExpanded(item.id)) {
+            <div class="flex gap-4 pr-20">
+              <!-- Imagen del platillo -->
+              <div class="item-image w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-[#1A0A2E] border border-[#31204F]">
+                <img [src]="item.dishImageUrl" [alt]="item.dishName" class="w-full h-full object-cover">
+              </div>
+
+              <!-- Info del item -->
+              <div class="flex-1">
+                <h3 class="text-base font-bold text-[#FAF8FB] mb-1">
+                  {{ item.dishName }}
+                </h3>
+
+                <!-- Modificadores y selecciones -->
+                @if (hasCustomizations(item)) {
+                  <div class="text-xs text-[#9D96A8] mb-2 space-y-1">
+                    <!-- Extras -->
+                    @if (item.modifiers && item.modifiers.length > 0) {
+                      <div class="flex items-start gap-1">
+                        <span class="font-semibold text-[#C30364]">Extras:</span>
+                        <span>
+                          @for (mod of item.modifiers; track mod.modifierId; let last = $last) {
+                            <span>
+                              {{ mod.modifierName }}
+                              @if (mod.quantity > 1) {
+                                <span class="text-[#716A7D]">(x{{ mod.quantity }})</span>
+                              }
+                              @if (!last) {<span>, </span>}
+                            </span>
+                          }
+                        </span>
+                      </div>
+                    }
+
+                    <!-- Incluye -->
+                    @if (item.requiredSelections && item.requiredSelections.length > 0) {
+                      <div class="flex items-start gap-1">
+                        <span class="font-semibold text-[#16A34A]">Incluye:</span>
+                        <span>
+                          @for (req of item.requiredSelections; track req.optionId; let last = $last) {
+                            <span>
+                              {{ req.optionName }}
+                              @if (!last) {<span>, </span>}
+                            </span>
+                          }
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Instrucciones especiales -->
+                @if (item.specialInstructions) {
+                  <p class="text-xs text-[#9D96A8] italic mb-2 bg-[#1A0A2E] border border-[#31204F] px-2 py-1 rounded">
+                    💬 "{{ item.specialInstructions }}"
+                  </p>
+                }
+
+                <!-- Checkbox Incluir Cubiertos (en tiempo real PUT) -->
+                <div class="my-2">
+                  <label class="inline-flex items-center gap-2 text-xs text-[#FAF8FB] cursor-pointer select-none bg-[#1A0A2E]/60 px-2.5 py-1.5 rounded-lg border border-[#31204F]">
+                    <input type="checkbox" 
+                           [checked]="item.includeCutlery" 
+                           (change)="toggleCutlery(item)" 
+                           [disabled]="isUpdating()"
+                           class="w-4 h-4 accent-[#C30364] rounded cursor-pointer">
+                    <span>Incluir cubiertos</span>
+                    @if (item.cutleryFee && item.cutleryFee > 0) {
+                      <span class="text-[#9D96A8]">(+S/ {{ item.cutleryFee.toFixed(2) }})</span>
+                    }
+                  </label>
+                </div>
+
+                <!-- Precio total y controles -->
+                <div class="flex items-center justify-between mt-2 pt-2 border-t border-[#31204F]/40">
+                  <div>
+                    <p class="text-lg font-bold text-[#C30364]">
+                      S/ {{ item.itemTotal.toFixed(2) }}
+                    </p>
+                  </div>
+
+                  <!-- Controles de cantidad -->
+                  <div class="flex items-center gap-3">
+                    <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
+                      class="w-8 h-8 bg-[#1A0A2E] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                      −
+                    </button>
+
+                    <span class="text-lg font-bold text-[#FAF8FB] w-8 text-center">
+                      {{ item.quantity }}
+                    </span>
+
+                    <button (click)="increaseQuantity(item)" [disabled]="isUpdating()"
+                      class="w-8 h-8 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold hover:shadow-[0_4px_15px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- VISTA ESTRUCTURADA (DETALLE DEL ÍTEM EXPANDIDO) -->
+          @else {
+            <div class="space-y-3 pr-20">
+              <!-- Imagen y Nombre -->
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-lg overflow-hidden bg-[#1A0A2E] border border-[#31204F] shrink-0">
+                  <img [src]="item.dishImageUrl" [alt]="item.dishName" class="w-full h-full object-cover">
+                </div>
+                <div>
+                  <h3 class="text-base font-bold text-[#FAF8FB]">
+                    {{ item.dishName }}
+                  </h3>
+                  <p class="text-xs text-[#9D96A8]">
+                    Detalle desglosado del platillo
+                  </p>
+                </div>
+              </div>
+
+              <!-- Desglose de Precios y Opciones -->
+              <div class="bg-[#1A0A2E] rounded-xl p-3 border border-[#31204F] text-xs space-y-2">
+                <!-- Precio Base -->
+                <div class="flex justify-between items-center text-[#FAF8FB]">
+                  <span class="text-[#9D96A8]">Precio base:</span>
+                  <span class="font-semibold">S/ {{ item.basePrice.toFixed(2) }}</span>
+                </div>
+
+                <!-- Modificadores agrupados -->
+                @for (group of getGroupedModifiers(item.modifiers); track group.groupName) {
+                  <div class="pt-1 border-t border-[#31204F]/60">
+                    <p class="font-bold text-[#FF6DB5] mb-1">{{ group.groupName }}</p>
+                    @for (mod of group.items; track mod.modifierId) {
+                      <div class="flex justify-between items-center pl-2 text-[#FAF8FB]">
+                        <span>{{ mod.modifierName }} @if (mod.quantity > 1) { (x{{ mod.quantity }}) }</span>
+                        <span class="text-[#9D96A8]">+S/ {{ (mod.price * mod.quantity).toFixed(2) }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Selecciones requeridas agrupadas -->
+                @for (group of getGroupedRequired(item.requiredSelections); track group.groupName) {
+                  <div class="pt-1 border-t border-[#31204F]/60">
+                    <p class="font-bold text-[#16A34A] mb-1">{{ group.groupName }}</p>
+                    @for (req of group.items; track req.optionId) {
+                      <div class="flex justify-between items-center pl-2 text-[#FAF8FB]">
+                        <span>{{ req.optionName }}</span>
+                        <span class="text-[#9D96A8]">
+                          {{ req.priceAdjustment > 0 ? '+S/ ' + req.priceAdjustment.toFixed(2) : 'Incluido' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Costo de tápers -->
+                <div class="flex justify-between items-center pt-1 border-t border-[#31204F]/60 text-[#FAF8FB]">
+                  <span class="text-[#9D96A8]">Costo de tápers / empaque:</span>
+                  <span class="font-semibold">S/ {{ (item.packagingFee || 0).toFixed(2) }}</span>
+                </div>
+
+                <!-- Checkbox Incluir Cubiertos -->
+                <div class="pt-1 border-t border-[#31204F]/60">
+                  <label class="flex justify-between items-center cursor-pointer select-none">
+                    <span class="flex items-center gap-2 text-[#FAF8FB]">
+                      <input type="checkbox" 
+                             [checked]="item.includeCutlery" 
+                             (change)="toggleCutlery(item)" 
+                             [disabled]="isUpdating()"
+                             class="w-4 h-4 accent-[#C30364] rounded cursor-pointer">
+                      <span>Incluir cubiertos</span>
+                    </span>
+                    <span class="text-[#9D96A8] font-semibold">
+                      S/ {{ (item.cutleryFee || 0).toFixed(2) }}
+                    </span>
+                  </label>
+                </div>
+
+                <!-- Separador -->
+                <div class="border-t border-[#31204F] pt-2 space-y-1.5 font-epilogue">
+                  <!-- Precio total unitario del item -->
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-[#FAF8FB] font-medium">Precio total unitario:</span>
+                    <span class="text-[#FF6DB5] font-bold">
+                      S/ {{ (item.itemTotal / item.quantity).toFixed(2) }}
+                    </span>
+                  </div>
+
+                  <!-- Cantidad de items / platillos -->
+                  <div class="flex justify-between items-center py-1">
+                    <span class="text-[#FAF8FB] font-medium">Cantidad:</span>
+                    <div class="flex items-center gap-2">
+                      <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
+                        class="w-7 h-7 bg-[#221638] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs">
+                        −
+                      </button>
+
+                      <span class="text-sm font-bold text-[#FAF8FB] w-6 text-center">
+                        {{ item.quantity }}
+                      </span>
+
+                      <button (click)="increaseQuantity(item)" [disabled]="isUpdating()"
+                        class="w-7 h-7 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold text-xs hover:shadow-[0_2px_10px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50">
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Costo total del item -->
+                  <div class="flex justify-between items-center pt-1 border-t border-[#31204F]/60">
+                    <span class="text-sm font-bold text-[#FAF8FB]">Costo total del ítem:</span>
+                    <span class="text-base font-bold text-[#C30364]">
+                      S/ {{ item.itemTotal.toFixed(2) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
         </div>
         }
 

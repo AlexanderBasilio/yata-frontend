@@ -46,9 +46,23 @@ export class DishModalComponent {
   // Instrucciones especiales
   specialInstructions = signal('');
 
-  // ✅ Precio calculado INCLUYENDO modifiers y required selections
+  // 🎯 NUEVO: Opción de solicitar cubiertos
+  includeCutlery = signal<boolean>(false);
+
+  // ✅ Precio calculado INCLUYENDO modifiers, required selections, tápers y cubiertos
   calculatedPrice = computed(() => {
-    let total = this.dish().price;
+    const dish = this.dish();
+    let itemUnitPrice = dish.price;
+
+    // Sumar tápers / empaque por unidad
+    const packaging = dish.defaultPackagingFee || 0;
+    itemUnitPrice += packaging;
+
+    // Sumar cubiertos si el cliente los solicitó
+    if (this.includeCutlery()) {
+      const cutlery = dish.defaultCutleryFee || 0;
+      itemUnitPrice += cutlery;
+    }
 
     // Sumar opciones de modificadores seleccionadas
     this.selectedModifierOptions().forEach((qty, optionId) => {
@@ -56,7 +70,7 @@ export class DishModalComponent {
       for (const modifier of this.modifiers()) {
         const option = modifier.options?.find(o => o.id === optionId);
         if (option) {
-          total += option.price * qty;
+          itemUnitPrice += option.price * qty;
           break;
         }
       }
@@ -68,14 +82,14 @@ export class DishModalComponent {
         optionIds.forEach(optionId => {
           const option = selection.options.find(o => o.id === optionId);
           if (option) {
-            total += option.priceAdjustment;
+            itemUnitPrice += option.priceAdjustment;
           }
         });
       }
     });
 
     // Multiplicar por la cantidad del plato
-    return total * this.quantity();
+    return itemUnitPrice * this.quantity();
   });
 
   // Validación de selecciones requeridas
@@ -238,6 +252,7 @@ export class DishModalComponent {
       dishImageUrl: this.dish().imageUrl,
       basePrice: this.dish().price,
       quantity: this.quantity(),
+      includeCutlery: this.dish().allowCutleryRequest ? this.includeCutlery() : false, // 🎯 NUEVO: includeCutlery
       modifiers,
       requiredSelections,
       specialInstructions: this.specialInstructions().trim() || undefined,
@@ -245,7 +260,7 @@ export class DishModalComponent {
       restaurantName: '' // ← Lo llenaremos desde el componente padre
     };
 
-    console.log('🛒 Request a enviar al carrito:', request.modifiers);
+    console.log('🛒 Request a enviar al carrito:', request);
 
     this.addToCart.emit(request);
   }

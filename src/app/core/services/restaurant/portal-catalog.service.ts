@@ -29,6 +29,7 @@ export interface DishHomeSummaryResponse {
   name: string;
   description?: string;
   price: number; // BigDecimal
+  listPrice?: number; // 🎯 NUEVO: Precio de lista (tachado)
   imageUrl?: string;
   isAvailable?: boolean;
 }
@@ -210,6 +211,7 @@ export class PortalCatalogService {
             name: '1/4 Pollo a la Brasa Tradicional',
             description: 'Pollo jugoso al carbón con papas onduladas y crema de ají',
             price: 19.90,
+            listPrice: 24.90,
             imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&q=80',
             isAvailable: true
           },
@@ -220,6 +222,7 @@ export class PortalCatalogService {
             name: 'Ceviche Mixto Clásico',
             description: 'Pesca del día con calamar, choclo desgranado y camote dulce',
             price: 35.00,
+            listPrice: 42.00,
             imageUrl: 'https://images.unsplash.com/photo-1535399831218-d5bd36d1a6b3?w=400&q=80',
             isAvailable: true
           },
@@ -246,6 +249,7 @@ export class PortalCatalogService {
             name: 'Alita King Broaster Crocante',
             description: 'Alita + Papas nativas + Arroz + Ensalada + Cremas ilimitadas',
             price: 10.20,
+            listPrice: 12.50,
             imageUrl: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80',
             isAvailable: true
           },
@@ -266,6 +270,7 @@ export class PortalCatalogService {
             name: 'Burger Royale Doble Smashed',
             description: 'Doble carne smashed, queso cheddar derretido y tocino ahumado',
             price: 24.90,
+            listPrice: 30.00,
             imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80',
             isAvailable: true
           },
@@ -276,6 +281,7 @@ export class PortalCatalogService {
             name: 'Tacu Tacu con Lomo Saltado',
             description: 'Tacu Tacu de frijol canario con lomo fino flameado al pisco',
             price: 50.60,
+            listPrice: 58.00,
             imageUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80',
             isAvailable: true
           }

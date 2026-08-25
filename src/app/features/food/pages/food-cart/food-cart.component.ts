@@ -2,7 +2,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FoodCartService } from '../../../../core/services/food-cart/food-cart.service';
-import { FoodCart, FoodCartItem } from '../../../../core/models/food-cart.model';
+import { FoodCart, FoodCartItem, SelectedModifier, SelectedRequired } from '../../../../core/models/food-cart.model';
 
 @Component({
   selector: 'app-food-cart',
@@ -63,19 +63,66 @@ export class FoodCartComponent implements OnInit {
     });
   }
 
+  expandedItemIds = signal<Set<string>>(new Set());
+
+  toggleExpand(itemId: string) {
+    this.expandedItemIds.update(set => {
+      const next = new Set(set);
+      if (next.has(itemId)) {
+        next.delete(itemId);
+      } else {
+        next.add(itemId);
+      }
+      return next;
+    });
+  }
+
+  isExpanded(itemId: string): boolean {
+    return this.expandedItemIds().has(itemId);
+  }
+
+  toggleCutlery(item: FoodCartItem) {
+    this.isUpdating.set(true);
+    const newInclude = !item.includeCutlery;
+    this.foodCartService.updateItem(item.id, {
+      quantity: item.quantity,
+      includeCutlery: newInclude,
+      modifiers: item.modifiers,
+      requiredSelections: item.requiredSelections,
+      specialInstructions: item.specialInstructions
+    }).subscribe({
+      next: (updatedCart) => {
+        console.log('✅ Preferencia de cubiertos actualizada');
+        this.cart.set(updatedCart);
+        this.isUpdating.set(false);
+      },
+      error: (err) => {
+        console.error('❌ Error actualizando cubiertos:', err);
+        alert('No se pudo actualizar la preferencia de cubiertos');
+        this.isUpdating.set(false);
+      }
+    });
+  }
+
   increaseQuantity(item: FoodCartItem) {
-    this.updateItemQuantity(item.id, item.quantity + 1);
+    this.updateItemQuantity(item, item.quantity + 1);
   }
 
   decreaseQuantity(item: FoodCartItem) {
     if (item.quantity > 1) {
-      this.updateItemQuantity(item.id, item.quantity - 1);
+      this.updateItemQuantity(item, item.quantity - 1);
     }
   }
 
-  updateItemQuantity(itemId: string, newQuantity: number) {
+  updateItemQuantity(item: FoodCartItem, newQuantity: number) {
     this.isUpdating.set(true);
-    this.foodCartService.updateItemQuantity(itemId, newQuantity).subscribe({
+    this.foodCartService.updateItem(item.id, {
+      quantity: newQuantity,
+      includeCutlery: item.includeCutlery,
+      modifiers: item.modifiers,
+      requiredSelections: item.requiredSelections,
+      specialInstructions: item.specialInstructions
+    }).subscribe({
       next: (updatedCart) => {
         console.log('✅ Cantidad actualizada');
         this.cart.set(updatedCart);
@@ -87,6 +134,28 @@ export class FoodCartComponent implements OnInit {
         this.isUpdating.set(false);
       }
     });
+  }
+
+  getGroupedModifiers(modifiers: SelectedModifier[]): { groupName: string, items: SelectedModifier[] }[] {
+    if (!modifiers || modifiers.length === 0) return [];
+    const map = new Map<string, SelectedModifier[]>();
+    for (const mod of modifiers) {
+      const gName = mod.modifierGroupName || 'Extras';
+      if (!map.has(gName)) map.set(gName, []);
+      map.get(gName)!.push(mod);
+    }
+    return Array.from(map.entries()).map(([groupName, items]) => ({ groupName, items }));
+  }
+
+  getGroupedRequired(required: SelectedRequired[]): { groupName: string, items: SelectedRequired[] }[] {
+    if (!required || required.length === 0) return [];
+    const map = new Map<string, SelectedRequired[]>();
+    for (const req of required) {
+      const gName = req.requiredGroupName || 'Opciones Requeridas';
+      if (!map.has(gName)) map.set(gName, []);
+      map.get(gName)!.push(req);
+    }
+    return Array.from(map.entries()).map(([groupName, items]) => ({ groupName, items }));
   }
 
   removeItem(itemId: string) {

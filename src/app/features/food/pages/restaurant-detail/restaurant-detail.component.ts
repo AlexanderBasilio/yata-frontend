@@ -170,8 +170,9 @@ export class RestaurantDetailComponent implements OnInit {
       return;
     }
 
-    if (dish.modifiers && dish.modifiers.length > 0 ||
-      dish.requiredSelections && dish.requiredSelections.length > 0) {
+    if (dish.allowCutleryRequest !== undefined ||
+      (dish.modifiers && dish.modifiers.length > 0) ||
+      (dish.requiredSelections && dish.requiredSelections.length > 0)) {
       console.log('📦 Usando platillo ya cargado:', dish);
       this.selectedDish.set(dish);
       this.showDishModal.set(true);

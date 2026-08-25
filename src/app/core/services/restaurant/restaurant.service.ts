@@ -66,6 +66,7 @@ export class RestaurantService {
       description: summary.description,
       ingredients: '', // No viene en el summary
       price: summary.price,
+      listPrice: summary.listPrice, // 🎯 NUEVO: Precio de lista tachado
       imageUrl: summary.imageUrl,
       category: summary.category,
       isAvailable: summary.isAvailable, // ✅ Mapeado desde isAvailable
