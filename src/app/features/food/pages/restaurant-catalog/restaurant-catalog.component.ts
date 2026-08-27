@@ -166,7 +166,18 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
       r.description?.toLowerCase().includes(query) ||
       r.specialties.some(s => s.name.toLowerCase().includes(query))
     );
-    this.filteredRestaurants.set(filtered);
+    this.filteredRestaurants.set(this.sortRestaurantsByOpenStatus(filtered));
+  }
+
+  private sortRestaurantsByOpenStatus(restaurants: Restaurant[]): Restaurant[] {
+    if (!restaurants || !Array.isArray(restaurants)) return [];
+    return [...restaurants].sort((a, b) => {
+      const aOpen = Boolean(a.isOpen && !a.isTemporarilyClosed);
+      const bOpen = Boolean(b.isOpen && !b.isTemporarilyClosed);
+      if (aOpen && !bOpen) return -1;
+      if (!aOpen && bOpen) return 1;
+      return 0;
+    });
   }
 
   onRestaurantClick(restaurant: Restaurant) {

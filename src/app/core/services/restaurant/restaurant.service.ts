@@ -19,12 +19,14 @@ export class RestaurantService {
   private dishApiUrl = `${environment.restaurantServiceUrl}/api/dishes`; // ← NUEVO
 
   /**
-   * Obtener todos los restaurantes zonificados
+   * Obtener todos los restaurantes zonificados (ordenados: abiertos primero, cerrados al final)
    */
   getAllRestaurants(customerZoneId: string): Observable<Restaurant[]> {
     return this.http.get<Restaurant[]>(`${environment.portalUrl}/portal/catalog`, {
       params: { customerZoneId }
-    });
+    }).pipe(
+      map(restaurants => this.sortRestaurantsByOpenStatus(restaurants))
+    );
   }
 
   /**
@@ -35,11 +37,27 @@ export class RestaurantService {
   }
 
   /**
-   * Buscar restaurantes por especialidad zonificados
+   * Buscar restaurantes por especialidad zonificados (ordenados: abiertos primero, cerrados al final)
    */
   searchBySpecialty(customerZoneId: string, specialty: string): Observable<Restaurant[]> {
     return this.http.get<Restaurant[]>(`${environment.portalUrl}/portal/catalog`, {
       params: { customerZoneId, specialty }
+    }).pipe(
+      map(restaurants => this.sortRestaurantsByOpenStatus(restaurants))
+    );
+  }
+
+  /**
+   * Ordena restaurantes colocando primero los abiertos y al final los cerrados
+   */
+  private sortRestaurantsByOpenStatus(restaurants: Restaurant[]): Restaurant[] {
+    if (!restaurants || !Array.isArray(restaurants)) return [];
+    return [...restaurants].sort((a, b) => {
+      const aOpen = Boolean(a.isOpen && !a.isTemporarilyClosed);
+      const bOpen = Boolean(b.isOpen && !b.isTemporarilyClosed);
+      if (aOpen && !bOpen) return -1;
+      if (!aOpen && bOpen) return 1;
+      return 0;
     });
   }
 
@@ -85,7 +103,7 @@ export class RestaurantService {
   }
 
   /**
-   * Obtener especialidades disponibles (las 16)
+   * Obtener especialidades disponibles
    */
   getSpecialties(): Specialty[] {
     const iconBase = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/c_scale,w_64,h_64';
@@ -106,7 +124,8 @@ export class RestaurantService {
       { name: 'Pastas', iconUrl: `${iconBase}/food-icons/pastas.png` },
       { name: 'Caldos y Sopas', iconUrl: `${iconBase}/food-icons/caldosYsopas.png` },
       { name: 'Pasteleria', iconUrl: `${iconBase}/food-icons/pasteleria.png` },
-      { name: 'Saludables', iconUrl: `${iconBase}/food-icons/saludables.png` }
+      { name: 'Saludables', iconUrl: `${iconBase}/food-icons/saludables.png` },
+      { name: 'Cafetería', iconUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1787790621/food-icons/cafeteria.png' }
     ];
   }
 }
