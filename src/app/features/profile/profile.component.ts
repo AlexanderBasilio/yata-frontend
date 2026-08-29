@@ -143,11 +143,18 @@ export class ProfileComponent implements OnInit, OnDestroy {
         identityPath: 'KALLPA',
         xpRequiredToReachCurrentLevel: 0,
         xpRequiredToReachNextLevel: 1200,
+        xpEarnedInCurrentLevel: 320,
+        xpNeededForNextLevel: 1200,
+        progressPercentage: 27,
         xpRequiredForCurrentLevel: 0,
         xpRequiredForNextLevel: 1200
     });
 
-    // Computeds Dinámicos de Nivel y Experiencia
+    // Modal de Confirmación de Camino
+    showPathConfirmModal = signal(false);
+    pendingPath = signal<'KALLPA' | 'SAMI' | null>(null);
+
+    // Computeds Dinámicos de Nivel y Experiencia (Usa directamente los datos provistos por Backend)
     currentLevel = computed(() => this.loyaltyAccount().currentLevel || 6);
     nextLevel = computed(() => this.currentLevel() + 1);
 
@@ -162,15 +169,27 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
 
     currentXpInLevel = computed(() => {
-        const totalXp = this.loyaltyAccount().totalXp || 320;
+        const acc = this.loyaltyAccount();
+        if (acc.xpEarnedInCurrentLevel != null) {
+            return acc.xpEarnedInCurrentLevel;
+        }
+        const totalXp = acc.totalXp || 320;
         return Math.max(0, totalXp - this.xpMin());
     });
 
     xpToNextLevelInLevel = computed(() => {
+        const acc = this.loyaltyAccount();
+        if (acc.xpNeededForNextLevel != null) {
+            return acc.xpNeededForNextLevel;
+        }
         return Math.max(1, this.xpMax() - this.xpMin());
     });
 
     progressPercentage = computed(() => {
+        const acc = this.loyaltyAccount();
+        if (acc.progressPercentage != null) {
+            return Math.min(100, Math.max(0, Math.round(acc.progressPercentage)));
+        }
         const curr = this.currentXpInLevel();
         const total = this.xpToNextLevelInLevel();
         return Math.min(100, Math.max(0, Math.round((curr / total) * 100)));
@@ -572,6 +591,25 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 }
             }
         }
+    }
+
+    openPathConfirmModal(path: 'KALLPA' | 'SAMI') {
+        this.pendingPath.set(path);
+        this.showPathConfirmModal.set(true);
+    }
+
+    cancelPathConfirm() {
+        this.showPathConfirmModal.set(false);
+        this.pendingPath.set(null);
+    }
+
+    confirmChoosePath() {
+        const path = this.pendingPath();
+        if (!path) return;
+
+        this.choosePath(path);
+        this.showPathConfirmModal.set(false);
+        this.pendingPath.set(null);
     }
 
     choosePath(path: 'KALLPA' | 'SAMI') {

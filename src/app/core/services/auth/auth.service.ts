@@ -143,8 +143,16 @@ export interface LoyaltyAccountResponse {
     totalXp: number;            // Progreso del Guardián
     currentLevel: number;    // Nivel calculado dinámicamente en base al XP (Ej: totalXp / 1000)
     identityPath: 'KALLPA' | 'SAMI' | 'NONE' | string;     // "KALLPA", "SAMI" o "NONE"
+
+    // Umbrales acumulados
     xpRequiredToReachCurrentLevel?: number; // XP total donde inició este nivel
     xpRequiredToReachNextLevel?: number;    // XP total necesaria para pasar al siguiente nivel
+
+    // Progreso dentro del nivel actual (campos directos de Backend)
+    xpEarnedInCurrentLevel?: number;  // XP ganado dentro del nivel actual
+    xpNeededForNextLevel?: number;    // XP necesario dentro del nivel
+    progressPercentage?: number;      // Porcentaje de progresión en el nivel
+
     xpRequiredForCurrentLevel?: number; // Compatibilidad hacia atrás
     xpRequiredForNextLevel?: number;    // Compatibilidad hacia atrás
     isChoiceAvailable?: boolean;
