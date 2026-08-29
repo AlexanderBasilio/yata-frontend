@@ -120,24 +120,68 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return `background: conic-gradient(${stops.join(', ')})`;
     });
 
-    // Gamification properties
-    loyaltyAccount: LoyaltyAccountResponse = {
-        zisiCoins: 150,
-        totalXp: 1250,
-        currentLevel: 3,
-        identityPath: 'NONE',
-        xpRequiredForCurrentLevel: 641,
-        xpRequiredForNextLevel: 1300
-    };
+    // Computeds para Nombre y Datos Personales
+    fullName = computed(() => {
+        const contact = this.contactInfo();
+        if (contact?.firstName && contact?.lastName) {
+            return `${contact.firstName} ${contact.lastName}`.trim();
+        }
+        if (contact?.firstName) return contact.firstName;
+        const user = this.authService.currentUser$.value;
+        if (user?.firstName && user?.lastName) {
+            return `${user.firstName} ${user.lastName}`.trim();
+        }
+        if (user?.firstName) return user.firstName;
+        return this.customerName || 'Alexander Basilio';
+    });
+
+    // Gamification Signal & Properties
+    loyaltyAccount = signal<LoyaltyAccountResponse>({
+        zisiCoins: 0,
+        totalXp: 320,
+        currentLevel: 6,
+        identityPath: 'KALLPA',
+        xpRequiredToReachCurrentLevel: 0,
+        xpRequiredToReachNextLevel: 1200,
+        xpRequiredForCurrentLevel: 0,
+        xpRequiredForNextLevel: 1200
+    });
+
+    // Computeds Dinámicos de Nivel y Experiencia
+    currentLevel = computed(() => this.loyaltyAccount().currentLevel || 6);
+    nextLevel = computed(() => this.currentLevel() + 1);
+
+    xpMin = computed(() => {
+        const acc = this.loyaltyAccount();
+        return acc.xpRequiredToReachCurrentLevel ?? acc.xpRequiredForCurrentLevel ?? 0;
+    });
+
+    xpMax = computed(() => {
+        const acc = this.loyaltyAccount();
+        return acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1200;
+    });
+
+    currentXpInLevel = computed(() => {
+        const totalXp = this.loyaltyAccount().totalXp || 320;
+        return Math.max(0, totalXp - this.xpMin());
+    });
+
+    xpToNextLevelInLevel = computed(() => {
+        return Math.max(1, this.xpMax() - this.xpMin());
+    });
+
+    progressPercentage = computed(() => {
+        const curr = this.currentXpInLevel();
+        const total = this.xpToNextLevelInLevel();
+        return Math.min(100, Math.max(0, Math.round((curr / total) * 100)));
+    });
 
     selectedGender: 'neutral' | 'chico' | 'chica' = 'neutral';
     
-    // Level progress stats
-    levelNumber = 3;
-    levelName = 'Guardián Maki';
-    xpMin = 641;
-    xpMax = 1300;
-    xpProgressPercentage = 92;
+    // Level progress stats (legacy / fallback)
+    levelNumber = 6;
+    levelName = 'Guardián Kallpa (Nv. 6)';
+    xpProgressPercentage = 27;
 
     // Deity properties
     isChoiceAvailable = false;
@@ -460,7 +504,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         this.authService.getMyLoyaltyStatus().subscribe({
             next: (loyalty) => {
                 if (loyalty) {
-                    this.loyaltyAccount = loyalty;
+                    this.loyaltyAccount.set(loyalty);
                     this.pointsCount = loyalty.zisiCoins;
                     this.calculateLevelStats();
                     this.checkChoiceAvailability();
@@ -475,37 +519,37 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     calculateLevelStats() {
-        const xp = this.loyaltyAccount.totalXp;
-        const currentReq = this.loyaltyAccount.xpRequiredForCurrentLevel;
-        const nextReq = this.loyaltyAccount.xpRequiredForNextLevel;
+        const acc = this.loyaltyAccount();
+        const xp = acc.totalXp;
+        const currentReq = acc.xpRequiredToReachCurrentLevel ?? acc.xpRequiredForCurrentLevel ?? 0;
+        const nextReq = acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1200;
 
-        this.levelNumber = this.loyaltyAccount.currentLevel;
-        this.xpMin = currentReq;
-        this.xpMax = nextReq;
-        this.pointsCount = this.loyaltyAccount.zisiCoins;
+        this.levelNumber = acc.currentLevel || 6;
+        this.pointsCount = acc.zisiCoins || 0;
 
         // Visual curve calculation
         const denominator = nextReq - currentReq;
         if (denominator > 0) {
-            this.xpProgressPercentage = Math.min(100, Math.max(0, ((xp - currentReq) / denominator) * 100));
+            this.xpProgressPercentage = Math.min(100, Math.max(0, Math.round(((xp - currentReq) / denominator) * 100)));
         } else {
             this.xpProgressPercentage = 100;
         }
 
         // Mapping level names dynamically based on identity path
-        if (this.loyaltyAccount.identityPath === 'NONE') {
+        if (acc.identityPath === 'NONE' || !acc.identityPath) {
             this.levelName = `Guardián Iniciante (Nv. ${this.levelNumber})`;
         } else {
-            const pathLabel = this.loyaltyAccount.identityPath === 'KALLPA' ? 'Kallpa' : 'Sami';
+            const pathLabel = acc.identityPath === 'KALLPA' ? 'Kallpa' : 'Sami';
             this.levelName = `Guardián ${pathLabel} (Nv. ${this.levelNumber})`;
         }
     }
 
     checkChoiceAvailability() {
         this.isChoiceAvailable = false;
-        if (this.loyaltyAccount.isChoiceAvailable) {
+        const acc = this.loyaltyAccount();
+        if (acc.isChoiceAvailable) {
             this.isChoiceAvailable = true;
-            this.choices = this.loyaltyAccount.choices || [];
+            this.choices = acc.choices || [];
             return;
         }
 
@@ -533,15 +577,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
     choosePath(path: 'KALLPA' | 'SAMI') {
         this.authService.chooseGuardianPath(path).subscribe({
             next: () => {
-                this.loyaltyAccount.identityPath = path;
+                this.loyaltyAccount.update(acc => ({ ...acc, identityPath: path }));
                 this.calculateLevelStats();
             },
             error: (err) => {
                 console.error('Error choosing path:', err);
-                this.loyaltyAccount.identityPath = path;
+                this.loyaltyAccount.update(acc => ({ ...acc, identityPath: path }));
                 this.calculateLevelStats();
             }
         });
+    }
+
+    logout() {
+        this.authService.logout();
+        this.router.navigate(['/auth/login']);
     }
 
     selectDeity(deity: DeityOption) {
@@ -578,10 +627,5 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     setGender(gender: 'neutral' | 'chico' | 'chica') {
         this.selectedGender = gender;
-    }
-
-    logout() {
-        this.authService.logout();
-        this.router.navigate(['/auth/login']);
     }
 }

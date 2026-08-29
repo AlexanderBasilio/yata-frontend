@@ -46,7 +46,29 @@ export interface DishSectionDto {
   items: DishHomeSummaryResponse[];
 }
 
+export interface AddressDto {
+  id?: number;
+  label?: string;
+  streetAddress?: string;
+  reference?: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  isDefault?: boolean;
+  zoneId?: string;
+}
+
+export interface CustomerHeaderSummaryDto {
+  customerName?: string;       // Ej: "Carlos" / "Emilio"
+  currentIdentity?: string;    // Ej: "KALLPA" o "SAMI" o null
+  defaultAddress?: AddressDto;  // Dirección seleccionada
+  totalOrders?: number;       // Contador histórico de pedidos
+  zisiCoins?: number;         // Balance de Zisi-Coins
+  referrals?: string;        // Referidos (mock "0")
+}
+
 export interface HomeShortcutSectionsResponse {
+  headerSummaryDto?: CustomerHeaderSummaryDto;
   nearbySection: RestaurantSectionDto;
   newOptionsSection: RestaurantSectionDto;
   reorderSection: DishSectionDto;
@@ -97,6 +119,21 @@ export class PortalCatalogService {
   // Fallback estructurado con las 4 secciones exactas requeridas
   private getMockHomeShortcuts(): HomeShortcutSectionsResponse {
     return {
+      headerSummaryDto: {
+        customerName: 'Carlos',
+        currentIdentity: 'KALLPA',
+        defaultAddress: {
+          id: 101,
+          label: 'Casa',
+          streetAddress: 'Avenida A 10, Lima, Lima ...',
+          city: 'LIMA',
+          isDefault: true,
+          zoneId: 'HYO_GRID_120_84'
+        },
+        totalOrders: 21,
+        zisiCoins: 56,
+        referrals: '0'
+      },
       nearbySection: {
         title: 'Cerca de ti',
         subtitle: 'Restaurantes en tu zona con delivery ultra rápido',

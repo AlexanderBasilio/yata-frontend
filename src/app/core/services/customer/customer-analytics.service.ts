@@ -34,6 +34,8 @@ export interface CustomerProfileStatsResponse {
 }
 
 export interface ContactInfoDto {
+  firstName?: string;
+  lastName?: string;
   email: string;
   phoneNumber: string;
   phoneVerified: boolean;
@@ -258,6 +260,8 @@ export class CustomerAnalyticsService {
   private getMockPersonalInfo(): CustomerPersonalInfoResponse {
     return {
       contactInfo: {
+        firstName: 'Carlos',
+        lastName: 'Peña',
         email: 'minaya13m.s@gmail.com',
         phoneNumber: '+51 987 654 321',
         phoneVerified: true,

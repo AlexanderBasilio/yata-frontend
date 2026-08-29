@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -59,11 +59,59 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   walletBalance = '950.000';
   ordersCount = 21;
   pointsCount = 56;
-  referidosCount = 3;
+  referidosCount = 0;
 
-  // Home Shortcuts Signal (4 Secciones: Cerca de ti, Prueba nuevas opciones, Tendencias, Vuelve a pedir)
+  // Home Shortcuts Signal (Header Summary + 4 Secciones)
   homeShortcuts = signal<HomeShortcutSectionsResponse | null>(null);
   isLoadingShortcuts = signal(false);
+
+  // 🎯 Computeds basados en el nuevo headerSummaryDto de Portal
+  headerSummary = computed(() => this.homeShortcuts()?.headerSummaryDto || null);
+
+  displayCustomerName = computed(() => {
+    const summary = this.headerSummary();
+    if (summary?.customerName) {
+      return `Hola, ${summary.customerName}`;
+    }
+    return 'Hola, Sapa Inca';
+  });
+
+  displayCurrentIdentity = computed(() => {
+    const summary = this.headerSummary();
+    const identity = summary?.currentIdentity;
+    if (!identity || identity === 'NONE' || identity === 'null') {
+      return '';
+    }
+    return `Camino ${identity}`;
+  });
+
+  displayAddressLabel = computed(() => {
+    const summary = this.headerSummary();
+    if (summary?.defaultAddress?.label) {
+      return summary.defaultAddress.label;
+    }
+    return this.currentAddress()?.label || '¿Dónde entregamos?';
+  });
+
+  displayStreetAddress = computed(() => {
+    const summary = this.headerSummary();
+    if (summary?.defaultAddress?.streetAddress) {
+      return summary.defaultAddress.streetAddress;
+    }
+    return this.currentAddress()?.streetAddress || 'No seleccionada';
+  });
+
+  displayTotalOrders = computed(() => {
+    return this.headerSummary()?.totalOrders ?? this.ordersCount;
+  });
+
+  displayZisiCoins = computed(() => {
+    return this.headerSummary()?.zisiCoins ?? this.pointsCount;
+  });
+
+  displayReferrals = computed(() => {
+    return this.headerSummary()?.referrals ?? '0';
+  });
 
   categories: Category[] = [
     { id: 'food', name: 'Comida', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png', route: '/food/catalog', available: true },

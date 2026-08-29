@@ -141,10 +141,12 @@ export interface DeityOption {
 export interface LoyaltyAccountResponse {
     zisiCoins: number;       // Moneda virtual
     totalXp: number;            // Progreso del Guardián
-    currentLevel: number;    // Nivel calculado dinámicamente en base al XP
-    identityPath: 'KALLPA' | 'SAMI' | 'NONE';     // "KALLPA", "SAMI" o "NONE"
-    xpRequiredForCurrentLevel: number; // XP donde inició este nivel
-    xpRequiredForNextLevel: number;    // XP necesaria para pasar al siguiente nivel
+    currentLevel: number;    // Nivel calculado dinámicamente en base al XP (Ej: totalXp / 1000)
+    identityPath: 'KALLPA' | 'SAMI' | 'NONE' | string;     // "KALLPA", "SAMI" o "NONE"
+    xpRequiredToReachCurrentLevel?: number; // XP total donde inició este nivel
+    xpRequiredToReachNextLevel?: number;    // XP total necesaria para pasar al siguiente nivel
+    xpRequiredForCurrentLevel?: number; // Compatibilidad hacia atrás
+    xpRequiredForNextLevel?: number;    // Compatibilidad hacia atrás
     isChoiceAvailable?: boolean;
     choices?: DeityOption[];
 }
