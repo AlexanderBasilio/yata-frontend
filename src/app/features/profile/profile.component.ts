@@ -135,19 +135,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
         return this.customerName || 'Alexander Basilio';
     });
 
-    // Gamification Signal & Properties
+    // Gamification Signal & Properties (Inicia limpiamente en Nivel 0 con 0 XP)
     loyaltyAccount = signal<LoyaltyAccountResponse>({
         zisiCoins: 0,
-        totalXp: 320,
-        currentLevel: 6,
-        identityPath: 'KALLPA',
+        totalXp: 0,
+        currentLevel: 0,
+        identityPath: 'NONE',
         xpRequiredToReachCurrentLevel: 0,
-        xpRequiredToReachNextLevel: 1200,
-        xpEarnedInCurrentLevel: 320,
-        xpNeededForNextLevel: 1200,
-        progressPercentage: 27,
+        xpRequiredToReachNextLevel: 1000,
+        xpEarnedInCurrentLevel: 0,
+        xpNeededForNextLevel: 1000,
+        progressPercentage: 0,
         xpRequiredForCurrentLevel: 0,
-        xpRequiredForNextLevel: 1200
+        xpRequiredForNextLevel: 1000
     });
 
     // Modal de Confirmación de Camino
@@ -155,8 +155,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
     pendingPath = signal<'KALLPA' | 'SAMI' | null>(null);
 
     // Computeds Dinámicos de Nivel y Experiencia (Usa directamente los datos provistos por Backend)
-    currentLevel = computed(() => this.loyaltyAccount().currentLevel || 6);
-    nextLevel = computed(() => this.currentLevel() + 1);
+    currentLevel = computed(() => this.loyaltyAccount().currentLevel ?? 0);
+    nextLevel = computed(() => (this.loyaltyAccount().currentLevel ?? 0) + 1);
 
     xpMin = computed(() => {
         const acc = this.loyaltyAccount();
@@ -165,7 +165,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     xpMax = computed(() => {
         const acc = this.loyaltyAccount();
-        return acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1200;
+        return acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1000;
     });
 
     currentXpInLevel = computed(() => {
@@ -173,7 +173,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (acc.xpEarnedInCurrentLevel != null) {
             return acc.xpEarnedInCurrentLevel;
         }
-        const totalXp = acc.totalXp || 320;
+        const totalXp = acc.totalXp ?? 0;
         return Math.max(0, totalXp - this.xpMin());
     });
 
@@ -198,9 +198,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     selectedGender: 'neutral' | 'chico' | 'chica' = 'neutral';
     
     // Level progress stats (legacy / fallback)
-    levelNumber = 6;
-    levelName = 'Guardián Kallpa (Nv. 6)';
-    xpProgressPercentage = 27;
+    levelNumber = 0;
+    levelName = 'Guardián Iniciante (Nv. 0)';
+    xpProgressPercentage = 0;
 
     // Deity properties
     isChoiceAvailable = false;
@@ -524,13 +524,25 @@ export class ProfileComponent implements OnInit, OnDestroy {
             next: (loyalty) => {
                 if (loyalty) {
                     this.loyaltyAccount.set(loyalty);
-                    this.pointsCount = loyalty.zisiCoins;
+                    this.pointsCount = loyalty.zisiCoins ?? 0;
                     this.calculateLevelStats();
                     this.checkChoiceAvailability();
                 }
             },
             error: (err) => {
-                console.warn('⚠️ No se pudo obtener la cuenta de lealtad del backend, usando fallback de simulación:', err);
+                console.warn('⚠️ No se pudo obtener la cuenta de lealtad del backend, usando cuenta inicial en Nivel 0:', err);
+                const initialLoyalty: LoyaltyAccountResponse = {
+                    zisiCoins: 0,
+                    totalXp: 0,
+                    currentLevel: 0,
+                    identityPath: 'NONE',
+                    xpRequiredToReachCurrentLevel: 0,
+                    xpRequiredToReachNextLevel: 1000,
+                    xpEarnedInCurrentLevel: 0,
+                    xpNeededForNextLevel: 1000,
+                    progressPercentage: 0.0
+                };
+                this.loyaltyAccount.set(initialLoyalty);
                 this.calculateLevelStats();
                 this.checkChoiceAvailability();
             }
@@ -539,19 +551,19 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
     calculateLevelStats() {
         const acc = this.loyaltyAccount();
-        const xp = acc.totalXp;
+        const xp = acc.totalXp ?? 0;
         const currentReq = acc.xpRequiredToReachCurrentLevel ?? acc.xpRequiredForCurrentLevel ?? 0;
-        const nextReq = acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1200;
+        const nextReq = acc.xpRequiredToReachNextLevel ?? acc.xpRequiredForNextLevel ?? 1000;
 
-        this.levelNumber = acc.currentLevel || 6;
-        this.pointsCount = acc.zisiCoins || 0;
+        this.levelNumber = acc.currentLevel ?? 0;
+        this.pointsCount = acc.zisiCoins ?? 0;
 
         // Visual curve calculation
         const denominator = nextReq - currentReq;
         if (denominator > 0) {
             this.xpProgressPercentage = Math.min(100, Math.max(0, Math.round(((xp - currentReq) / denominator) * 100)));
         } else {
-            this.xpProgressPercentage = 100;
+            this.xpProgressPercentage = 0;
         }
 
         // Mapping level names dynamically based on identity path
