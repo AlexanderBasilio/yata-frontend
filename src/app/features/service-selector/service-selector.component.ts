@@ -466,7 +466,6 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.customerName = 'ZISIFY';
     this.loadCustomerProfileAndAddresses();
-    this.loadHomeShortcuts();
   }
 
   ngOnDestroy() {
@@ -502,7 +501,10 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   loadCustomerProfileAndAddresses(forceNewest: boolean = false) {
     const userId = this.authService.getUserId();
     if (!userId) {
-      this.loadHomeShortcuts();
+      this.currentAddress.set(null);
+      this.customerService.clearActiveAddress();
+      this.homeShortcuts.set(null);
+      this.isLoadingShortcuts.set(false);
       return;
     }
 
@@ -511,26 +513,43 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
         const addresses = profile.addresses || [];
         this.customerAddresses.set(addresses);
 
-        let active = forceNewest ? null : this.customerService.getActiveAddress();
-
-        if (forceNewest && addresses.length > 0) {
-          active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
-          console.log('🔥 [Sync Backend] Dirección seleccionada tras guardar:', active);
-        } else if (!active && addresses.length > 0) {
-          active = addresses.find(a => a.isDefault) || addresses[0];
+        if (addresses.length === 0) {
+          console.log('📍 [Sync Backend] El usuario no tiene direcciones en la base de datos.');
+          this.currentAddress.set(null);
+          this.customerService.clearActiveAddress();
+          this.homeShortcuts.set(null);
+          this.isLoadingShortcuts.set(false);
+          return;
         }
 
-        if (active) {
+        let active: Address | null = null;
+
+        if (forceNewest) {
+          active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
+        } else {
+          const saved = this.customerService.getActiveAddress();
+          const stillExists = saved ? addresses.find(a => (saved.id && a.id === saved.id) || (a.streetAddress === saved.streetAddress)) : null;
+          active = stillExists || addresses.find(a => a.isDefault) || addresses[0];
+        }
+
+        if (active && active.streetAddress) {
           console.log('📍 [Estado Activo] Dirección configurada activa con zoneId:', active.zoneId || 'SIN_ZONE_ID');
           this.currentAddress.set(active);
           this.customerService.setActiveAddress(active);
+          this.loadHomeShortcuts();
+        } else {
+          this.currentAddress.set(null);
+          this.customerService.clearActiveAddress();
+          this.homeShortcuts.set(null);
+          this.isLoadingShortcuts.set(false);
         }
-
-        this.loadHomeShortcuts();
       },
       error: (err) => {
         console.error('❌ Error cargando perfil de cliente en inicio:', err);
-        this.loadHomeShortcuts();
+        this.currentAddress.set(null);
+        this.customerService.clearActiveAddress();
+        this.homeShortcuts.set(null);
+        this.isLoadingShortcuts.set(false);
       }
     });
   }

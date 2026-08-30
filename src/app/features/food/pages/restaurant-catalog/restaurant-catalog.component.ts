@@ -91,6 +91,10 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
   loadCustomerProfileAndAddresses(forceNewest: boolean = false) {
     const userId = this.authService.getUserId();
     if (!userId) {
+      this.currentAddress.set(null);
+      this.customerService.clearActiveAddress();
+      this.restaurants.set([]);
+      this.filteredRestaurants.set([]);
       this.isLoading.set(false);
       return;
     }
@@ -100,21 +104,40 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
         const addresses = profile.addresses || [];
         this.customerAddresses.set(addresses);
         
-        let active = forceNewest ? null : this.customerService.getActiveAddress();
-        
-        if (forceNewest && addresses.length > 0) {
+        if (addresses.length === 0) {
+          console.log('📍 [Sync Backend - Food] No hay direcciones en backend.');
+          this.currentAddress.set(null);
+          this.customerService.clearActiveAddress();
+          this.restaurants.set([]);
+          this.filteredRestaurants.set([]);
+          this.isLoading.set(false);
+          return;
+        }
+
+        let active: Address | null = null;
+        if (forceNewest) {
           active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
-          console.log('🔥 [Sync Backend - Food] Dirección seleccionada tras guardar:', active);
-        } else if (!active && addresses.length > 0) {
-          active = addresses.find(a => a.isDefault) || addresses[0];
+        } else {
+          const saved = this.customerService.getActiveAddress();
+          const stillExists = saved ? addresses.find(a => (saved.id && a.id === saved.id) || (a.streetAddress === saved.streetAddress)) : null;
+          active = stillExists || addresses.find(a => a.isDefault) || addresses[0];
         }
 
         if (active && active.streetAddress) {
           console.log('📍 [Estado Activo - Food] Dirección configurada activa con zoneId:', active.zoneId || 'SIN_ZONE_ID');
           this.currentAddress.set(active);
           this.customerService.setActiveAddress(active);
+          if (active.zoneId) {
+            this.customerZoneId.set(active.zoneId);
+            this.loadRestaurants(active.zoneId);
+          } else {
+            this.restaurants.set([]);
+            this.filteredRestaurants.set([]);
+            this.isLoading.set(false);
+          }
         } else {
           this.currentAddress.set(null);
+          this.customerService.clearActiveAddress();
           this.restaurants.set([]);
           this.filteredRestaurants.set([]);
           this.isLoading.set(false);
@@ -122,6 +145,10 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('❌ Error cargando perfil de cliente en catálogo:', err);
+        this.currentAddress.set(null);
+        this.customerService.clearActiveAddress();
+        this.restaurants.set([]);
+        this.filteredRestaurants.set([]);
         this.isLoading.set(false);
       }
     });

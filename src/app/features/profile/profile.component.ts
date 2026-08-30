@@ -78,9 +78,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (stats && stats.favoriteDishes && stats.favoriteDishes.length > 0) {
             return stats.favoriteDishes;
         }
-        return [
-            { name: 'Chaufa de Cerdo', ordersCount: 1 }
-        ];
+        return [];
     });
 
     currentFavoriteDish = computed(() => {
@@ -95,9 +93,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
         if (stats && stats.favoriteCategories && stats.favoriteCategories.length > 0) {
             return stats.favoriteCategories;
         }
-        return [
-            { category: 'Chifa y Fusión', percentage: 100 }
-        ];
+        return [];
     });
 
     conicGradientStyle = computed(() => {

@@ -655,17 +655,19 @@
         <!-- Botón de Cerrar (X) arriba a la derecha -->
         <button (click)="closePromoModal()" 
                 title="Cerrar"
-                class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer z-30 backdrop-blur-sm border border-white/20 active:scale-95 shadow-md">
+                class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center transition-all cursor-pointer z-30 backdrop-blur-md border border-white/30 active:scale-95 shadow-lg">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
 
-        <!-- Botón "Aprovechar oferta" interactivo posicionado encima del botón de la imagen -->
+        <!-- Botón "Aprovechar oferta" estilizado con gradiente y perfectamente encajado -->
         <button (click)="onAprovecharOferta()"
-                class="absolute bottom-[44px] sm:bottom-[50px] left-[8%] right-[8%] h-[46px] sm:h-[50px] rounded-2xl bg-transparent hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer z-30 border border-transparent focus:outline-none"
-                title="Aprovechar oferta">
-          <span class="sr-only">Aprovechar oferta</span>
+                class="absolute bottom-[7.5%] left-[8%] right-[8%] h-[38px] sm:h-[42px] rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-extrabold font-['Epilogue'] text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(195,3,100,0.75)] hover:shadow-[0_0_28px_rgba(232,54,138,0.95)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer z-30 border border-[#FF6DB5]/80 focus:outline-none">
+          <span>Aprovechar oferta</span>
+          <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/>
+          </svg>
         </button>
       </div>
     </div>

@@ -46,7 +46,10 @@ export class CustomerService {
         this.activeAddress$.next(address);
     }
 
-    constructor() { }
+    clearActiveAddress() {
+        localStorage.removeItem('zisify_active_address');
+        this.activeAddress$.next(null);
+    }
 
     getCustomerProfile(userId: string): Observable<CustomerResponse> {
         const url = `${this.platformUrl}/api/v1/customers/${userId}`;
@@ -60,6 +63,21 @@ export class CustomerService {
                 console.log('📍 Lista de Direcciones con ZoneId:', customer?.addresses);
                 console.groupEnd();
                 this.currentCustomer$.next(customer);
+
+                // Sincronizar activeAddress con las direcciones reales del backend
+                const addresses = customer?.addresses || [];
+                if (addresses.length === 0) {
+                    this.clearActiveAddress();
+                } else {
+                    const saved = this.getActiveAddress();
+                    const stillExists = saved ? addresses.find(a => (saved.id && a.id === saved.id) || (a.streetAddress === saved.streetAddress)) : null;
+                    if (stillExists) {
+                        this.setActiveAddress(stillExists);
+                    } else {
+                        const defaultOrFirst = addresses.find(a => a.isDefault) || addresses[0];
+                        this.setActiveAddress(defaultOrFirst);
+                    }
+                }
             })
         );
     }
