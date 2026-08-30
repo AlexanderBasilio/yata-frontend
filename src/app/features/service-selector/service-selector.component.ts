@@ -57,8 +57,8 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   customerName = 'ZISIFY';
   walletBalance = '950.000';
-  ordersCount = 21;
-  pointsCount = 56;
+  ordersCount = 0;
+  pointsCount = 0;
   referidosCount = 0;
 
   // Home Shortcuts Signal (Header Summary + 4 Secciones)
@@ -102,11 +102,11 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   });
 
   displayTotalOrders = computed(() => {
-    return this.headerSummary()?.totalOrders ?? this.ordersCount;
+    return this.headerSummary()?.totalOrders ?? 0;
   });
 
   displayZisiCoins = computed(() => {
-    return this.headerSummary()?.zisiCoins ?? this.pointsCount;
+    return this.headerSummary()?.zisiCoins ?? 0;
   });
 
   displayReferrals = computed(() => {

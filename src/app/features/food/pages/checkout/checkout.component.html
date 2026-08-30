@@ -115,11 +115,16 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-[#9D96A8] mb-1">Teléfono / Celular</label>
+                    <label class="block text-sm font-medium text-[#9D96A8] mb-1">Teléfono / Celular <span class="text-[#DC2626] font-bold">*</span></label>
                     <input type="tel" formControlName="clientPhoneNumber" placeholder="+51999000123"
-                        class="w-full p-3 bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-lg focus:ring-1 focus:ring-[#C30364] focus:border-[#C30364] placeholder-[#52465E]">
-                    <p *ngIf="detailsForm.get('clientPhoneNumber')?.touched && detailsForm.get('clientPhoneNumber')?.invalid"
-                        class="text-[#DC2626] text-xs mt-1">Número inválido (Debe ser +51 y 9 dígitos de celular, ej: +51999000123)</p>
+                        [class.border-[#DC2626]]="!detailsForm.get('clientPhoneNumber')?.value || (detailsForm.get('clientPhoneNumber')?.invalid && detailsForm.get('clientPhoneNumber')?.touched)"
+                        [class.focus:border-[#DC2626]]="!detailsForm.get('clientPhoneNumber')?.value"
+                        class="w-full p-3 bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-lg focus:ring-1 focus:ring-[#C30364] focus:border-[#C30364] placeholder-[#52465E] transition-colors">
+                    @if (!detailsForm.get('clientPhoneNumber')?.value || (detailsForm.get('clientPhoneNumber')?.invalid && detailsForm.get('clientPhoneNumber')?.touched)) {
+                        <p class="text-[#DC2626] text-xs mt-1.5 flex items-center gap-1 font-medium font-epilogue">
+                            <span>⚠️</span> Es obligatorio que ingreses tu número de celular (+51 seguido de 9 dígitos).
+                        </p>
+                    }
                 </div>
 
                 <div>
@@ -128,9 +133,16 @@
                         class="w-full p-3 bg-[#1A0A2E] border border-[#31204F] text-[#FAF8FB] rounded-lg focus:ring-1 focus:ring-[#C30364] focus:border-[#C30364] placeholder-[#52465E] resize-none"></textarea>
                 </div>
 
-                <div class="flex items-center gap-2 py-2">
-                    <input type="checkbox" id="isOver18" formControlName="isOver18" class="w-5 h-5 accent-[#C30364]">
-                    <label for="isOver18" class="text-sm font-medium text-[#FAF8FB]">Soy mayor de 18 años</label>
+                <div>
+                    <div class="flex items-center gap-2 py-2">
+                        <input type="checkbox" id="isOver18" formControlName="isOver18" class="w-5 h-5 accent-[#C30364] cursor-pointer">
+                        <label for="isOver18" class="text-sm font-medium text-[#FAF8FB] cursor-pointer">Soy mayor de 18 años <span class="text-[#DC2626] font-bold">*</span></label>
+                    </div>
+                    @if (!detailsForm.get('isOver18')?.value) {
+                        <p class="text-[#DC2626] text-xs mt-0.5 flex items-center gap-1 font-medium font-epilogue">
+                            <span>⚠️</span> Es obligatorio confirmar que eres mayor de 18 años para realizar el pedido.
+                        </p>
+                    }
                 </div>
 
                 <div class="pt-4">

@@ -28,10 +28,38 @@ export class RestaurantDetailComponent implements OnInit {
   categories = signal<string[]>([]);
   selectedCategory = signal<string | null>(null);
 
-  // Modal
+  // Modal Platillo
   showDishModal = signal(false);
   selectedDish = signal<Dish | null>(null);
   isLoadingDishDetail = signal(false);
+
+  // Modal Categorías
+  showCategoriesModal = signal(false);
+
+  openCategoriesModal() {
+    this.showCategoriesModal.set(true);
+  }
+
+  closeCategoriesModal() {
+    this.showCategoriesModal.set(false);
+  }
+
+  selectCategoryFromModal(category: string | null) {
+    if (!category) {
+      this.selectedCategory.set(null);
+      this.filteredDishes.set(this.dishes());
+    } else {
+      this.selectedCategory.set(category);
+      const filtered = this.dishes().filter(d => d.category === category);
+      this.filteredDishes.set(filtered);
+
+      setTimeout(() => {
+        const element = document.getElementById(`category-${category}`);
+        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    this.showCategoriesModal.set(false);
+  }
 
   isLoadingRestaurant = signal(true);
   isLoadingDishes = signal(true);

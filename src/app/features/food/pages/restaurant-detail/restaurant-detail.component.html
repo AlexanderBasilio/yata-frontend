@@ -67,12 +67,24 @@
     </div>
   </div>
 
-  <!-- Barra de categorías del menú (scroll horizontal) -->
-  <div class="categories-bar bg-white border-b border-gray-200 sticky top-[56px] z-40">
-    <div class="flex gap-2 overflow-x-auto px-4 py-3 scrollbar-hide">
+  <!-- Barra de categorías del menú -->
+  <div class="categories-bar bg-white border-b border-gray-200 sticky top-[56px] z-40 px-4 py-2.5 flex items-center gap-2.5 shadow-sm">
+    <!-- Botón Desplegar Categorías -->
+    <button (click)="openCategoriesModal()" 
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] shadow-sm transition-all shrink-0 cursor-pointer active:scale-95">
+      <svg class="w-3.5 h-3.5 text-[#E8368A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h7"/>
+      </svg>
+      <span>Desplegar categorías</span>
+    </button>
+
+    <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
+
+    <!-- Chips de categorías con scroll horizontal -->
+    <div class="flex gap-2 overflow-x-auto scrollbar-hide py-0.5 flex-1">
       @for (category of categories(); track category) {
       <button (click)="filterByCategory(category)"
-        class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all"
+        class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer"
         [class.active]="selectedCategory() === category">
         {{ category }}
       </button>
@@ -119,7 +131,55 @@
 
   }
 
+  <!-- Modal de Despliegue de Categorías (2 Columnas) -->
+  @if (showCategoriesModal()) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+       (click)="closeCategoriesModal()">
+    <div class="bg-[#1A0A2E] border-2 border-[#C30364]/70 rounded-3xl p-5 max-w-md w-full shadow-[0_0_35px_rgba(195,3,100,0.35)] relative overflow-hidden animate-scale-in text-white"
+         (click)="$event.stopPropagation()">
+      <!-- Glow decorativo -->
+      <div class="absolute -top-10 -right-10 w-28 h-28 bg-[#C30364]/25 rounded-full blur-[40px] pointer-events-none"></div>
+      <div class="absolute -bottom-10 -left-10 w-28 h-28 bg-[#8B5CF6]/20 rounded-full blur-[40px] pointer-events-none"></div>
 
+      <!-- Header Modal -->
+      <div class="flex justify-between items-center mb-4 pb-3 border-b border-white/10 relative z-10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-[#221638] border border-[#31204F] flex items-center justify-center text-sm shadow-sm">
+            📋
+          </div>
+          <div>
+            <h3 class="text-base font-bold font-['Epilogue'] text-white leading-tight">Categorías del Menú</h3>
+            <p class="text-[11px] text-[#9D96A8]">Selecciona para filtrar los platos</p>
+          </div>
+        </div>
+        <button (click)="closeCategoriesModal()"
+                class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-[#9D96A8] hover:text-white flex items-center justify-center transition-colors cursor-pointer">
+          ✕
+        </button>
+      </div>
+
+      <!-- Grid de 2 Columnas -->
+      <div class="grid grid-cols-2 gap-2.5 max-h-[60vh] overflow-y-auto pr-1 relative z-10 scrollbar-hide">
+        <!-- Botón: Ver Todo -->
+        <button (click)="selectCategoryFromModal(null)"
+                [class]="selectedCategory() === null ? 'border-[#C30364] bg-[#C30364]/25 text-[#FF6DB5] shadow-[0_0_15px_rgba(195,3,100,0.35)] font-bold' : 'border-white/10 bg-[#221638] text-gray-300 hover:border-white/20 hover:bg-[#2A1642]'"
+                class="p-3 rounded-2xl border text-left flex items-center justify-between gap-2 transition-all cursor-pointer active:scale-95 group min-h-[52px]">
+          <span class="text-xs uppercase font-epilogue tracking-wide font-bold">✨ Ver Todo</span>
+          <span class="text-xs text-[#9D96A8] group-hover:text-white transition-colors">({{ dishes().length }})</span>
+        </button>
+
+        @for (category of categories(); track category) {
+        <button (click)="selectCategoryFromModal(category)"
+                [class]="selectedCategory() === category ? 'border-[#C30364] bg-[#C30364]/25 text-[#FF6DB5] shadow-[0_0_15px_rgba(195,3,100,0.35)] font-bold' : 'border-white/10 bg-[#221638] text-gray-300 hover:border-white/20 hover:bg-[#2A1642]'"
+                class="p-3 rounded-2xl border text-left flex items-center justify-between gap-2 transition-all cursor-pointer active:scale-95 group min-h-[52px]">
+          <span class="text-xs uppercase font-epilogue tracking-wide line-clamp-2 leading-tight">{{ category }}</span>
+          <span class="text-xs text-[#E8368A] opacity-70 group-hover:opacity-100 transition-opacity shrink-0">➔</span>
+        </button>
+        }
+      </div>
+    </div>
+  </div>
+  }
 
   <!-- Modal de detalle del platillo -->
   @if (showDishModal() && selectedDish()) {
