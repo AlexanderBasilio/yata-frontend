@@ -61,19 +61,25 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
       next: (address) => {
         console.group('📍 [Catálogo Food] Dirección activa recibida');
         console.log('📦 Objeto dirección activo:', address);
-        if (address) {
+        if (address && address.streetAddress) {
           this.currentAddress.set(address);
           if (address.zoneId) {
             console.log('🌍 ZoneID activo detectado:', address.zoneId);
             this.customerZoneId.set(address.zoneId);
+            this.loadRestaurants(address.zoneId);
           } else {
-            console.warn('⚠️ La dirección activa NO contiene zoneId. Usando fallback:', this.customerZoneId());
+            console.warn('⚠️ La dirección activa NO contiene zoneId.');
+            this.restaurants.set([]);
+            this.filteredRestaurants.set([]);
+            this.isLoading.set(false);
           }
         } else {
-          console.warn('⚠️ No hay dirección activa. Usando fallback:', this.customerZoneId());
+          this.currentAddress.set(null);
+          this.restaurants.set([]);
+          this.filteredRestaurants.set([]);
+          this.isLoading.set(false);
         }
         console.groupEnd();
-        this.loadRestaurants(this.customerZoneId());
       }
     });
   }
@@ -84,7 +90,10 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
 
   loadCustomerProfileAndAddresses(forceNewest: boolean = false) {
     const userId = this.authService.getUserId();
-    if (!userId) return;
+    if (!userId) {
+      this.isLoading.set(false);
+      return;
+    }
 
     this.customerService.getCustomerProfile(userId).subscribe({
       next: (profile) => {
@@ -100,14 +109,20 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
           active = addresses.find(a => a.isDefault) || addresses[0];
         }
 
-        if (active) {
+        if (active && active.streetAddress) {
           console.log('📍 [Estado Activo - Food] Dirección configurada activa con zoneId:', active.zoneId || 'SIN_ZONE_ID');
           this.currentAddress.set(active);
           this.customerService.setActiveAddress(active);
+        } else {
+          this.currentAddress.set(null);
+          this.restaurants.set([]);
+          this.filteredRestaurants.set([]);
+          this.isLoading.set(false);
         }
       },
       error: (err) => {
         console.error('❌ Error cargando perfil de cliente en catálogo:', err);
+        this.isLoading.set(false);
       }
     });
   }

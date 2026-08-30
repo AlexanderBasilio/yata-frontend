@@ -110,6 +110,8 @@ export class AuthService {
     logout() {
         localStorage.removeItem(this.TOKEN_KEY);
         localStorage.removeItem(this.USER_ID_KEY);
+        localStorage.removeItem('zisify_active_address');
+        localStorage.removeItem('yata_cart_id');
         this.currentUser$.next(null);
     }
 

@@ -61,6 +61,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   pointsCount = 0;
   referidosCount = 0;
 
+  // Modal Promocional de Lanzamiento (se abre siempre al iniciar sesión / cargar inicio)
+  showPromoModal = signal(true);
+
   // Home Shortcuts Signal (Header Summary + 4 Secciones)
   homeShortcuts = signal<HomeShortcutSectionsResponse | null>(null);
   isLoadingShortcuts = signal(false);
@@ -72,6 +75,10 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     const summary = this.headerSummary();
     if (summary?.customerName) {
       return `Hola, ${summary.customerName}`;
+    }
+    const user = this.authService.currentUser$.value;
+    if (user?.firstName) {
+      return `Hola, ${user.firstName}`;
     }
     return 'Hola, Sapa Inca';
   });
@@ -90,15 +97,41 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     if (summary?.defaultAddress?.label) {
       return summary.defaultAddress.label;
     }
-    return this.currentAddress()?.label || '¿Dónde entregamos?';
+    return this.currentAddress()?.label || 'Ubicación';
   });
 
   displayStreetAddress = computed(() => {
     const summary = this.headerSummary();
-    if (summary?.defaultAddress?.streetAddress) {
+    if (summary?.defaultAddress?.streetAddress && summary.defaultAddress.streetAddress.trim() !== '') {
       return summary.defaultAddress.streetAddress;
     }
-    return this.currentAddress()?.streetAddress || 'No seleccionada';
+    const curr = this.currentAddress();
+    if (curr?.streetAddress && curr.streetAddress.trim() !== '') {
+      return curr.streetAddress;
+    }
+    return 'Seleccione ubicación';
+  });
+
+  hasActiveLocation = computed(() => {
+    const summary = this.headerSummary();
+    if (summary?.defaultAddress?.streetAddress && summary.defaultAddress.streetAddress.trim() !== '') {
+      return true;
+    }
+    const curr = this.currentAddress();
+    if (curr?.streetAddress && curr.streetAddress.trim() !== '') {
+      return true;
+    }
+    return false;
+  });
+
+  hasAnyShortcutItems = computed(() => {
+    const s = this.homeShortcuts();
+    if (!s) return false;
+    const nearby = s.nearbySection?.items?.length || 0;
+    const newOptions = s.newOptionsSection?.items?.length || 0;
+    const reorder = s.reorderSection?.items?.length || 0;
+    const trends = s.trendingSection?.items?.length || 0;
+    return (nearby + newOptions + reorder + trends) > 0;
   });
 
   displayTotalOrders = computed(() => {
@@ -112,6 +145,15 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   displayReferrals = computed(() => {
     return this.headerSummary()?.referrals ?? '0';
   });
+
+  closePromoModal() {
+    this.showPromoModal.set(false);
+  }
+
+  onAprovecharOferta() {
+    this.showPromoModal.set(false);
+    this.router.navigate(['/food/catalog']);
+  }
 
   categories: Category[] = [
     { id: 'food', name: 'Comida', icon: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png', route: '/food/catalog', available: true },
@@ -433,8 +475,14 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   loadHomeShortcuts() {
     const activeAddr = this.currentAddress() || this.customerService.getActiveAddress();
-    const zoneId = activeAddr?.zoneId || 'HYO_GRID_120_84';
+    const zoneId = activeAddr?.zoneId;
     const userId = this.authService.getUserId() || undefined;
+
+    if (!zoneId) {
+      this.isLoadingShortcuts.set(false);
+      this.homeShortcuts.set(null);
+      return;
+    }
 
     this.isLoadingShortcuts.set(true);
     this.portalCatalogService.getHomeShortcuts(zoneId, userId).subscribe({

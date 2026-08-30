@@ -110,8 +110,37 @@ export class PortalCatalogService {
         console.groupEnd();
       }),
       catchError(err => {
-        console.warn('⚠️ No se pudieron obtener home-shortcuts reales del portal, usando fallback mock:', err);
-        return of(this.getMockHomeShortcuts());
+        console.warn('⚠️ No se pudieron obtener home-shortcuts del portal:', err);
+        return of({
+          headerSummaryDto: {
+            customerName: '',
+            currentIdentity: 'NONE',
+            defaultAddress: undefined,
+            totalOrders: 0,
+            zisiCoins: 0,
+            referrals: '0'
+          },
+          nearbySection: {
+            title: 'Cerca de ti',
+            subtitle: 'Restaurantes en tu zona con delivery ultra rápido',
+            items: []
+          },
+          newOptionsSection: {
+            title: 'Prueba nuevas opciones',
+            subtitle: 'Novedades gastronómicas en tu ciudad',
+            items: []
+          },
+          reorderSection: {
+            title: 'Vuelve a pedir',
+            subtitle: 'Tus platos favoritos de siempre',
+            items: []
+          },
+          trendingSection: {
+            title: 'Tendencias',
+            subtitle: 'Los más pedidos de la semana',
+            items: []
+          }
+        });
       })
     );
   }

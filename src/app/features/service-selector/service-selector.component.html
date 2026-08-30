@@ -93,6 +93,29 @@
     </div>
   </div>
 
+  <!-- ─── MENSAJE: SELECCIONA TU UBICACIÓN (Cuando no hay ubicación seleccionada o no hay restaurantes) ─── -->
+  @if (!hasActiveLocation() || (!isLoadingShortcuts() && !hasAnyShortcutItems())) {
+    <div class="mx-6 my-8 p-6 sm:p-8 bg-white rounded-3xl border border-gray-100 shadow-sm text-center flex flex-col items-center animate-fade-in">
+      <div class="w-16 h-16 rounded-full bg-[#FFF0F7] border border-[#C30364]/20 flex items-center justify-center text-3xl mb-3 shadow-inner">
+        📍
+      </div>
+      <h3 class="text-base sm:text-lg font-bold text-[#1A0A2E] font-['Inknut_Antiqua'] mb-1.5">
+        Selecciona tu ubicación de entrega
+      </h3>
+      <p class="text-xs text-[#9D96A8] font-epilogue leading-relaxed max-w-sm mb-4">
+        Para ver los restaurantes disponibles y con delivery en tu zona, primero debes seleccionar o agregar tu ubicación de entrega en la parte superior.
+      </p>
+      <button (click)="openAddressModal()"
+        class="bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white text-xs font-bold font-epilogue px-6 py-3 rounded-2xl shadow-[0_4px_15px_rgba(195,3,100,0.3)] hover:shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span>Seleccionar mi ubicación</span>
+      </button>
+    </div>
+  }
+
   <!-- ─── CAROUSELS HORIZONTALES DE ATAJOS (PORTAL HOME SHORTCUTS) ─────────── -->
   <div class="space-y-8 mt-6">
 
@@ -613,6 +636,37 @@
 
         </div>
 
+      </div>
+    </div>
+  }
+
+  <!-- MODAL PROMOCIONAL DE LANZAMIENTO (BLOQUEA LA PANTALLA) -->
+  @if (showPromoModal()) {
+    <div class="fixed inset-0 bg-[#0D0518]/85 backdrop-blur-md z-[999] flex items-center justify-center p-4 animate-fade-in"
+         (click)="closePromoModal()">
+      <div class="relative w-full max-w-[340px] sm:max-w-[380px] rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(195,3,100,0.5)] border border-[#C30364]/60 animate-scale-in"
+           (click)="$event.stopPropagation()">
+        
+        <!-- Imagen promocional -->
+        <img src="https://res.cloudinary.com/dhgsvmcmc/image/upload/v1788112119/MODAL-PROMOCIONAL-HOME-USUARIOS_cbhgdj.png" 
+             alt="Primer Mes de Lanzamiento Zisify"
+             class="w-full h-auto object-contain block select-none pointer-events-none">
+
+        <!-- Botón de Cerrar (X) arriba a la derecha -->
+        <button (click)="closePromoModal()" 
+                title="Cerrar"
+                class="absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer z-30 backdrop-blur-sm border border-white/20 active:scale-95 shadow-md">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Botón "Aprovechar oferta" interactivo posicionado encima del botón de la imagen -->
+        <button (click)="onAprovecharOferta()"
+                class="absolute bottom-[44px] sm:bottom-[50px] left-[8%] right-[8%] h-[46px] sm:h-[50px] rounded-2xl bg-transparent hover:bg-white/10 active:scale-[0.98] transition-all cursor-pointer z-30 border border-transparent focus:outline-none"
+                title="Aprovechar oferta">
+          <span class="sr-only">Aprovechar oferta</span>
+        </button>
       </div>
     </div>
   }
