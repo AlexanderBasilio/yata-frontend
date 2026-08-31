@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../core/services/order/order.service';
@@ -11,7 +11,7 @@ import { OrderResponse } from '../../../core/models/order.model';
   templateUrl: './payment-stepper-modal.component.html',
   styleUrl: './payment-stepper-modal.component.scss'
 })
-export class PaymentStepperModalComponent implements OnInit {
+export class PaymentStepperModalComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
 
   @Input() orderCode: string | null = null;
@@ -33,6 +33,15 @@ export class PaymentStepperModalComponent implements OnInit {
   orderCodeCopied = signal<boolean>(false);
   errorMessage = signal<string>('');
 
+  // 🎧 Reproductor de Audio para Instrucciones de Pago
+  private audioStep1: HTMLAudioElement | null = null;
+  private audioStep2: HTMLAudioElement | null = null;
+  isPlayingAudioStep1 = signal<boolean>(false);
+  isPlayingAudioStep2 = signal<boolean>(false);
+
+  private readonly AUDIO_STEP1_URL = 'https://pub-2e54587e86f24e2fbe36fcbb8f62dbe2.r2.dev/chekcout-instrucciones-audio-paso1.mp3';
+  private readonly AUDIO_STEP2_URL = 'https://pub-2e54587e86f24e2fbe36fcbb8f62dbe2.r2.dev/chekcout-instrucciones-audio-paso2.mp3';
+
   ngOnInit(): void {
     this.currentStep.set(this.initialStep);
 
@@ -40,6 +49,75 @@ export class PaymentStepperModalComponent implements OnInit {
       this.order.set(this.orderData);
     } else if (this.orderCode) {
       this.fetchOrderDetails(this.orderCode);
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.stopAllAudio();
+  }
+
+  toggleAudioStep1(): void {
+    if (this.isPlayingAudioStep1()) {
+      this.stopAllAudio();
+      return;
+    }
+
+    this.stopAllAudio();
+
+    if (!this.audioStep1) {
+      this.audioStep1 = new Audio(this.AUDIO_STEP1_URL);
+      this.audioStep1.onended = () => this.isPlayingAudioStep1.set(false);
+      this.audioStep1.onerror = (err) => {
+        console.error('Error reproduciendo audio paso 1:', err);
+        this.isPlayingAudioStep1.set(false);
+      };
+    }
+
+    this.audioStep1.currentTime = 0;
+    this.audioStep1.play().then(() => {
+      this.isPlayingAudioStep1.set(true);
+    }).catch(err => {
+      console.warn('Auto-play bloqueado o error en audio:', err);
+      this.isPlayingAudioStep1.set(false);
+    });
+  }
+
+  toggleAudioStep2(): void {
+    if (this.isPlayingAudioStep2()) {
+      this.stopAllAudio();
+      return;
+    }
+
+    this.stopAllAudio();
+
+    if (!this.audioStep2) {
+      this.audioStep2 = new Audio(this.AUDIO_STEP2_URL);
+      this.audioStep2.onended = () => this.isPlayingAudioStep2.set(false);
+      this.audioStep2.onerror = (err) => {
+        console.error('Error reproduciendo audio paso 2:', err);
+        this.isPlayingAudioStep2.set(false);
+      };
+    }
+
+    this.audioStep2.currentTime = 0;
+    this.audioStep2.play().then(() => {
+      this.isPlayingAudioStep2.set(true);
+    }).catch(err => {
+      console.warn('Auto-play bloqueado o error en audio:', err);
+      this.isPlayingAudioStep2.set(false);
+    });
+  }
+
+  stopAllAudio(): void {
+    if (this.audioStep1) {
+      this.audioStep1.pause();
+      this.audioStep1.currentTime = 0;
+      this.isPlayingAudioStep1.set(false);
+    }
+    if (this.audioStep2) {
+      this.audioStep2.pause();
+      this.audioStep2.currentTime = 0;
+      this.isPlayingAudioStep2.set(false);
     }
   }
 
@@ -58,6 +136,7 @@ export class PaymentStepperModalComponent implements OnInit {
   }
 
   goToStep(step: 1 | 2 | 3): void {
+    this.stopAllAudio();
     this.errorMessage.set('');
     this.currentStep.set(step);
   }
@@ -119,6 +198,7 @@ export class PaymentStepperModalComponent implements OnInit {
   }
 
   closeModal(): void {
+    this.stopAllAudio();
     this.close.emit();
   }
 }

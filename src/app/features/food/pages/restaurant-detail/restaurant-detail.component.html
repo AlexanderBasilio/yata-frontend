@@ -69,14 +69,43 @@
 
   <!-- Barra de categorías del menú -->
   <div class="categories-bar bg-white border-b border-gray-200 sticky top-[56px] z-40 px-4 py-2.5 flex items-center gap-2.5 shadow-sm">
-    <!-- Botón Desplegar Categorías -->
-    <button (click)="openCategoriesModal()" 
-            class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] shadow-sm transition-all shrink-0 cursor-pointer active:scale-95">
-      <svg class="w-3.5 h-3.5 text-[#E8368A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h7"/>
-      </svg>
-      <span>Desplegar categorías</span>
-    </button>
+    <!-- Contenedor del Botón Desplegar Categorías y Burbuja Guía -->
+    <div class="relative shrink-0">
+      <!-- Botón Desplegar Categorías -->
+      <button (click)="openCategoriesModal()" 
+              class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] shadow-sm transition-all cursor-pointer active:scale-95">
+        <svg class="w-3.5 h-3.5 text-[#E8368A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h7"/>
+        </svg>
+        <span>Desplegar categorías</span>
+      </button>
+
+      <!-- Burbuja Guía Flotante -->
+      @if (showCategoryGuideBubble()) {
+        <div (click)="openCategoriesModal()"
+             class="absolute top-[calc(100%+10px)] left-0 z-50 w-64 bg-[#1A0A2E] text-white p-3 rounded-2xl border-2 border-[#C30364] shadow-[0_8px_30px_rgba(195,3,100,0.55)] flex items-start gap-2.5 cursor-pointer animate-bounce-subtle">
+          <!-- Flecha indicadora superior (Pointer) hacia el botón -->
+          <div class="absolute -top-2 left-8 w-3.5 h-3.5 bg-[#1A0A2E] border-t-2 border-l-2 border-[#C30364] rotate-45"></div>
+
+          <span class="text-base shrink-0 mt-0.5">📋</span>
+          <div class="flex-1 min-w-0 pr-1">
+            <p class="text-[11px] font-bold font-['Epilogue'] text-white leading-tight">
+              ¡Pulsa aquí para ver todas las categorías!
+            </p>
+            <p class="text-[10px] text-[#FF6DB5] mt-0.5 font-epilogue leading-snug">
+              Navega rápidamente como en una carta presencial.
+            </p>
+          </div>
+
+          <!-- Botón de cerrar sugerencia -->
+          <button (click)="dismissCategoryGuideBubble($event)" 
+                  title="Cerrar sugerencia"
+                  class="text-gray-400 hover:text-white text-xs p-1 rounded-full hover:bg-white/10 transition-colors shrink-0">
+            ✕
+          </button>
+        </div>
+      }
+    </div>
 
     <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
 

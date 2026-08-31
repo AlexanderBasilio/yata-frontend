@@ -33,10 +33,12 @@ export class RestaurantDetailComponent implements OnInit {
   selectedDish = signal<Dish | null>(null);
   isLoadingDishDetail = signal(false);
 
-  // Modal Categorías
+  // Modal Categorías y Burbuja Guía
   showCategoriesModal = signal(false);
+  showCategoryGuideBubble = signal(true);
 
   openCategoriesModal() {
+    this.showCategoryGuideBubble.set(false);
     this.showCategoriesModal.set(true);
   }
 
@@ -44,7 +46,13 @@ export class RestaurantDetailComponent implements OnInit {
     this.showCategoriesModal.set(false);
   }
 
+  dismissCategoryGuideBubble(event?: Event) {
+    if (event) event.stopPropagation();
+    this.showCategoryGuideBubble.set(false);
+  }
+
   selectCategoryFromModal(category: string | null) {
+    this.showCategoryGuideBubble.set(false);
     if (!category) {
       this.selectedCategory.set(null);
       this.filteredDishes.set(this.dishes());
@@ -152,18 +160,37 @@ export class RestaurantDetailComponent implements OnInit {
     this.restaurantService.getDishesByRestaurant(restaurantId).subscribe({
       next: (dishes) => {
         console.log('✅ Platillos recibidos:', dishes);
-        this.dishes.set(dishes);
-        this.filteredDishes.set(dishes);
 
-        const uniqueCategories = [...new Set(dishes.map(d => d.category))];
+        // 1. Ordenar platillos: primero los disponibles (isAvailable !== false), al final no disponibles
+        const sortedDishes = [...dishes].sort((a, b) => {
+          const aAvail = a.isAvailable !== false ? 1 : 0;
+          const bAvail = b.isAvailable !== false ? 1 : 0;
+          return bAvail - aAvail;
+        });
+
+        this.dishes.set(sortedDishes);
+        this.filteredDishes.set(sortedDishes);
+
+        // 2. Ordenar categorías: primero las que tengan mayor cantidad de platos disponibles
+        const uniqueCategories = [...new Set(sortedDishes.map(d => d.category))];
+        uniqueCategories.sort((catA, catB) => {
+          const availA = sortedDishes.filter(d => d.category === catA && d.isAvailable !== false).length;
+          const availB = sortedDishes.filter(d => d.category === catB && d.isAvailable !== false).length;
+          if (availB !== availA) {
+            return availB - availA;
+          }
+          const totalA = sortedDishes.filter(d => d.category === catA).length;
+          const totalB = sortedDishes.filter(d => d.category === catB).length;
+          return totalB - totalA;
+        });
+
         this.categories.set(uniqueCategories);
-
         this.isLoadingDishes.set(false);
 
         // Auto-abrir el modal del platillo si se pasa dishId en queryParams
         const targetDishId = this.route.snapshot.queryParamMap.get('dishId');
         if (targetDishId) {
-          const found = dishes.find(d => d.id === targetDishId);
+          const found = sortedDishes.find(d => d.id === targetDishId);
           if (found) {
             setTimeout(() => this.onDishClick(found), 150);
           }
