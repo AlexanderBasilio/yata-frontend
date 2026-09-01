@@ -2,7 +2,7 @@
 
 ## Alcance y límites
 
-Se mantiene Angular SPA/PWA, Firebase Hosting y el contrato actual de las APIs. No se borran carrito, sesión, direcciones ni caches por la fuerza. En `localStorage`, el código nuevo solo escribe la preferencia `zisify_analytics_consent_v1`; GA4 puede escribir sus cookies tras aceptar. El ID GA4 existente es `G-LHM0T0C63D`; no se creó una propiedad nueva.
+Se mantiene Angular SPA/PWA, Firebase Hosting y el contrato actual de las APIs. No se borran carrito, sesión, direcciones ni caches por la fuerza. En `localStorage`, el código nuevo solo escribe la preferencia `zisify_analytics_consent_v1`; GA4 puede escribir sus cookies tras aceptar. El frontend usa el flujo web de Zisify con ID de medición `G-YEE37VXVQX` e ID de flujo `14933976642`; no se creó una propiedad nueva.
 
 GA4 mide comportamiento, no es el registro contable de pedidos. Los usuarios que rechacen la analítica, los bloqueadores y las pérdidas de conexión producen datos parciales. No se registran retroactivamente acciones anteriores al consentimiento. No se añadieron grabaciones de sesión ni mapas de calor.
 
@@ -37,7 +37,7 @@ No confundir Cache Storage (versiones PWA) con `localStorage` (estado de negocio
 
 Esta parte está en la cuenta de Google, no en el repositorio. No fue modificada automáticamente.
 
-1. Abrir la propiedad que contiene el flujo web `G-LHM0T0C63D` y confirmar que corresponde a usuarios de Zisify.
+1. Abrir la propiedad que contiene el flujo web de Zisify (`G-YEE37VXVQX`, flujo `14933976642`) y configurar su URL como `https://www.zisify.com/`. El dominio sin `www` redirige a este dominio canónico.
 2. En **Administrador → Flujos de datos → flujo web → Medición mejorada**, desactivar la medición automática para este flujo. En particular las vistas por cambios del historial, interacciones con formularios y búsquedas automáticas. El frontend envía vistas manuales y acciones explícitas; dejar el seguimiento automático puede duplicar vistas o enviar parámetros no controlados. Si se reutiliza el mismo flujo en comercios/repartidores, revisar primero su instrumentación: el cambio de consola afecta al flujo completo.
 3. No activar Google Signals, datos proporcionados por usuarios ni personalización publicitaria para esta implementación. La configuración cliente también desactiva Signals/personalización y deniega almacenamiento y uso de datos publicitarios.
 4. Crear dimensiones personalizadas de **ámbito Evento**: `button_id`, `screen_name`, `checkout_step`, `payment_step`, `flow_stage`, `http_status` y `update_action`.
