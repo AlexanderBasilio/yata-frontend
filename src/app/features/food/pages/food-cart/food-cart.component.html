@@ -4,7 +4,7 @@
   <nav class="navbar bg-[#1A0A2E]/80 backdrop-blur-xl shadow-sm sticky top-0 z-50 px-4 py-3 border-b border-[#31204F]">
     <div class="max-w-screen-xl mx-auto flex items-center justify-between">
       <!-- Botón de retroceso -->
-      <button (click)="goToCatalog()" class="flex items-center gap-2 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">
+      <button data-analytics="cart_catalog" (click)="goToCatalog()" class="flex items-center gap-2 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
@@ -15,7 +15,7 @@
 
       <!-- Botón limpiar carrito -->
       @if (!isEmpty()) {
-      <button (click)="clearCart()" [disabled]="isClearing()"
+      <button data-analytics="cart_clear" (click)="clearCart()" [disabled]="isClearing()"
         class="text-sm text-[#DC2626] hover:text-[#EF4444] font-semibold disabled:opacity-50 transition-colors">
         Vaciar
       </button>
@@ -51,7 +51,7 @@
       <p class="text-[#9D96A8] text-sm mb-8">
         ¡Agrega platillos deliciosos de nuestros restaurantes para comenzar tu pedido!
       </p>
-      <button (click)="goToCatalog()"
+      <button data-analytics="cart_catalog" (click)="goToCatalog()"
         class="px-8 py-3 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-xl font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
         Ver restaurantes
       </button>
@@ -74,7 +74,7 @@
               {{ cart()!.items.length }} {{ cart()!.items.length === 1 ? 'tipo de platillo' : 'tipos de platillos' }}
             </p>
           </div>
-          <button (click)="goToRestaurant()" class="text-sm text-[#C30364] font-semibold hover:underline">
+          <button data-analytics="cart_return_restaurant" (click)="goToRestaurant()" class="text-sm text-[#C30364] font-semibold hover:underline">
             Ver menú
           </button>
         </div>
@@ -95,7 +95,7 @@
             </button>
 
             <!-- Botón eliminar -->
-            <button (click)="removeItem(item.id)" [disabled]="isUpdating()"
+            <button data-analytics="cart_remove_item" (click)="removeItem(item.id)" [disabled]="isUpdating()"
               title="Eliminar plato"
               class="w-8 h-8 text-[#DC2626] bg-[#1A0A2E] border border-[#31204F] hover:bg-[#DC2626] hover:text-[#FAF8FB] rounded-full flex items-center justify-center transition-colors disabled:opacity-50">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +189,7 @@
 
                   <!-- Controles de cantidad -->
                   <div class="flex items-center gap-3">
-                    <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
+                    <button data-analytics="cart_decrease_quantity" (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
                       class="w-8 h-8 bg-[#1A0A2E] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                       −
                     </button>
@@ -198,7 +198,7 @@
                       {{ item.quantity }}
                     </span>
 
-                    <button (click)="increaseQuantity(item)" [disabled]="isUpdating()"
+                    <button data-analytics="cart_increase_quantity" (click)="increaseQuantity(item)" [disabled]="isUpdating()"
                       class="w-8 h-8 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold hover:shadow-[0_4px_15px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50">
                       +
                     </button>
@@ -299,7 +299,7 @@
                   <div class="flex justify-between items-center py-1">
                     <span class="text-[#FAF8FB] font-medium">Cantidad:</span>
                     <div class="flex items-center gap-2">
-                      <button (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
+                      <button data-analytics="cart_decrease_quantity" (click)="decreaseQuantity(item)" [disabled]="item.quantity <= 1 || isUpdating()"
                         class="w-7 h-7 bg-[#221638] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs">
                         −
                       </button>
@@ -308,7 +308,7 @@
                         {{ item.quantity }}
                       </span>
 
-                      <button (click)="increaseQuantity(item)" [disabled]="isUpdating()"
+                      <button data-analytics="cart_increase_quantity" (click)="increaseQuantity(item)" [disabled]="isUpdating()"
                         class="w-7 h-7 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold text-xs hover:shadow-[0_2px_10px_rgba(195,3,100,0.40)] transition-all disabled:opacity-50">
                         +
                       </button>
@@ -358,13 +358,13 @@
           </div>
 
           <!-- Botón continuar -->
-          <button (click)="proceedToCheckout()"
+          <button data-analytics="cart_checkout" (click)="proceedToCheckout()"
             class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-4 rounded-xl font-bold text-lg hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98]">
             Continuar con el pedido
           </button>
 
           <!-- Botón agregar más -->
-          <button (click)="goToRestaurant()"
+          <button data-analytics="cart_return_restaurant" (click)="goToRestaurant()"
             class="w-full mt-3 bg-[#1A0A2E] border border-[#31204F] text-[#C30364] py-3 rounded-xl font-semibold hover:bg-[#31204F] transition-colors">
             Agregar más platillos
           </button>

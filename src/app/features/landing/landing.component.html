@@ -30,11 +30,11 @@
 
     <!-- Auth Buttons (Despliegan el Modal Central estilo DoorDash) -->
     <div class="flex items-center gap-3">
-        <button type="button" (click)="openAuthModal('login')"
+        <button type="button" data-analytics="landing_nav_login" (click)="openAuthModal('login')"
             class="font-['Epilogue'] text-sm font-semibold text-[#C30364] border border-[#C30364] px-4 py-2 rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all cursor-pointer">
             Ingresar
         </button>
-        <button type="button" (click)="openAuthModal('register')"
+        <button type="button" data-analytics="landing_nav_register" (click)="openAuthModal('register')"
             class="font-['Epilogue'] text-sm font-bold text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-4 py-2 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98] cursor-pointer">
             Registrarse
         </button>
@@ -79,11 +79,11 @@
 
     <!-- CTAs -->
     <div class="flex flex-col sm:flex-row gap-4 relative z-10 mb-16">
-        <button type="button" (click)="openAuthModal('register')"
+        <button type="button" data-analytics="landing_hero_register" (click)="openAuthModal('register')"
             class="font-['Epilogue'] font-bold text-base text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-8 py-4 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.5)] transition-all active:scale-[0.98] cursor-pointer">
             Empieza gratis →
         </button>
-        <button type="button" (click)="openAuthModal('login')"
+        <button type="button" data-analytics="landing_hero_login" (click)="openAuthModal('login')"
             class="font-['Epilogue'] font-semibold text-base text-[#FAF8FB] bg-transparent border border-[#31204F] px-8 py-4 rounded-xl hover:border-[#5A3D88] hover:bg-[rgba(90,61,136,0.1)] transition-all cursor-pointer">
             Ya tengo cuenta
         </button>
@@ -307,7 +307,7 @@
                     pedido desde Zisify — sin que se entere hasta que llegue.
                 </p>
             </div>
-            <button type="button" (click)="openAuthModal('register')"
+            <button type="button" data-analytics="landing_footer_register" (click)="openAuthModal('register')"
                 class="font-['Epilogue'] font-bold text-sm text-white bg-[#16A34A] px-6 py-3 rounded-xl shadow-[0_0_20px_rgba(22,163,74,0.3)] hover:bg-[#15803D] transition-colors flex-shrink-0 cursor-pointer">
                 Probar gratis ↗
             </button>

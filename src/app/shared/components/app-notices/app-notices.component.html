@@ -1,0 +1,27 @@
+<div class="notices">
+  @if (analytics.preferencesOpen()) {
+    <section class="notice" aria-labelledby="cookies-title">
+      <h2 id="cookies-title">Tú decides sobre las cookies</h2>
+      <p>Usamos almacenamiento necesario para tu sesión y pedidos. Si aceptas, Google Analytics nos ayudará a entender qué pantallas y botones se usan para mejorar Zisify.</p>
+      <p class="detail">No enviamos nombres, teléfonos, direcciones ni datos de pago en nuestros eventos. Puedes cambiar tu decisión en <a routerLink="/privacy">Privacidad</a>.</p>
+      <div class="actions">
+        <button type="button" (click)="analytics.setConsent('denied')">Solo necesarias</button>
+        <button type="button" (click)="analytics.setConsent('granted')">Aceptar analítica</button>
+      </div>
+    </section>
+  } @else if (updates.visible()) {
+    <section class="notice" aria-labelledby="update-title">
+      <div role="status" aria-live="polite">
+        <h2 id="update-title">{{ updates.recovery() ? 'Zisify necesita recargarse' : 'Hay una nueva versión de Zisify' }}</h2>
+        <p>{{ updates.blocked() ? 'Actualiza al terminar el pedido y cerrar los formularios abiertos. No interrumpiremos tu compra.' : 'Actualiza para disfrutar de las últimas mejoras. Tu sesión y carrito de comidas se conservarán.' }}</p>
+        @if (updates.message()) { <p class="detail">{{ updates.message() }}</p> }
+      </div>
+      <div class="actions">
+        <button type="button" (click)="updates.postpone()">Más tarde</button>
+        <button type="button" (click)="updates.applyUpdate()" [disabled]="updates.blocked() || updates.checking()">
+          {{ updates.checking() ? 'Comprobando…' : 'Actualizar ahora' }}
+        </button>
+      </div>
+    </section>
+  }
+</div>

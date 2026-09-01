@@ -8,6 +8,7 @@ import { Restaurant, Dish } from '../../../../core/models/restaurant.model';
 import { AddToCartRequest, FoodCart } from '../../../../core/models/food-cart.model';
 import { DishCardComponent } from '../../components/dish-card/dish-card.component';
 import { DishModalComponent } from '../../components/dish-modal/dish-modal.component';
+import { AnalyticsService } from '../../../../core/services/analytics/analytics.service';
 
 @Component({
   selector: 'app-restaurant-detail',
@@ -21,6 +22,7 @@ export class RestaurantDetailComponent implements OnInit {
   private foodCartService = inject(FoodCartService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private analytics = inject(AnalyticsService);
 
   restaurant = signal<Restaurant | null>(null);
   dishes = signal<Dish[]>([]);
@@ -231,6 +233,7 @@ export class RestaurantDetailComponent implements OnInit {
       console.log('📦 Usando platillo ya cargado:', dish);
       this.selectedDish.set(dish);
       this.showDishModal.set(true);
+      this.analytics.trackEcommerce('view_item', [{ id: dish.id, price: dish.price, quantity: 1 }]);
       return;
     }
 
@@ -240,6 +243,7 @@ export class RestaurantDetailComponent implements OnInit {
         console.log('✅ Detalle del platillo recibido:', fullDish);
         this.selectedDish.set(fullDish);
         this.showDishModal.set(true);
+        this.analytics.trackEcommerce('view_item', [{ id: fullDish.id, price: fullDish.price, quantity: 1 }]);
         this.isLoadingDishDetail.set(false);
       },
       error: (error) => {
@@ -285,11 +289,13 @@ export class RestaurantDetailComponent implements OnInit {
       const updatedCart = await firstValueFrom(this.foodCartService.addItem(request));
       console.log('✅ Item agregado al carrito:', updatedCart);
       this.cart.set(updatedCart);
+      this.analytics.trackEcommerce('add_to_cart', [{ id: request.dishId, price: request.basePrice, quantity: request.quantity }]);
 
       this.closeDishModal();
       alert('✅ Platillo agregado al carrito');
 
     } catch (error: any) {
+      this.analytics.trackError('cart_add', error?.status);
       console.error('❌ Error completo:', error);
 
       let errorMessage = 'No se pudo agregar el platillo al carrito';

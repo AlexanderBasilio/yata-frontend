@@ -5,7 +5,7 @@
 
     <!-- Botón de Cierre (X) si es modal -->
     @if (isModal) {
-      <button (click)="closeModal()" class="absolute top-4 right-4 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors p-1 rounded-full hover:bg-[#221638] focus:outline-none">
+      <button data-analytics="payment_close" (click)="closeModal()" class="absolute top-4 right-4 text-[#9D96A8] hover:text-[#FAF8FB] transition-colors p-1 rounded-full hover:bg-[#221638] focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
@@ -45,7 +45,7 @@
         </div>
 
         <!-- Botón Copiar número de Yape (Texto en DOM NUNCA expone el número real) -->
-        <button type="button" (click)="copyCelular()"
+        <button type="button" data-analytics="payment_copy_phone" (click)="copyCelular()"
           class="w-full bg-[#FAF8FB] hover:bg-[#FFF0F7] text-[#1A0A2E] py-3.5 px-4 rounded-xl font-bold text-sm transition-all shadow-md flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.98]">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#C30364]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -54,7 +54,7 @@
         </button>
 
         <!-- Botón Escuchar Instrucciones Paso 1 -->
-        <button type="button" (click)="toggleAudioStep1()"
+        <button type="button" data-analytics="payment_audio_step_1" (click)="toggleAudioStep1()"
           class="w-full py-3 px-4 rounded-xl font-bold text-xs transition-all border flex items-center justify-center gap-2.5 cursor-pointer shadow-sm active:scale-[0.98]"
           [class.bg-[#C30364]/20]="isPlayingAudioStep1()"
           [class.border-[#C30364]]="isPlayingAudioStep1()"
@@ -78,7 +78,7 @@
         </button>
 
         <!-- CTA Principal Paso 1 -->
-        <button type="button" (click)="goToStep(2)"
+        <button type="button" data-analytics="payment_continue" (click)="goToStep(2)"
           class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] flex justify-center items-center gap-2 cursor-pointer mt-2">
           <span>Ya pagué, continuar</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,7 +98,7 @@
         </p>
 
         <!-- Botón Escuchar Instrucciones Paso 2 -->
-        <button type="button" (click)="toggleAudioStep2()"
+        <button type="button" data-analytics="payment_audio_step_2" (click)="toggleAudioStep2()"
           class="w-full py-3 px-4 rounded-xl font-bold text-xs transition-all border flex items-center justify-center gap-2.5 cursor-pointer shadow-sm active:scale-[0.98]"
           [class.bg-[#C30364]/20]="isPlayingAudioStep2()"
           [class.border-[#C30364]]="isPlayingAudioStep2()"
@@ -166,7 +166,7 @@
 
         <!-- Enlace para revisar instrucciones del Paso 1 si es necesario -->
         <div class="flex justify-start">
-          <button type="button" (click)="goToStep(1)" class="text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors inline-flex items-center gap-1">
+          <button type="button" data-analytics="payment_back" (click)="goToStep(1)" class="text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
@@ -182,7 +182,7 @@
         }
 
         <!-- CTA Principal Paso 2 -->
-        <button type="button" (click)="submitPayment()" [disabled]="!isValidOperationNumber() || isSubmitting()"
+        <button type="button" data-analytics="payment_report" (click)="submitPayment()" [disabled]="!isValidOperationNumber() || isSubmitting()"
           class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex justify-center items-center gap-2 cursor-pointer mt-2">
           @if (isSubmitting()) {
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -216,7 +216,7 @@
             <span class="block text-[10px] text-[#716A7D] uppercase tracking-wider font-bold mb-1">Código de Pedido</span>
             <div class="flex items-center justify-between bg-[#1A0A2E] p-2.5 rounded-lg border border-[#31204F]">
               <span class="font-mono text-sm font-bold text-[#FAF8FB]">{{ order()?.orderCode }}</span>
-              <button (click)="copyOrderCode()" class="text-[#716A7D] hover:text-[#C30364] text-xs font-semibold flex items-center gap-1 transition-colors">
+              <button data-analytics="payment_copy_order_code" (click)="copyOrderCode()" class="text-[#716A7D] hover:text-[#C30364] text-xs font-semibold flex items-center gap-1 transition-colors">
                 <span>{{ orderCodeCopied() ? '¡Copiado!' : 'Copiar' }}</span>
               </button>
             </div>
@@ -240,7 +240,7 @@
         </div>
 
         <!-- CTA Principal Paso 3 -->
-        <button type="button" (click)="closeModal()"
+        <button type="button" data-analytics="payment_done" (click)="closeModal()"
           class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3.5 rounded-xl font-bold text-sm transition-all shadow-[0_4px_20px_rgba(195,3,100,0.4)] cursor-pointer mt-2">
           Volver a Mis Pedidos
         </button>

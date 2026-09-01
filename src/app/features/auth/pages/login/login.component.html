@@ -21,7 +21,7 @@
                 <div #googleBtn class="w-full flex justify-center min-h-[44px]"></div>
 
                 <!-- Botón Custom de fallback para Google -->
-                <button type="button" (click)="triggerGoogleOneTap()"
+                <button type="button" data-analytics="login_google" (click)="triggerGoogleOneTap()"
                     class="w-full mt-2.5 bg-[#1A0A2E] hover:bg-[#221638] text-[#FAF8FB] font-semibold border border-[#31204F] hover:border-[#C30364] rounded-xl py-3 px-4 transition-all duration-200 flex items-center justify-center gap-3 shadow-md group cursor-pointer">
                     <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -88,7 +88,7 @@
                 }
 
                 <!-- Botón Submit -->
-                <button type="submit" [disabled]="isLoading"
+                <button data-analytics="login_submit" type="submit" [disabled]="isLoading"
                     class="w-full bg-gradient-cta text-white font-bold rounded-xl py-3.5 mt-4 transition-all duration-300 flex justify-center items-center shadow-lg disabled:opacity-70 disabled:cursor-not-allowed">
                     @if (isLoading) {
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
@@ -112,7 +112,7 @@
 
             <!-- Links Adicionales -->
             <div class="text-center text-sm text-[#9D96A8]">
-                <p>¿No tienes una cuenta? <span (click)="goToRegister()"
+                <p>¿No tienes una cuenta? <span data-analytics="login_register" (click)="goToRegister()"
                         class="text-[#C30364] font-bold cursor-pointer hover:underline">Regístrate</span></p>
             </div>
 

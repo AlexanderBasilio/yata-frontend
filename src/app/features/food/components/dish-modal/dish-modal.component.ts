@@ -1,4 +1,5 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import { Component, DestroyRef, inject, input, output, signal, computed } from '@angular/core';
+import { AppUpdateService } from '../../../../core/services/app-update/app-update.service';
 import { CommonModule } from '@angular/common';
 import { Dish, DishModifier, DishModifierOption, RequiredSelection, SelectionOption } from '../../../../core/models/restaurant.model';
 import { AddToCartRequest, SelectedModifier, SelectedRequired } from '../../../../core/models/food-cart.model';
@@ -12,6 +13,9 @@ import { FormsModule } from '@angular/forms';
   styleUrl: './dish-modal.component.scss'
 })
 export class DishModalComponent {
+  constructor() {
+    inject(DestroyRef).onDestroy(inject(AppUpdateService).holdUpdates());
+  }
   dish = input.required<Dish>();
   close = output<void>();
   addToCart = output<AddToCartRequest>();

@@ -124,7 +124,7 @@
 
             <!-- Si el pedido requiere pago (PENDING_PAYMENT), mostramos únicamente el botón "Continuar pago" -->
             @if (order.status === 'PENDING_PAYMENT') {
-              <button (click)="openPaymentStepper(order)"
+              <button data-analytics="orders_open_payment" (click)="openPaymentStepper(order)"
                 class="w-full mt-3 bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3 rounded-xl font-bold text-sm shadow-[0_4px_15px_rgba(195,3,100,0.3)] transition-all cursor-pointer flex items-center justify-center gap-2">
                 <span>💳</span>
                 <span>Continuar pago</span>

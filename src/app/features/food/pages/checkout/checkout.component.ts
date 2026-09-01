@@ -17,6 +17,7 @@ import {
 } from '../../../../core/models/food-order.model';
 
 import { PaymentStepperModalComponent } from '../../../../shared/components/payment-stepper-modal/payment-stepper-modal.component';
+import { AnalyticsService } from '../../../../core/services/analytics/analytics.service';
 
 @Component({
     selector: 'app-checkout',
@@ -38,6 +39,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private authService = inject(AuthService);
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
+    private analytics = inject(AnalyticsService);
 
     // Signals
     clientName = signal<string>('');
@@ -139,6 +141,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
 
         // Cargar datos de usuario de Platform proactivamente al iniciar
+        this.analytics.trackCheckoutStep('delivery');
         const userId = this.authService.getUserId();
         if (userId) {
             this.authService.getProfile(userId).subscribe({
@@ -345,6 +348,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Volver al Paso 1
     goToStep1() {
         this.currentStep = 1;
+        this.analytics.trackCheckoutStep('delivery');
         setTimeout(() => this.initializeMap(), 100);
     }
 
@@ -393,11 +397,13 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                 console.log('✅ Resumen recibido:', res); // Log de éxito
                 this.orderSummary = res;
                 this.currentStep = 2; // Actualizamos el paso primero
+                this.analytics.trackCheckoutStep('review');
                 this.isLoadingSummary = false;
                 this.cdr.detectChanges(); // Forzamos actualización de la vista
             },
             error: (err) => {
                 console.error('❌ Error calculando resumen:', err);
+                this.analytics.trackError('checkout_summary', err?.status);
                 if (err.error) {
                     console.error('📦 Detalle del error:', JSON.stringify(err.error, null, 2));
                     alert(`Error: ${err.error.message || 'Datos inválidos'}`);
@@ -440,6 +446,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             next: (res) => {
                 // Éxito: Establecemos el pedido confirmado y pasamos al paso 3
                 this.confirmedOrder = res;
+                this.analytics.trackOrderCreated();
+                this.analytics.trackCheckoutStep('order_created');
                 localStorage.removeItem('yata_confirmed_order');
 
                 // Limpiamos el carrito local para evitar que se use de nuevo
@@ -451,6 +459,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error('❌ Error creando pedido:', err);
+                this.analytics.trackError('checkout_submit', err?.status);
                 alert('Error al crear el pedido: ' + (err?.error?.message || 'Revisa los datos e intenta nuevamente'));
                 this.isProcessingOrder = false;
             }

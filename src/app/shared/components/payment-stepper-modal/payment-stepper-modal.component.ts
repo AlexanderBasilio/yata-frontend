@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrderService } from '../../../core/services/order/order.service';
 import { OrderResponse } from '../../../core/models/order.model';
+import { AnalyticsService } from '../../../core/services/analytics/analytics.service';
+import { AppUpdateService } from '../../../core/services/app-update/app-update.service';
 
 @Component({
   selector: 'app-payment-stepper-modal',
@@ -13,6 +15,9 @@ import { OrderResponse } from '../../../core/models/order.model';
 })
 export class PaymentStepperModalComponent implements OnInit, OnDestroy {
   private orderService = inject(OrderService);
+  private analytics = inject(AnalyticsService);
+  private updates = inject(AppUpdateService);
+  private releaseUpdateHold?: () => void;
 
   @Input() orderCode: string | null = null;
   @Input() orderData: any = null;
@@ -43,7 +48,9 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
   private readonly AUDIO_STEP2_URL = 'https://pub-2e54587e86f24e2fbe36fcbb8f62dbe2.r2.dev/chekcout-instrucciones-audio-paso2.mp3';
 
   ngOnInit(): void {
+    this.releaseUpdateHold = this.updates.holdUpdates();
     this.currentStep.set(this.initialStep);
+    this.analytics.trackPaymentStep(this.initialStep);
 
     if (this.orderData) {
       this.order.set(this.orderData);
@@ -53,6 +60,7 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.releaseUpdateHold?.();
     this.stopAllAudio();
   }
 
@@ -139,6 +147,7 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
     this.stopAllAudio();
     this.errorMessage.set('');
     this.currentStep.set(step);
+    this.analytics.trackPaymentStep(step);
   }
 
   onOperationNumberChange(val: string): void {
@@ -184,6 +193,9 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
 
     this.orderService.reportPayment(code, { operationNumber: this.operationNumber() }).subscribe({
       next: (updatedOrder: OrderResponse) => {
+        // Reporting a manual payment is NOT evidence of payment approval.
+        this.analytics.trackPaymentReported();
+        this.analytics.trackPaymentStep(3);
         this.order.set(updatedOrder);
         this.isSubmitting.set(false);
         this.paymentCompleted.emit(updatedOrder);
@@ -191,6 +203,7 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSubmitting.set(false);
+        this.analytics.trackError('payment_report', err?.status);
         console.error('Error reportando pago:', err);
         this.errorMessage.set(err?.error?.message || 'No se pudo registrar el pago. Verifica el número de operación.');
       }

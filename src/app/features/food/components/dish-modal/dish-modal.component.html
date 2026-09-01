@@ -11,7 +11,7 @@
       <div class="absolute inset-0 bg-gradient-to-t from-[#1A0A2E] to-transparent opacity-80"></div>
 
       <!-- Botón cerrar -->
-      <button (click)="onClose()"
+      <button data-analytics="dish_close" (click)="onClose()"
         class="absolute top-4 right-4 w-10 h-10 bg-[#221638]/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-[#31204F] transition-colors border border-[#31204F]">
         <svg class="w-6 h-6 text-[#FAF8FB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -59,7 +59,7 @@
       <div class="quantity-section bg-[#1A0A2E] border border-[#31204F] rounded-xl p-4 mb-6">
         <p class="text-sm font-semibold text-[#FAF8FB] mb-3">Cantidad</p>
         <div class="flex items-center justify-between">
-          <button (click)="decreaseQuantity()" [disabled]="quantity() <= 1"
+          <button data-analytics="dish_quantity_decrease" (click)="decreaseQuantity()" [disabled]="quantity() <= 1"
             class="w-10 h-10 bg-[#221638] border border-[#31204F] rounded-full flex items-center justify-center font-bold text-xl text-[#FAF8FB] hover:bg-[#31204F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             −
           </button>
@@ -68,7 +68,7 @@
             {{ quantity() }}
           </span>
 
-          <button (click)="increaseQuantity()"
+          <button data-analytics="dish_quantity_increase" (click)="increaseQuantity()"
             class="w-10 h-10 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] rounded-full flex items-center justify-center font-bold text-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all">
             +
           </button>
@@ -234,7 +234,7 @@
 
     <!-- Footer con botón agregar -->
     <div class="modal-footer sticky bottom-0 bg-[#221638]/95 backdrop-blur-md border-t border-[#31204F] p-4 pb-[80px] sm:pb-4 rounded-b-[24px]">
-      <button (click)="onAddToCart()" [disabled]="!canAddToCart()"
+      <button data-analytics="dish_add_to_cart" (click)="onAddToCart()" [disabled]="!canAddToCart()"
         class="w-full bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-4 rounded-xl font-bold text-lg hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-between px-6">
         <span>Agregar al carrito</span>
         <span>S/ {{ calculatedPrice().toFixed(2) }}</span>

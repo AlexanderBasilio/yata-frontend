@@ -1,4 +1,5 @@
-import { Component, Input, Output, EventEmitter, inject, signal, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, DestroyRef, Input, Output, EventEmitter, inject, signal, OnInit, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { AppUpdateService } from '../../../core/services/app-update/app-update.service';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,6 +15,9 @@ import { GoogleAuthService } from '../../../core/services/auth/google-auth.servi
   styleUrl: './auth-modal.component.scss'
 })
 export class AuthModalComponent implements OnInit, AfterViewInit {
+  constructor() {
+    inject(DestroyRef).onDestroy(inject(AppUpdateService).holdUpdates());
+  }
   private fb = inject(FormBuilder);
   private router = inject(Router);
   private authService = inject(AuthService);

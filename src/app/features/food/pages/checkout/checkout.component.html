@@ -61,7 +61,7 @@
                     <p *ngIf="locationForm.get('address')?.touched && locationForm.get('address')?.hasError('required')"
                         class="text-[#DC2626] text-xs mt-1">Ingresa una dirección</p>
                 </div>
-                <button type="button" (click)="searchAddress()"
+                <button type="button" data-analytics="checkout_search_address" (click)="searchAddress()"
                     class="mt-6 bg-[#221638] border border-[#31204F] text-[#C30364] px-4 rounded-lg hover:bg-[#31204F] transition-colors flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
@@ -92,7 +92,7 @@
             </div>
 
             <div class="flex justify-end pt-4">
-                <button (click)="goToStep2()" [disabled]="locationForm.invalid || isLoadingSummary"
+                <button data-analytics="checkout_continue" (click)="goToStep2()" [disabled]="locationForm.invalid || isLoadingSummary"
                     class="bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] px-8 py-3 rounded-lg font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all flex items-center justify-center min-w-[200px]">
                     <span *ngIf="!isLoadingSummary">Confirmar Ubicación</span>
                     <span *ngIf="isLoadingSummary">Calculando...</span>
@@ -203,11 +203,11 @@
                     </p>
 
                     <div class="flex gap-3">
-                        <button (click)="goToStep1()"
+                        <button data-analytics="checkout_back" (click)="goToStep1()"
                             class="px-4 py-3 bg-transparent border border-[#C30364] text-[#C30364] rounded-lg font-medium hover:bg-[#C30364]/10 transition-colors">
                             Atrás
                         </button>
-                        <button (click)="confirmOrder()" [disabled]="detailsForm.invalid || isProcessingOrder"
+                        <button data-analytics="checkout_confirm_order" (click)="confirmOrder()" [disabled]="detailsForm.invalid || isProcessingOrder"
                             class="flex-1 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-lg font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] disabled:opacity-50 disabled:shadow-none transition-all">
                             <span *ngIf="!isProcessingOrder">Realizar Pedido</span>
                             <span *ngIf="isProcessingOrder">Procesando...</span>

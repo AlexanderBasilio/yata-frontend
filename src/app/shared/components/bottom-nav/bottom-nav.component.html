@@ -4,7 +4,7 @@
         class="bg-[#1A0A2E]/90 backdrop-blur-xl border border-[#31204F] rounded-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.3)] mx-auto max-w-md pointer-events-auto flex justify-between items-center px-6 py-2">
 
         <!-- Inicio (Home) -->
-        <a routerLink="/home"
+        <a data-analytics="nav_home" routerLink="/home"
             class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative"
             [class.text-[#C30364]]="isActive('/home')" [class.text-[#9D96A8]]="!isActive('/home')">
             <!-- Glow active -->
@@ -20,7 +20,7 @@
         </a>
 
         <!-- Carrito -->
-        <a [routerLink]="getCartRoute()"
+        <a data-analytics="nav_cart" [routerLink]="getCartRoute()"
             class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative"
             [class.text-[#C30364]]="isActive('/cart')" [class.text-[#9D96A8]]="!isActive('/cart')">
             <div class="relative">
@@ -47,7 +47,7 @@
         </a>
 
         <!-- Botón Central (Pedidos Activos/Realizados) -->
-        <a routerLink="/orders"
+        <a data-analytics="nav_orders" routerLink="/orders"
             class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative group"
             [class.text-[#C30364]]="isActive('/orders')" [class.text-[#9D96A8]]="!isActive('/orders')">
             <div class="relative">
@@ -66,7 +66,7 @@
         </a>
 
         <!-- Billetera -->
-        <a routerLink="/wallet"
+        <a data-analytics="nav_wallet" routerLink="/wallet"
             class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative"
             [class.text-[#C30364]]="isActive('/wallet')" [class.text-[#9D96A8]]="!isActive('/wallet')">
             @if (isActive('/wallet')) {
@@ -81,7 +81,7 @@
         </a>
 
         <!-- Perfil -->
-        <a routerLink="/profile"
+        <a data-analytics="nav_profile" routerLink="/profile"
             class="flex flex-col items-center justify-center gap-1 min-w-[3.5rem] transition-all relative"
             [class.text-[#C30364]]="isActive('/profile')" [class.text-[#9D96A8]]="!isActive('/profile')">
             @if (isActive('/profile')) {

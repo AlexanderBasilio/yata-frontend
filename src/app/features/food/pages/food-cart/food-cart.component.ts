@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FoodCartService } from '../../../../core/services/food-cart/food-cart.service';
 import { FoodCart, FoodCartItem, SelectedModifier, SelectedRequired } from '../../../../core/models/food-cart.model';
+import { AnalyticsService } from '../../../../core/services/analytics/analytics.service';
 
 @Component({
   selector: 'app-food-cart',
@@ -14,6 +15,8 @@ import { FoodCart, FoodCartItem, SelectedModifier, SelectedRequired } from '../.
 export class FoodCartComponent implements OnInit {
   private foodCartService = inject(FoodCartService);
   private router = inject(Router);
+  private analytics = inject(AnalyticsService);
+  private cartViewTracked = false;
 
   cart = signal<FoodCart | null>(null);
   isLoading = signal(true);
@@ -52,6 +55,10 @@ export class FoodCartComponent implements OnInit {
         console.log('🛒 Carrito cargado:', cart);
         // Puede ser null si no hay carrito
         this.cart.set(cart);
+        if (cart?.items.length && !this.cartViewTracked) {
+          this.cartViewTracked = true;
+          this.analytics.trackEcommerce('view_cart', cart.items.map(item => ({ id: item.dishId, price: item.basePrice, quantity: item.quantity })));
+        }
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -215,6 +222,7 @@ export class FoodCartComponent implements OnInit {
     }
 
     // Limpiamos cualquier rastro de pedido previo antes de iniciar checkout
+    this.analytics.trackEcommerce('begin_checkout', this.cart()!.items.map(item => ({ id: item.dishId, price: item.basePrice, quantity: item.quantity })));
     localStorage.removeItem('yata_confirmed_order');
     this.router.navigate(['/food/checkout']);
   }

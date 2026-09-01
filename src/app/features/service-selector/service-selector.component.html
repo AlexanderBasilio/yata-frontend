@@ -5,7 +5,7 @@
     <div class="absolute bottom-0 right-0 w-40 h-40 bg-[#C30364] rounded-full blur-[80px] opacity-20"></div>
 
     <!-- Header de Ubicación Superior -->
-    <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2.5 cursor-pointer relative z-10" (click)="openAddressModal()">
+    <div class="flex items-center justify-between mb-3 border-b border-white/10 pb-2.5 cursor-pointer relative z-10" data-analytics="home_open_address" (click)="openAddressModal()">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-white">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -76,7 +76,7 @@
   <div class="pl-6 mt-4">
     <div class="flex overflow-x-auto gap-4 pb-2 scrollbar-hide pr-6">
       @for (cat of categories; track cat.id) {
-      <button (click)="selectCategory(cat)" class="flex flex-col items-center gap-2 min-w-[70px]"
+      <button data-analytics="home_select_service" (click)="selectCategory(cat)" class="flex flex-col items-center gap-2 min-w-[70px]"
         [class.opacity-50]="!cat.available">
         <div
           class="w-[70px] h-[70px] bg-white rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.05)] border border-gray-100 flex items-center justify-center text-3xl transition-transform transform active:scale-95 overflow-hidden"
@@ -105,7 +105,7 @@
       <p class="text-xs text-[#9D96A8] font-epilogue leading-relaxed max-w-sm mb-4">
         Para ver los restaurantes disponibles y con delivery en tu zona, primero debes seleccionar o agregar tu ubicación de entrega en la parte superior.
       </p>
-      <button (click)="openAddressModal()"
+      <button data-analytics="home_open_address" (click)="openAddressModal()"
         class="bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white text-xs font-bold font-epilogue px-6 py-3 rounded-2xl shadow-[0_4px_15px_rgba(195,3,100,0.3)] hover:shadow-lg active:scale-95 transition-all flex items-center gap-2 cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -136,7 +136,7 @@
         <div class="flex gap-4 overflow-x-auto pb-4 pt-1 px-6 scrollbar-hide snap-x snap-mandatory">
           @for (rest of homeShortcuts()!.nearbySection.items; track rest.id) {
             <div 
-              (click)="onRestaurantCardClick(rest)"
+              data-analytics="home_select_restaurant" (click)="onRestaurantCardClick(rest)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <!-- Imagen Superior con Esquinas Redondeadas -->
@@ -204,7 +204,7 @@
         <div class="flex gap-4 overflow-x-auto pb-4 pt-1 px-6 scrollbar-hide snap-x snap-mandatory">
           @for (rest of homeShortcuts()!.newOptionsSection.items; track rest.id) {
             <div 
-              (click)="onRestaurantCardClick(rest)"
+              data-analytics="home_select_restaurant" (click)="onRestaurantCardClick(rest)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <div class="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 mb-2 shrink-0 relative">
@@ -267,7 +267,7 @@
         <div class="flex gap-4 overflow-x-auto pb-4 pt-1 px-6 scrollbar-hide snap-x snap-mandatory">
           @for (dish of homeShortcuts()!.trendingSection.items; track dish.id) {
             <div 
-              (click)="onDishCardClick(dish)"
+              data-analytics="home_select_dish" (click)="onDishCardClick(dish)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <div class="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 mb-2 shrink-0 relative">
@@ -344,7 +344,7 @@
         <div class="flex gap-4 overflow-x-auto pb-4 pt-1 px-6 scrollbar-hide snap-x snap-mandatory">
           @for (dish of homeShortcuts()!.reorderSection.items; track dish.id) {
             <div 
-              (click)="onDishCardClick(dish)"
+              data-analytics="home_select_dish" (click)="onDishCardClick(dish)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <div class="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 mb-2 shrink-0 relative">
@@ -662,7 +662,7 @@
         </button>
 
         <!-- Botón "Aprovechar oferta" estilizado con gradiente y perfectamente encajado -->
-        <button (click)="onAprovecharOferta()"
+        <button data-analytics="home_promotion_open" (click)="onAprovecharOferta()"
                 class="absolute bottom-[7.5%] left-[8%] right-[8%] h-[38px] sm:h-[42px] rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-extrabold font-['Epilogue'] text-xs sm:text-sm tracking-wide flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(195,3,100,0.75)] hover:shadow-[0_0_28px_rgba(232,54,138,0.95)] hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer z-30 border border-[#FF6DB5]/80 focus:outline-none">
           <span>Aprovechar oferta</span>
           <svg class="w-4 h-4 text-white shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
