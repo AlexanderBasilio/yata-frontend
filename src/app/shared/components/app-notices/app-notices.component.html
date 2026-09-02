@@ -18,8 +18,8 @@
       </div>
       <div class="actions">
         <button type="button" (click)="updates.postpone()">Más tarde</button>
-        <button type="button" (click)="updates.applyUpdate()" [disabled]="updates.blocked() || updates.checking()">
-          {{ updates.checking() ? 'Comprobando…' : 'Actualizar ahora' }}
+        <button type="button" (click)="updates.applyUpdate()" [disabled]="updates.blocked()">
+          Actualizar ahora
         </button>
       </div>
     </section>

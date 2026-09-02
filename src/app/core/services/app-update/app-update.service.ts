@@ -3,7 +3,7 @@ import { ApplicationRef, DestroyRef, Injectable, InjectionToken, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
-import { filter, firstValueFrom, from, fromEvent, interval, merge, of, switchMap, take, timeout } from 'rxjs';
+import { filter, firstValueFrom, from, fromEvent, merge, of, switchMap, take, timeout, timer } from 'rxjs';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { CartService } from '../cart/cart.service';
 
@@ -31,7 +31,8 @@ export class AppUpdateService {
   private readonly route = signal(this.router.url);
   private readonly holds = signal(0);
   private initialized = false;
-  private lastCheck = 0;
+  private lastCheck = -Infinity;
+  private readonly checkCooldown = 5 * 60_000;
   private pending: Promise<boolean> | null = null;
   readonly available = signal(false);
   readonly recovery = signal(false);
@@ -45,16 +46,15 @@ export class AppUpdateService {
   initialize(): void {
     if (this.initialized || !this.updates?.isEnabled) return;
     this.initialized = true;
-    this.router.events.pipe(
-      filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-      takeUntilDestroyed(this.destroyRef)
-    ).subscribe(event => { this.route.set(event.urlAfterRedirects); this.deferred.set(false); });
+    const navigation = this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    );
+    navigation.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
+      this.route.set(event.urlAfterRedirects); this.deferred.set(false);
+    });
     this.updates.versionUpdates.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
       if (event.type === 'VERSION_READY') {
-        this.available.set(true);
-        this.deferred.set(false);
-        this.message.set('');
-        this.analytics.trackUpdate('ready');
+        this.markAvailable();
       } else if (event.type === 'VERSION_INSTALLATION_FAILED') {
         this.analytics.trackUpdate('installation_failed');
         this.message.set('No se pudo descargar la nueva versión. Intentaremos de nuevo.');
@@ -69,9 +69,14 @@ export class AppUpdateService {
       filter(() => this.document.visibilityState === 'visible')
     );
     const online = this.document.defaultView ? fromEvent(this.document.defaultView, 'online') : of();
-    this.appRef.isStable.pipe(
-      filter(stable => stable), take(1),
-      switchMap(() => merge(of(null), interval(15 * 60_000), foreground, online)),
+    const restored = this.document.defaultView ? fromEvent<PageTransitionEvent>(this.document.defaultView, 'pageshow').pipe(
+      filter(event => event.persisted)
+    ) : of();
+    // One-shot fallback matches SW registration's 30s limit if the app never stabilizes.
+    // No recurring timer: idle/background tabs do not poll our servers.
+    merge(this.appRef.isStable.pipe(filter(stable => stable)), timer(30_000)).pipe(
+      take(1),
+      switchMap(() => merge(of(null), foreground, online, restored, navigation)),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(() => {
       if (this.document.visibilityState !== 'hidden') {
@@ -93,16 +98,28 @@ export class AppUpdateService {
 
   postpone(): void { this.deferred.set(true); this.analytics.trackUpdate('deferred'); }
 
-  async checkForUpdate(force = false): Promise<boolean> {
+  private markAvailable(): void {
+    if (!this.available()) this.analytics.trackUpdate('ready');
+    this.available.set(true);
+    this.deferred.set(false);
+    this.message.set('');
+  }
+
+  async checkForUpdate(): Promise<boolean> {
     if (!this.updates?.isEnabled || this.document.defaultView?.navigator.onLine === false) return false;
+    // A fully downloaded release is already available. Do not fetch another one before adoption.
+    if (this.available() && !this.recovery()) return true;
     if (this.pending) return this.pending;
-    if (!force && Date.now() - this.lastCheck < 60_000) return false;
+    if (Date.now() - this.lastCheck < this.checkCooldown) return false;
     this.lastCheck = Date.now();
     this.checking.set(true);
     // Do not leave the button disabled forever if the worker/network stops responding.
-    this.pending = firstValueFrom(from(this.updates.checkForUpdate()).pipe(timeout(30_000))).then(() => {
+    this.pending = firstValueFrom(from(this.updates.checkForUpdate()).pipe(timeout(30_000))).then(found => {
+      // The promise is also authoritative: an initially uncontrolled tab can miss VERSION_READY
+      // before the worker has associated that client with an application version.
+      if (found) this.markAvailable();
       this.message.set('');
-      return true;
+      return found;
     }).catch(() => {
       this.message.set('No pudimos comprobar la versión. Revisa tu conexión e inténtalo de nuevo.');
       this.analytics.trackUpdate('check_failed');
@@ -112,15 +129,16 @@ export class AppUpdateService {
   }
 
   async applyUpdate(): Promise<void> {
-    if ((!this.available() && !this.recovery()) || this.blocked() || this.checking()) return;
+    if ((!this.available() && !this.recovery()) || this.blocked()) return;
     if (!this.confirmReload()) return;
-    // Re-check in case another release appeared while the banner was on screen.
-    const checked = await this.checkForUpdate(true);
-    if (!checked || this.blocked()) {
-      if (!checked) this.message.set('Necesitas conexión para comprobar y actualizar Zisify. Inténtalo de nuevo.');
+    if (this.recovery() && this.document.defaultView?.navigator.onLine === false) {
+      this.message.set('Necesitas conexión para recuperar Zisify. Inténtalo cuando vuelvas a estar en línea.');
       return;
     }
+    if (this.blocked()) return;
     this.analytics.trackUpdate('accepted');
+    // VERSION_READY means the release is completely cached. A second network check is unnecessary
+    // and can prevent recovery when the current worker is broken or the network is slow.
     // Do not activateUpdate(), clear storage, or unregister the worker.
     this.reload();
   }

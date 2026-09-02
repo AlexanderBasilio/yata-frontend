@@ -1,6 +1,10 @@
 // Read-only check of the disjoint RE2-compatible Hosting header rules.
 const assert = require('node:assert/strict');
 const { hosting } = require('../firebase.json');
+const sw = require('../ngsw-config.json');
+
+assert.equal(sw.navigationRequestStrategy, 'freshness', 'Online SPA document loads must request current HTML');
+assert.equal(sw.dataGroups?.length ?? 0, 0, 'Do not add API response caching without a reviewed backend contract');
 
 function cacheHeader(pathname) {
   const matches = hosting.headers.filter(rule => new RegExp(rule.regex).test(pathname));
@@ -19,4 +23,4 @@ for (const path of ['/main-ABCDEFGH.js', '/chunk-1234ABCD.js', '/styles-ABC12345
 for (const path of ['/custom.js', '/images/logo.svg', '/styles.css']) {
   assert(!cacheHeader(path)?.includes('immutable'), `${path} has no content hash`);
 }
-console.log('Cache policy verified: SPA routes/control files no-store, hashed bundles immutable, no overlaps.');
+console.log('Cache policy verified: network-first SPA documents, no API dataGroups, control files no-store, hashed bundles immutable, no overlaps.');

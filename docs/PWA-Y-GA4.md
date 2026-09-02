@@ -8,10 +8,11 @@ GA4 mide comportamiento, no es el registro contable de pedidos. Los usuarios que
 
 ## Cómo se actualiza la aplicación
 
-- `SwUpdate` busca después de estabilizar Angular, al volver a primer plano, al recuperar conexión y cada 15 minutos mientras la página esté visible. Se limita a una comprobación por minuto y una solicitud simultánea.
-- Se muestra el botón solo cuando una versión completa está lista (`VERSION_READY`), o un aviso de recuperación cuando el worker informa un estado irrecuperable.
+- Las cargas completas de rutas SPA usan `navigationRequestStrategy: freshness`: solicitan primero el HTML actual a Hosting. Con red disponible, una recarga normal obtiene la publicación actual sin esperar a que termine la instalación de esa versión en Cache Storage. Ante un fallo de red se conserva el respaldo offline. No se modifica la caché por hash de los bundles. El coste es una solicitud de HTML en cada apertura/recarga y la latencia de red correspondiente; esta opción no establece un timeout de 3 segundos ni convierte errores HTTP del servidor en respaldo offline.
+- Nuestro servicio `SwUpdate` comprueba al iniciar, volver a primer plano (`visibilitychange`), restaurar desde BFCache (`pageshow.persisted`), recuperar conexión o navegar dentro de la SPA. No tiene sondeo periódico. Espera a estabilizar Angular, con un único límite de espera de 30 segundos para no quedar inactivo indefinidamente. Las comprobaciones propias se limitan a una cada cinco minutos por pestaña, sin concurrencia, y cesan mientras haya una versión lista pendiente de aceptar. Angular también realiza sus comprobaciones internas al inicializarse y ante navegaciones completas.
+- Se muestra el botón cuando una versión completa está lista, tanto por `VERSION_READY` como por la resolución `true` de `checkForUpdate()`. Este segundo camino cubre pestañas recién controladas que aún no estaban asociadas a una versión cuando se emitió el evento. No se muestra por `VERSION_DETECTED` ni por un resultado `false`. También hay aviso de recuperación cuando el worker informa un estado irrecuperable.
 - “Más tarde” pospone el aviso hasta la siguiente navegación/comprobación. No se recarga automáticamente.
-- “Actualizar ahora” pide confirmación y vuelve a comprobar versiones antes de recargar. Si no hay conexión, falla la comprobación o no responde en 30 segundos, se conserva la aplicación actual y se permite reintentar.
+- “Actualizar ahora” pide confirmación y recarga sin una segunda comprobación: la versión ya está descargada. Esto evita bloquear el botón por una red lenta o por un worker que necesita recuperarse. Para recuperación de estado irrecuperable se exige estar en línea. Las comprobaciones en segundo plano tienen un límite de espera de 30 segundos; nunca provocan recarga automática.
 - No se permite recargar en carrito/checkout, con el modal de pago, con el modal de personalización de platillos, con el modal de autenticación o con artículos en el carrito antiguo de licores (ese carrito vive en memoria).
 - La recarga no cambia `localStorage`; tampoco se llama a `activateUpdate`, `unregister` ni `caches.delete`.
 - Se conservan los grupos de recursos y `prefetch` del service worker. No se agregó caché de respuestas de APIs, precios, pagos ni datos personales.
@@ -19,6 +20,10 @@ GA4 mide comportamiento, no es el registro contable de pedidos. Los usuarios que
 ### Primera publicación
 
 Los clientes que estén ejecutando la versión antigua todavía NO contienen este botón. Necesitan cargar esta primera versión al recargar/reabrir. No es posible insertar el aviso en una pestaña que sigue ejecutando código antiguo. Una vez adoptada esta versión, los despliegues siguientes ya tienen el mecanismo de aviso. Una PWA cerrada/suspendida tampoco puede prometer actualización inmediata; se comprueba al volver.
+
+Lo mismo aplica al cambio de `performance` a `freshness`: una versión antigua del manifiesto conserva su política hasta que el navegador incorpora la nueva. La garantía probada de una sola recarga online corresponde a las publicaciones siguientes, después de adoptar esta configuración. No se debe cerrar sesión, borrar `localStorage` ni desregistrar el worker para actualizar.
+
+No existe detección de publicaciones con cero comunicación. El manifiesto publicado durante esta revisión medía 6.296 bytes sin comprimir; los archivos cambiados requieren su descarga aparte. No se consulta ninguna API de negocio para comprobar versiones. Una pestaña visible e inmóvil puede no enterarse de una publicación hasta la siguiente actividad, ya que se ha eliminado el temporizador periódico.
 
 ### Cabeceras
 
@@ -90,6 +95,29 @@ Se retiró la carga de Vercel Analytics para no añadir un segundo canal de medi
 
 Compilar producción hacia `dist/codex-verification`, ejecutar `node scripts/serve-pwa-verification.cjs` y abrir `http://127.0.0.1:4301/privacy`. Una vez instalada la PWA, una solicitud POST local a `/__qa/release` incrementa solamente `appData` del manifiesto servido; no escribe los archivos ni toca Firebase. Una nueva navegación externa o comprobación del worker detecta la versión. Este servidor es solo de desarrollo y escucha exclusivamente en loopback. No sustituye la prueba con dos builds distintos en preview ni la validación de cabeceras reales de Hosting.
 
+La prueba adicional `node scripts/verify-pwa-lifecycle.cjs dist/codex-pwa-verification/browser` requiere Playwright disponible en la ruta de módulos de Node y Chrome instalado. Genera en memoria dos publicaciones con HTML, bundle principal y hashes distintos a partir de un build de producción; no modifica el build ni publica. Usa perfiles aislados y restringe la resolución DNS a loopback. Reproduce la primera recarga obsoleta con `performance`, verifica una sola recarga con `freshness` mientras se retiene la descarga del manifiesto, comprueba respaldo offline y conservación de claves de sesión/carrito/consentimiento, y valida el aviso por actividad sin recarga previa. No sustituye Safari/iOS ni una prueba final de dos releases en Hosting preview.
+
+## Revisión de caché y requerimiento para backend
+
+No hace falta un endpoint, tabla ni servicio de versiones para actualizar este frontend: `ngsw.json` lo genera Angular y lo sirve Firebase Hosting. Se compararon los SHA-256 del manifiesto, worker e index publicados con el build local y coincidían; las cabeceras publicadas de control/HTML eran `no-store`. Esto descarta un artefacto distinto en esa revisión, pero no permite inspeccionar retrospectivamente el estado de la caché del navegador afectado.
+
+La sugerencia de agregar `dataGroups` a `/api/restaurantes/**` y `/api/pedidos/**` no corresponde al contrato observado: el frontend usa varios hosts externos y hoy no hay `dataGroups`. Agregar fallback cacheado de pedidos, precios o stock puede mostrar datos antiguos y no arregla el HTML. No se modificó esa política.
+
+Si se abre una tarea independiente con backend, pedir revisión/documentación de estos puntos (no son fallos confirmados de las APIs actuales):
+
+1. Para respuestas personalizadas de sesión, perfil, carrito, pedidos y pagos: definir `Cache-Control: private, no-store` y evitar cachés compartidas por usuario. Revisar también proxies/CDN intermedios.
+2. Para catálogo público: documentar la política de frescura. Si se busca ahorrar transferencia sin servir datos obsoletos, evaluar `ETag`/`If-None-Match` con revalidación (`Cache-Control: no-cache`); no aplicar el mismo contrato a recursos privados.
+3. Al cotizar/crear pedidos, validar en servidor precios, disponibilidad y totales actuales, independientemente de lo mostrado en el navegador. Documentar la respuesta cuando cambian y mecanismos de idempotencia antes de reintentar operaciones de compra.
+4. Si se desea renovar sesión: proporcionar el contrato real de refresh (método/URL, credenciales o cookie, respuesta, expiración, rotación, revocación y errores). La interfaz `AuthResponse` menciona `refreshToken`, pero el frontend inspeccionado no lo renueva; esa interfaz por sí sola no acredita que exista un endpoint utilizable. No se inventó ni implementó uno.
+
+Un aviso instantáneo mientras la pestaña permanece inmóvil exigiría consultas periódicas o una notificación de servidor (SSE/WebSocket/push), que también consume red y añade infraestructura. No se recomienda introducirlo solo para invalidar versiones del frontend en este MVP.
+
+### Verificación adicional del 1 de septiembre de 2026
+
+- Build de producción separado correcto y 33 pruebas focalizadas correctas.
+- Worker real Angular 20.3.27 en Chrome: reproducción de la recarga obsoleta anterior; una recarga online a código nuevo con `freshness`; respaldo offline; aviso sin refrescar tras actividad; adopción voluntaria conservando claves locales.
+- Sin publicación en Firebase, sin cambios en backend/API/auth, sin limpieza de almacenamiento de usuarios. Las claves de sesión de la prueba son ficticias: se prueba preservación de almacenamiento, no validez ni renovación de tokens.
+
 ## Backend pendiente solo si se requieren ventas confirmadas
 
 No se añadió `purchase`. Para hacerlo de forma fiable hace falta confirmar el contrato del backend: cuándo se aprueba una transferencia, qué evento/estado lo acredita y cuál es el identificador transaccional estable para deduplicar. No inferir aprobación a partir de crear un pedido o reportar un número de operación. No se necesita backend adicional para la medición UI/UX implementada.
@@ -106,6 +134,7 @@ No se añadió `purchase`. Para hacerlo de forma fiable hace falta confirmar el 
 ## Referencias oficiales
 
 - [Angular: comunicación con el service worker](https://angular.dev/ecosystem/service-workers/communications)
+- [Angular: estrategias de navegación y datos](https://angular.dev/ecosystem/service-workers/config#navigationrequeststrategy)
 - [Firebase: configuración de Hosting](https://firebase.google.com/docs/hosting/full-config)
 - [GA4: vistas manuales](https://developers.google.com/analytics/devguides/collection/ga4/views)
 - [GA4: medición SPA](https://developers.google.com/analytics/devguides/collection/ga4/single-page-applications)
