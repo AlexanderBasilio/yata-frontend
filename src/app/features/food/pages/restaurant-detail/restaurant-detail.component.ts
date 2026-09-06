@@ -27,7 +27,36 @@ export class RestaurantDetailComponent implements OnInit {
   restaurant = signal<Restaurant | null>(null);
   dishes = signal<Dish[]>([]);
   filteredDishes = signal<Dish[]>([]);
-  categories = signal<string[]>([]);
+  // ✅ Criterio de Orden Visual: Secuencia definida estrictamente por RestaurantResponse.categories (de posición 0 a última)
+  // No aplicar ordenamiento alfabético ni métodos que alteren la posición de las llaves
+  categories = computed(() => {
+    const rest = this.restaurant();
+    const currentDishes = this.dishes();
+    if (!currentDishes.length) {
+      return rest?.categories || [];
+    }
+
+    const dishCategories = new Set(currentDishes.map(d => d.category));
+    const orderedCategories: string[] = [];
+
+    // 1. Respetar estrictamente el orden de RestaurantResponse.categories (de la posición 0 a la última)
+    if (rest?.categories && Array.isArray(rest.categories)) {
+      for (const cat of rest.categories) {
+        if (dishCategories.has(cat) && !orderedCategories.includes(cat)) {
+          orderedCategories.push(cat);
+        }
+      }
+    }
+
+    // 2. Si existen platillos con alguna categoría no listada en restaurant.categories, preservarlas al final
+    for (const d of currentDishes) {
+      if (d.category && !orderedCategories.includes(d.category)) {
+        orderedCategories.push(d.category);
+      }
+    }
+
+    return orderedCategories;
+  });
   selectedCategory = signal<string | null>(null);
 
   // Modal Platillo
@@ -173,20 +202,6 @@ export class RestaurantDetailComponent implements OnInit {
         this.dishes.set(sortedDishes);
         this.filteredDishes.set(sortedDishes);
 
-        // 2. Ordenar categorías: primero las que tengan mayor cantidad de platos disponibles
-        const uniqueCategories = [...new Set(sortedDishes.map(d => d.category))];
-        uniqueCategories.sort((catA, catB) => {
-          const availA = sortedDishes.filter(d => d.category === catA && d.isAvailable !== false).length;
-          const availB = sortedDishes.filter(d => d.category === catB && d.isAvailable !== false).length;
-          if (availB !== availA) {
-            return availB - availA;
-          }
-          const totalA = sortedDishes.filter(d => d.category === catA).length;
-          const totalB = sortedDishes.filter(d => d.category === catB).length;
-          return totalB - totalA;
-        });
-
-        this.categories.set(uniqueCategories);
         this.isLoadingDishes.set(false);
 
         // Auto-abrir el modal del platillo si se pasa dishId en queryParams
