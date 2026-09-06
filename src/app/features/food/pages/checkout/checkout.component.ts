@@ -55,8 +55,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     // Mapa
     map!: mapboxgl.Map;
     marker!: mapboxgl.Marker;
-    initialLat = -12.06513; // Huancayo por defecto
-    initialLng = -75.20486;
+    initialLat = -12.003528; // Lima (12°00'12.7"S)
+    initialLng = -76.876778; // Lima (76°52'36.4"W)
 
     // Estado
     cartId: string | null = null;
@@ -247,7 +247,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         try {
             const accessToken = environment.mapbox.accessToken;
             // Centro por defecto o el del mapa si existe
-            const center = this.map ? this.map.getCenter() : { lng: -77.0428, lat: -12.0464 };
+            const center = this.map ? this.map.getCenter() : { lng: -76.876778, lat: -12.003528 };
 
             const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${accessToken}&country=pe&proximity=${center.lng},${center.lat}&types=address,poi,place&limit=1`;
 
@@ -303,9 +303,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     // Helper para parsear el contexto de Mapbox
     extractCityAndRegion(context: any[]): { city: string, region: string } {
-        // Valores por defecto
-        let city = 'Huancayo';
-        let region = 'Junin';
+        // Valores por defecto Lima
+        let city = 'Lima';
+        let region = 'Lima';
 
         // Mapbox context devuelve array de objetos con "id". 
         // Ejemplo: id: "place.123" -> Ciudad/Distrito, id: "region.456" -> Departamento
@@ -358,8 +358,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             address: loc.address,
             latitude: Number(loc.latitude.toFixed(8)),
             longitude: Number(loc.longitude.toFixed(8)),
-            city: loc.city || 'Huancayo',
-            region: loc.region || 'Junin',
+            city: loc.city || 'Lima',
+            region: loc.region || 'Lima',
             reference: loc.reference || ''
         };
 
@@ -436,8 +436,8 @@ export class CheckoutComponent implements OnInit, OnDestroy {
                 address: locVal.address,
                 latitude: Number(locVal.latitude.toFixed(8)),
                 longitude: Number(locVal.longitude.toFixed(8)),
-                city: locVal.city || 'Huancayo',
-                region: locVal.region || 'Junin',
+                city: locVal.city || 'Lima',
+                region: locVal.region || 'Lima',
                 reference: locVal.reference || ''
             }
         };

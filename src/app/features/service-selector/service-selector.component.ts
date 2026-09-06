@@ -124,6 +124,22 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     return false;
   });
 
+  // 🎯 Tutorial guiado paso a paso cuando el usuario no tiene ubicación
+  showLocationTutorial = computed(() => {
+    return !this.hasActiveLocation() && 
+           !this.showPromoModal() && 
+           !this.showAddressModal() && 
+           !this.showAddAddressModal();
+  });
+
+  openAddressTutorialFlow() {
+    if (this.customerAddresses().length === 0) {
+      this.openAddAddressModal();
+    } else {
+      this.openAddressModal();
+    }
+  }
+
   hasAnyShortcutItems = computed(() => {
     const s = this.homeShortcuts();
     if (!s) return false;
@@ -450,9 +466,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   newLabel = signal('Casa');
   newStreetAddress = signal('');
   newReference = signal('');
-  newCity = signal('HUANCAYO');
-  newLatitude = signal(-12.04637);
-  newLongitude = signal(-75.21128);
+  newCity = signal('LIMA');
+  newLatitude = signal(-12.003528);
+  newLongitude = signal(-76.876778);
   isSavingAddress = signal(false);
 
   // Mapbox GL instance variables
@@ -609,9 +625,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.newLabel.set('Casa');
     this.newStreetAddress.set('');
     this.newReference.set('');
-    this.newCity.set('HUANCAYO');
-    this.newLatitude.set(-12.04637);
-    this.newLongitude.set(-75.21128);
+    this.newCity.set('LIMA');
+    this.newLatitude.set(-12.003528);
+    this.newLongitude.set(-76.876778);
     this.showAddAddressModal.set(true);
     setTimeout(() => {
       this.initMap();
@@ -626,9 +642,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.newLabel.set(address.label || 'Casa');
     this.newStreetAddress.set(address.streetAddress || '');
     this.newReference.set(address.reference || '');
-    this.newCity.set(address.city || 'HUANCAYO');
-    this.newLatitude.set(address.latitude || -12.04637);
-    this.newLongitude.set(address.longitude || -75.21128);
+    this.newCity.set(address.city || 'LIMA');
+    this.newLatitude.set(address.latitude || -12.003528);
+    this.newLongitude.set(address.longitude || -76.876778);
     this.showAddAddressModal.set(true);
     setTimeout(() => {
       this.initMap(address.latitude, address.longitude);
@@ -682,8 +698,8 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private initMap(initialLat?: number, initialLng?: number) {
     this.cleanupMap();
 
-    const lat = initialLat || -12.04637;
-    const lng = initialLng || -75.21128;
+    const lat = initialLat || -12.003528;
+    const lng = initialLng || -76.876778;
     const defaultCenter: [number, number] = [lng, lat];
 
     try {

@@ -28,7 +28,7 @@ export class MapboxService {
   }
 
   async searchAddress(query: string): Promise<any[]> {
-    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${environment.mapbox.accessToken}&country=PE&limit=5&proximity=-75.2,-12.0`;
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${environment.mapbox.accessToken}&country=PE&limit=5&proximity=-76.876778,-12.003528`;
 
     try {
       const response = await fetch(url);

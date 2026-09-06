@@ -128,9 +128,9 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   initMap(): void {
-    const huancayoCenter: [number, number] = [-75.2137, -12.0653];
+    const defaultCenter: [number, number] = [-76.876778, -12.003528];
 
-    this.map = this.mapboxService.createMap('map', huancayoCenter, 14);
+    this.map = this.mapboxService.createMap('map', defaultCenter, 14);
 
     this.map.on('load', () => {
       this.isLoadingMap.set(false);
@@ -139,7 +139,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
         draggable: true,
         color: '#0F456E'
       })
-        .setLngLat(huancayoCenter)
+        .setLngLat(defaultCenter)
         .addTo(this.map);
 
       this.marker.on('dragend', () => {
@@ -157,12 +157,6 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
   }
 
   async onMarkerDrag(lng: number, lat: number): Promise<void> {
-    if (!this.mapboxService.isLocationInHuancayo(lat, lng)) {
-      alert('⚠️ Por ahora solo hacemos entregas en Huancayo');
-      const huancayoCenter: [number, number] = [-75.2137, -12.0653];
-      this.marker.setLngLat(huancayoCenter);
-      return;
-    }
 
     const location = await this.mapboxService.reverseGeocode(lng, lat);
     if (location) {
@@ -366,8 +360,8 @@ export class LocationPickerComponent implements OnInit, OnDestroy, AfterViewInit
           address: this.tempOrderData.location.address,
           latitude: this.tempOrderData.location.latitude,
           longitude: this.tempOrderData.location.longitude,
-          city: 'Huancayo',
-          region: 'Junín'
+          city: 'Lima',
+          region: 'Lima'
         },
         payment: {
           method: this.tempOrderData.payment.method,
