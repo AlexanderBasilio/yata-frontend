@@ -1,27 +1,54 @@
 <div class="restaurant-catalog min-h-screen bg-gray-50 pb-36">
 
-  <!-- Header de Ubicación Superior -->
-  <div class="bg-white px-4 py-3 flex items-center justify-between border-b border-gray-100 cursor-pointer" data-analytics="catalog_open_address" (click)="openAddressModal()">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-full bg-[#0F456E]/10 flex items-center justify-center text-[#0F456E]">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+  <!-- Header Superior: Hamburger Menu (Izquierda) + Ubicación (Derecha) -->
+  <div class="bg-white px-4 py-2.5 flex items-center justify-between border-b border-gray-100 shadow-sm relative z-20">
+    <!-- Hamburger Menu Animado -->
+    <button 
+      type="button" 
+      (click)="toggleSidebar()"
+      class="w-9 h-9 flex flex-col justify-center items-center gap-1.5 p-1 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-95 transition-all text-gray-700 border border-gray-200 cursor-pointer focus:outline-none"
+      [attr.aria-expanded]="isSidebarOpen()"
+      aria-label="Abrir menú de cuenta">
+      <!-- Barra 1 (Superior) -->
+      <span class="w-5 h-[2px] bg-gray-800 rounded-full transition-all duration-300 transform origin-center"
+        [class.rotate-45]="isSidebarOpen()"
+        [class.translate-y-[8px]]="isSidebarOpen()"
+        [class.bg-[#C30364]]="isSidebarOpen()"></span>
+      <!-- Barra 2 (Central) -->
+      <span class="w-5 h-[2px] bg-gray-800 rounded-full transition-all duration-300 transform origin-center"
+        [class.opacity-0]="isSidebarOpen()"
+        [class.scale-0]="isSidebarOpen()"></span>
+      <!-- Barra 3 (Inferior) -->
+      <span class="w-5 h-[2px] bg-gray-800 rounded-full transition-all duration-300 transform origin-center"
+        [class.-rotate-45]="isSidebarOpen()"
+        [class.-translate-y-[8px]]="isSidebarOpen()"
+        [class.bg-[#C30364]]="isSidebarOpen()"></span>
+    </button>
+
+    <!-- Ubicación (A la derecha: icono pequeño sin círculo + Casa/Etiqueta + Flecha, y debajo la calle) -->
+    <div 
+      (click)="openAddressModal()" 
+      class="flex flex-col items-end text-right cursor-pointer group py-1 px-2 rounded-xl hover:bg-gray-50 transition-all duration-200" 
+      data-analytics="catalog_open_address">
+      
+      <!-- Fila Superior: Ícono de ubicación pequeño (sin círculo blanco) + Etiqueta + Flecha desplegable -->
+      <div class="flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5 text-[#C30364] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        <span class="text-xs font-bold text-gray-900 group-hover:text-[#C30364] transition-colors truncate max-w-[160px]">
+          {{ currentAddress()?.label ? currentAddress()!.label : 'Ubicación' }}
+        </span>
+        <svg class="w-3 h-3 text-gray-500 group-hover:text-gray-900 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
         </svg>
       </div>
-      <div class="max-w-[280px]">
-        <p class="text-[10px] text-gray-400 font-medium truncate">
-          {{ currentAddress()?.streetAddress ? (currentAddress()!.streetAddress + (currentAddress()!.city ? ', ' + currentAddress()!.city : '')) : 'Seleccione ubicación' }}
-        </p>
-        <div class="flex items-center gap-1">
-          <span class="text-sm font-bold text-gray-800">
-            {{ currentAddress()?.label ? currentAddress()!.label : 'Ubicación de entrega' }}
-          </span>
-          <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </div>
-      </div>
+
+      <!-- Fila Inferior: Calle o dirección debajo -->
+      <p class="text-[11px] font-medium text-gray-500 truncate max-w-[210px] mt-0.5 group-hover:text-gray-800 transition-colors">
+        {{ currentAddress()?.streetAddress ? (currentAddress()!.streetAddress + (currentAddress()!.city ? ', ' + currentAddress()!.city : '')) : 'Seleccione ubicación' }}
+      </p>
     </div>
   </div>
 
@@ -383,5 +410,11 @@
       </div>
     </div>
   }
+
+  <!-- DRAWER LATERAL DE MI CUENTA (z-[150]) -->
+  <app-account-drawer
+    [isOpen]="isSidebarOpen()"
+    (closeDrawer)="closeSidebar()">
+  </app-account-drawer>
 
 </div>

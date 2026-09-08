@@ -8,12 +8,13 @@ import { RestaurantCardComponent } from '../restaurant-card/restaurant-card.comp
 import { CustomerService, Address } from '../../../../core/services/customer/customer.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { MapboxService } from '../../../../core/services/location/mapbox.service';
+import { AccountDrawerComponent } from '../../../../shared/components/account-drawer/account-drawer.component';
 import mapboxgl from 'mapbox-gl';
 
 @Component({
   selector: 'app-restaurant-catalog',
   standalone: true,
-  imports: [CommonModule, RouterModule, RestaurantCardComponent, FormsModule],
+  imports: [CommonModule, RouterModule, RestaurantCardComponent, FormsModule, AccountDrawerComponent],
   templateUrl: './restaurant-catalog.component.html',
   styleUrl: './restaurant-catalog.component.scss'
 })
@@ -23,6 +24,17 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private mapboxService = inject(MapboxService);
   private router = inject(Router);
+
+  // Menú lateral "Mi cuenta"
+  isSidebarOpen = signal(false);
+
+  toggleSidebar() {
+    this.isSidebarOpen.update(prev => !prev);
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen.set(false);
+  }
 
   restaurants = signal<Restaurant[]>([]);
   filteredRestaurants = signal<Restaurant[]>([]);

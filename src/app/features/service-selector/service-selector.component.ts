@@ -13,6 +13,8 @@ import {
 } from '../../core/services/restaurant/portal-catalog.service';
 import mapboxgl from 'mapbox-gl';
 
+import { AccountDrawerComponent } from '../../shared/components/account-drawer/account-drawer.component';
+
 interface Category {
   id: string;
   name: string;
@@ -41,7 +43,7 @@ export interface CategoryCarousel {
 @Component({
   selector: 'app-service-selector',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, AccountDrawerComponent],
   templateUrl: './service-selector.component.html',
   styleUrl: './service-selector.component.scss',
 })
@@ -51,6 +53,17 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private customerService = inject(CustomerService);
   private mapboxService = inject(MapboxService);
   private portalCatalogService = inject(PortalCatalogService);
+
+  // Menú lateral "Mi cuenta"
+  isSidebarOpen = signal(false);
+
+  toggleSidebar() {
+    this.isSidebarOpen.update(prev => !prev);
+  }
+
+  closeSidebar() {
+    this.isSidebarOpen.set(false);
+  }
 
   readonly womenAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573894/Gemini_Generated_Image_alg3v6alg3v6alg3_lpa0lo.png';
   readonly menAvatarUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786573919/avatar-man_uftrhm.png';
@@ -129,7 +142,8 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     return !this.hasActiveLocation() && 
            !this.showPromoModal() && 
            !this.showAddressModal() && 
-           !this.showAddAddressModal();
+           !this.showAddAddressModal() &&
+           !this.isSidebarOpen();
   });
 
   openAddressTutorialFlow() {
