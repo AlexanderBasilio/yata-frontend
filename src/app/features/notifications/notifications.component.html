@@ -1,0 +1,167 @@
+<div class="min-h-screen bg-[#0D0518] text-[#FAF8FB] font-sans pb-32">
+
+  <!-- Header con Glow Zisify -->
+  <div class="bg-gradient-to-b from-[#1A0A2E] to-[#0D0518] border-b border-[#31204F]/60 px-5 pt-6 pb-6 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-48 h-48 bg-[#C30364] rounded-full blur-[90px] opacity-25 pointer-events-none"></div>
+
+    <div class="max-w-xl mx-auto flex items-center justify-between relative z-10">
+      <div class="flex items-center gap-3">
+        <button 
+          type="button" 
+          (click)="goBack()"
+          class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white flex items-center justify-center border border-white/10 transition-all cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-xl font-bold font-['Inknut_Antiqua'] text-white">Notificaciones</h1>
+          <p class="text-xs text-[#9D96A8]">Buzón de avisos y premios</p>
+        </div>
+      </div>
+
+      <!-- Marcar todo como leído -->
+      <button 
+        type="button"
+        (click)="markAllAsRead()"
+        [disabled]="isMarkingAll() || notifications().length === 0"
+        class="text-[11px] font-semibold text-[#FF6DB5] hover:text-white disabled:opacity-40 transition-colors py-1 px-2.5 rounded-lg bg-white/5 border border-white/10 active:scale-95 cursor-pointer">
+        {{ isMarkingAll() ? 'Marcando...' : 'Marcar leídas' }}
+      </button>
+    </div>
+
+    <!-- Pestañas de Filtro (Todas / No leídas) -->
+    <div class="max-w-xl mx-auto mt-5 flex gap-2 relative z-10">
+      <button 
+        type="button"
+        (click)="setFilter(false)"
+        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+        [class.bg-[#C30364]]="!filterUnreadOnly()"
+        [class.text-white]="!filterUnreadOnly()"
+        [class.border-[#FF6DB5]/50]="!filterUnreadOnly()"
+        [class.shadow-[0_0_15px_rgba(195,3,100,0.4)]]="!filterUnreadOnly()"
+        [class.bg-white/5]="filterUnreadOnly()"
+        [class.text-[#9D96A8]]="filterUnreadOnly()"
+        [class.border-white/10]="filterUnreadOnly()">
+        Todas
+      </button>
+
+      <button 
+        type="button"
+        (click)="setFilter(true)"
+        class="flex-1 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer"
+        [class.bg-[#C30364]]="filterUnreadOnly()"
+        [class.text-white]="filterUnreadOnly()"
+        [class.border-[#FF6DB5]/50]="filterUnreadOnly()"
+        [class.shadow-[0_0_15px_rgba(195,3,100,0.4)]]="filterUnreadOnly()"
+        [class.bg-white/5]="!filterUnreadOnly()"
+        [class.text-[#9D96A8]]="!filterUnreadOnly()"
+        [class.border-white/10]="!filterUnreadOnly()">
+        No leídas
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de Notificaciones -->
+  <div class="max-w-xl mx-auto px-4 py-6">
+
+    @if (isLoading()) {
+      <div class="space-y-3">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <div class="bg-[#1A0A2E]/70 border border-[#31204F]/60 rounded-2xl p-4 animate-pulse flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-white/10 flex-shrink-0"></div>
+            <div class="flex-1">
+              <div class="h-3.5 bg-white/10 rounded w-2/3 mb-2"></div>
+              <div class="h-3 bg-white/5 rounded w-full mb-1"></div>
+              <div class="h-2.5 bg-white/5 rounded w-1/4"></div>
+            </div>
+          </div>
+        }
+      </div>
+    } @else if (notifications().length === 0) {
+      <!-- Empty State -->
+      <div class="bg-gradient-to-b from-[#1A0A2E]/80 to-[#221638]/40 border border-[#31204F]/70 rounded-3xl p-8 text-center shadow-xl">
+        <div class="w-16 h-16 rounded-2xl bg-[#C30364]/20 border border-[#FF6DB5]/30 text-[#FF6DB5] flex items-center justify-center mx-auto mb-4 text-2xl shadow-[0_0_20px_rgba(195,3,100,0.4)]">
+          🔔
+        </div>
+        <h3 class="text-base font-bold text-white font-['Inknut_Antiqua'] mb-1">
+          No tienes notificaciones
+        </h3>
+        <p class="text-xs text-[#9D96A8] leading-relaxed max-w-sm mx-auto mb-6">
+          {{ filterUnreadOnly() ? 'No tienes mensajes no leídos en este momento.' : 'Aquí recibirás novedades de tus pedidos, avisos de encuestas y reclamos de recompensas.' }}
+        </p>
+        <button 
+          type="button" 
+          (click)="goBack()"
+          class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-semibold text-xs border border-white/15 transition-all">
+          Volver al Inicio
+        </button>
+      </div>
+    } @else {
+      <div class="space-y-3">
+        @for (item of notifications(); track item.uuid) {
+          <div 
+            (click)="onNotificationClick(item)"
+            class="p-4 rounded-2xl border transition-all cursor-pointer relative group flex items-start gap-3.5"
+            [class.bg-[#1A0A2E]]="item.isRead"
+            [class.border-[#31204F]]="item.isRead"
+            [class.bg-gradient-to-r]="!item.isRead"
+            [class.from-[#221638]]="!item.isRead"
+            [class.to-[#1A0A2E]]="!item.isRead"
+            [class.border-[#C30364]/60]="!item.isRead"
+            [class.shadow-[0_0_20px_rgba(195,3,100,0.25)]]="!item.isRead">
+
+            <!-- Ícono según Tipo Transversal -->
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-lg border"
+              [class.bg-[#C30364]/25]="!item.isRead"
+              [class.border-[#FF6DB5]/40]="!item.isRead"
+              [class.bg-white/5]="item.isRead"
+              [class.border-white/10]="item.isRead">
+              @if (item.reference?.type === 'REWARD' || item.type === 'REWARD_PENDING') {
+                🎁
+              } @else if (item.reference?.type === 'SURVEY' || item.type === 'SURVEY_INVITATION') {
+                📝
+              } @else if (item.reference?.type === 'ORDER') {
+                🛍️
+              } @else {
+                ✨
+              }
+            </div>
+
+            <!-- Contenido -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-1">
+                <h4 class="text-xs font-bold truncate font-['Epilogue']"
+                  [class.text-white]="!item.isRead"
+                  [class.text-white/80]="item.isRead">
+                  {{ item.title }}
+                </h4>
+                <span class="text-[10px] text-[#9D96A8] flex-shrink-0">
+                  {{ formatDate(item.createdAt) }}
+                </span>
+              </div>
+
+              <p class="text-xs text-[#9D96A8] leading-relaxed line-clamp-2">
+                {{ item.message }}
+              </p>
+
+              @if (item.action?.label) {
+                <div class="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-[#FF6DB5] group-hover:underline">
+                  <span>{{ item.action!.label }}</span>
+                  <span>→</span>
+                </div>
+              }
+            </div>
+
+            <!-- Punto de no leído -->
+            @if (!item.isRead) {
+              <div class="w-2 h-2 rounded-full bg-[#C30364] flex-shrink-0 mt-1 shadow-[0_0_8px_#C30364]"></div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+</div>

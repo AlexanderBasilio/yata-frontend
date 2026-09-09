@@ -14,6 +14,8 @@ import {
 import mapboxgl from 'mapbox-gl';
 
 import { AccountDrawerComponent } from '../../shared/components/account-drawer/account-drawer.component';
+import { PortalHomeSummaryService } from '../../core/services/portal/portal-home-summary.service';
+import { HomeSummaryResponse } from '../../core/models/portal-home-summary.model';
 
 interface Category {
   id: string;
@@ -53,6 +55,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private customerService = inject(CustomerService);
   private mapboxService = inject(MapboxService);
   private portalCatalogService = inject(PortalCatalogService);
+  private portalHomeSummaryService = inject(PortalHomeSummaryService);
 
   // Menú lateral "Mi cuenta"
   isSidebarOpen = signal(false);
@@ -77,12 +80,29 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   // Modal Promocional de Lanzamiento (se abre siempre al iniciar sesión / cargar inicio)
   showPromoModal = signal(true);
 
-  // Home Shortcuts Signal (Header Summary + 4 Secciones)
+  // 🎯 Nuevo Home Summary (Header + Notifications + Rewards)
+  homeSummaryData = signal<HomeSummaryResponse | null>(null);
+
+  // Home Shortcuts Signal (Carruseles de Comida exclusivos)
   homeShortcuts = signal<HomeShortcutSectionsResponse | null>(null);
   isLoadingShortcuts = signal(false);
 
-  // 🎯 Computeds basados en el nuevo headerSummaryDto de Portal
-  headerSummary = computed(() => this.homeShortcuts()?.headerSummaryDto || null);
+  // 🎯 Computeds basados en el nuevo GET /api/v1/portal/home/summary
+  headerSummary = computed(() => {
+    const summary = this.homeSummaryData();
+    if (summary?.header) {
+      return summary.header;
+    }
+    return this.homeShortcuts()?.headerSummaryDto || null;
+  });
+
+  notificationsUnreadCount = computed(() => {
+    return this.homeSummaryData()?.notifications?.unreadCount ?? 0;
+  });
+
+  rewardsPendingCount = computed(() => {
+    return this.homeSummaryData()?.rewards?.pendingClaimCount ?? 0;
+  });
 
   displayCustomerName = computed(() => {
     const summary = this.headerSummary();
@@ -495,7 +515,20 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.customerName = 'ZISIFY';
+    this.loadPortalHomeSummary();
     this.loadCustomerProfileAndAddresses();
+  }
+
+  loadPortalHomeSummary() {
+    this.portalHomeSummaryService.getHomeSummary().subscribe(res => {
+      if (res) {
+        this.homeSummaryData.set(res);
+      }
+    });
+  }
+
+  navigateToRewards() {
+    this.router.navigate(['/rewards']);
   }
 
   ngOnDestroy() {

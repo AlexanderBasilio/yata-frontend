@@ -32,6 +32,8 @@ export class AccountDrawerComponent {
   totalOrders = input<number | string>(0);
   referrals = input<number | string>('0');
   avatarUrl = input<string>('');
+  notificationsCount = input<number | null>(null);
+  rewardsPendingCount = input<number | null>(null);
 
   // Outputs
   closeDrawer = output<void>();
@@ -40,69 +42,72 @@ export class AccountDrawerComponent {
   activeModalItem = signal<DrawerMenuItem | null>(null);
 
   /**
-   * Rutas preparadas para el menú lateral.
-   * Cuando el backend tenga listas las rutas o páginas, simplemente se asigna el string
-   * y el ítem navegará automáticamente a su ruta real.
+   * Rutas reales conectadas para el menú lateral.
    */
-  readonly menuItems: DrawerMenuItem[] = [
-    {
-      id: 'profile',
-      title: 'Mi perfil',
-      subtitle: 'Datos personales y preferencias',
-      icon: 'profile',
-      route: '/profile' // ✅ Ruta activa
-    },
-    {
-      id: 'orders',
-      title: 'Mis pedidos',
-      subtitle: 'Historial y estado de tus compras',
-      icon: 'orders',
-      route: '/orders' // ✅ Ruta activa
-    },
-    {
-      id: 'notifications',
-      title: 'Notificaciones',
-      subtitle: 'Avisos y novedades en tiempo real',
-      icon: 'notifications',
-      route: null, // ⏳ Listo para ruta real e.g. '/notifications'
-      badge: '3',
-      badgeType: 'primary'
-    },
-    {
-      id: 'rewards',
-      title: 'Recompensas',
-      subtitle: 'Tus Z-Coins, nivel y logros',
-      icon: 'rewards',
-      route: null, // ⏳ Listo para ruta real e.g. '/rewards'
-      badge: 'Z-Coins',
-      badgeType: 'gold'
-    },
-    {
-      id: 'surveys',
-      title: 'Mis encuestas',
-      subtitle: 'Opina y gana bonificaciones',
-      icon: 'surveys',
-      route: null // ⏳ Listo para ruta real e.g. '/surveys'
-    },
-    {
-      id: 'coupons',
-      title: 'Mis cupones',
-      subtitle: 'Promociones y descuentos vigentes',
-      icon: 'coupons',
-      route: null, // ⏳ Listo para ruta real e.g. '/coupons'
-      badge: '2 activos',
-      badgeType: 'primary'
-    },
-    {
-      id: 'referrals',
-      title: 'Mis referidos',
-      subtitle: 'Comparte tu código y acumula saldo',
-      icon: 'referrals',
-      route: null, // ⏳ Listo para ruta real e.g. '/referrals'
-      badge: 'Nuevo',
-      badgeType: 'accent'
-    }
-  ];
+  get dynamicMenuItems(): DrawerMenuItem[] {
+    const notifCount = this.notificationsCount();
+    const rewardCount = this.rewardsPendingCount();
+
+    return [
+      {
+        id: 'profile',
+        title: 'Mi perfil',
+        subtitle: 'Datos personales y preferencias',
+        icon: 'profile',
+        route: '/profile' // ✅ Ruta activa
+      },
+      {
+        id: 'orders',
+        title: 'Mis pedidos',
+        subtitle: 'Historial y estado de tus compras',
+        icon: 'orders',
+        route: '/orders' // ✅ Ruta activa
+      },
+      {
+        id: 'notifications',
+        title: 'Notificaciones',
+        subtitle: 'Avisos y novedades en tiempo real',
+        icon: 'notifications',
+        route: '/notifications', // ✅ Ruta activa
+        badge: notifCount && notifCount > 0 ? notifCount.toString() : undefined,
+        badgeType: 'primary'
+      },
+      {
+        id: 'rewards',
+        title: 'Recompensas',
+        subtitle: 'Tus Z-Coins, nivel y logros',
+        icon: 'rewards',
+        route: '/rewards', // ✅ Ruta activa
+        badge: rewardCount && rewardCount > 0 ? `${rewardCount} por cobrar` : undefined,
+        badgeType: 'gold'
+      },
+      {
+        id: 'surveys',
+        title: 'Mis encuestas',
+        subtitle: 'Opina y gana bonificaciones',
+        icon: 'surveys',
+        route: '/surveys' // ✅ Ruta activa
+      },
+      {
+        id: 'coupons',
+        title: 'Mis cupones',
+        subtitle: 'Promociones y descuentos vigentes',
+        icon: 'coupons',
+        route: null, // ⏳ Listo para ruta real cuando backend lo habilite
+        badge: '2 activos',
+        badgeType: 'primary'
+      },
+      {
+        id: 'referrals',
+        title: 'Mis referidos',
+        subtitle: 'Comparte tu código y acumula saldo',
+        icon: 'referrals',
+        route: null, // ⏳ Listo para ruta real cuando backend lo habilite
+        badge: 'Nuevo',
+        badgeType: 'accent'
+      }
+    ];
+  }
 
   onClose() {
     this.closeDrawer.emit();

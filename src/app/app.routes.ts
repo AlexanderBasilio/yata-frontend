@@ -69,6 +69,42 @@ export const routes: Routes = [
   },
 
   // ============================================
+  // SURVEYS (PROTEGIDO)
+  // ============================================
+  {
+    path: 'surveys',
+    canActivate: [authGuard],
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./features/surveys/pages/survey-feed/survey-feed.component').then(m => m.SurveyFeedComponent)
+      },
+      {
+        path: ':uuid',
+        loadComponent: () => import('./features/surveys/pages/survey-detail/survey-detail.component').then(m => m.SurveyDetailComponent)
+      }
+    ]
+  },
+
+  // ============================================
+  // NOTIFICATIONS (PROTEGIDO)
+  // ============================================
+  {
+    path: 'notifications',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/notifications/notifications.component').then(m => m.NotificationsComponent)
+  },
+
+  // ============================================
+  // REWARDS (PROTEGIDO)
+  // ============================================
+  {
+    path: 'rewards',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/rewards/rewards.component').then(m => m.RewardsComponent)
+  },
+
+  // ============================================
   // 4. SERVICIO DE LICORES (PROTEGIDO)
   // ============================================
   {
