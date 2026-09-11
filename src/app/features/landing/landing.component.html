@@ -6,12 +6,11 @@
 
 <!-- ─── NAVBAR ─────────────────────────────────────────────── -->
 <nav
-    class="sticky top-0 z-50 bg-[rgba(26,10,46,0.90)] backdrop-blur-[12px] border-b border-[#31204F] px-6 py-4 flex items-center justify-between">
+    class="sticky top-0 z-50 bg-[rgba(26,10,46,0.90)] backdrop-blur-[12px] border-b border-[#31204F] px-4 py-2.5 sm:px-6 sm:py-3.5 flex items-center justify-between">
     <!-- Logo con Texto ZISIFY en mayúsculas tipografía Inknut Antiqua Black -->
-    <div class="flex items-center gap-3">
-        <img [src]="logoUrl" alt="Zisify Icon"
-            class="h-8 w-auto object-contain" />
-        <span class="font-['Inknut_Antiqua'] text-xl sm:text-2xl font-black text-white uppercase tracking-wider">
+    <div class="flex items-center gap-2 sm:gap-3">
+        <img [src]="logoUrl" alt="Zisify Icon" class="h-6 sm:h-8 w-auto object-contain" />
+        <span class="font-['Inknut_Antiqua'] text-lg sm:text-2xl font-black text-white uppercase tracking-wider">
             ZISIFY
         </span>
     </div>
@@ -29,13 +28,13 @@
     </div>
 
     <!-- Auth Buttons (Despliegan el Modal Central estilo DoorDash) -->
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 sm:gap-3">
         <button type="button" data-analytics="landing_nav_login" (click)="openAuthModal('login')"
-            class="font-['Epilogue'] text-sm font-semibold text-[#C30364] border border-[#C30364] px-4 py-2 rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all cursor-pointer">
+            class="font-['Epilogue'] text-xs sm:text-sm font-semibold text-[#C30364] border border-[#C30364] px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:bg-[rgba(195,3,100,0.08)] transition-all cursor-pointer whitespace-nowrap">
             Ingresar
         </button>
         <button type="button" data-analytics="landing_nav_register" (click)="openAuthModal('register')"
-            class="font-['Epilogue'] text-sm font-bold text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-4 py-2 rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98] cursor-pointer">
+            class="font-['Epilogue'] text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-[#C30364] to-[#E8368A] px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] transition-all active:scale-[0.98] cursor-pointer whitespace-nowrap">
             Registrarse
         </button>
     </div>
@@ -45,7 +44,7 @@
 <section
     class="relative min-h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden px-6 py-20 hero-section">
     <!-- Overlay oscuro para reducir el brillo y maximizar legibilidad del texto -->
-    <div class="absolute inset-0 bg-[#0D0518]/70 z-0"></div>
+    <div class="absolute inset-0 bg-black/45 pointer-events-none z-0"></div>
 
     <!-- Background glows -->
     <div class="absolute inset-0 pointer-events-none z-10">
@@ -58,8 +57,8 @@
     <!-- Eyebrow -->
     <div class="relative z-10 mb-6">
         <span
-            class="font-['Epilogue'] text-[11px] text-[#FF6DB5] tracking-[0.2em] uppercase font-bold bg-[rgba(195,3,100,0.12)] border border-[rgba(195,3,100,0.25)] px-4 py-1.5 rounded-full">
-            ✨ La app que te recompensa por comer bien
+            class="font-['Epilogue'] text-[10px] sm:text-[11px] text-white tracking-[0.08em] sm:tracking-[0.2em] uppercase font-bold bg-[rgba(195,3,100,0.12)] border border-[rgba(195,3,100,0.25)] px-3 py-1 sm:px-4 sm:py-1.5 rounded-full inline-block whitespace-nowrap">
+            La app que te recompensa por comer bien
         </span>
     </div>
 
@@ -392,13 +391,14 @@
 <!-- ─── FOOTER ─────────────────────────────────────────────── -->
 <footer class="bg-[#1A0A2E] border-t border-[#31204F] px-6 py-14">
     <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-5 gap-8 items-start">
-        
+
         <!-- Col 1: Brand (Desktop & Mobile) -->
         <div class="col-span-2 md:col-span-1">
             <!-- Logo con ZISIFY text -->
             <div class="flex items-center gap-3 mb-4">
                 <img [src]="logoUrl" alt="Zisify" class="h-8 w-auto object-contain" />
-                <span class="font-['Inknut_Antiqua'] text-xl font-black text-white uppercase tracking-wider">ZISIFY</span>
+                <span
+                    class="font-['Inknut_Antiqua'] text-xl font-black text-white uppercase tracking-wider">ZISIFY</span>
             </div>
             <p class="font-['Epilogue'] text-xs text-[#9D96A8] leading-relaxed mb-4">
                 La plataforma de delivery que te premia.<br>
@@ -429,12 +429,21 @@
 
         <!-- Col 2: Plataforma -->
         <div class="col-span-1">
-            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Plataforma</h5>
+            <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Plataforma
+            </h5>
             <ul class="space-y-2.5">
-                <li><a routerLink="/zisify" fragment="features" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a></li>
-                <li><a routerLink="/zisify" fragment="points" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a></li>
-                <li><a routerLink="/zisify" fragment="avatar" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a></li>
-                <li><a routerLink="/zisify" fragment="stats" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadística</a></li>
+                <li><a routerLink="/zisify" fragment="features"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Servicios</a>
+                </li>
+                <li><a routerLink="/zisify" fragment="points"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Puntos</a>
+                </li>
+                <li><a routerLink="/zisify" fragment="avatar"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Avatar</a>
+                </li>
+                <li><a routerLink="/zisify" fragment="stats"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Estadística</a>
+                </li>
             </ul>
         </div>
 
@@ -442,15 +451,22 @@
         <div class="col-span-1">
             <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Empresa</h5>
             <ul class="space-y-2.5">
-                <li><a href="#" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a></li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Nosotros</a>
+                </li>
                 <li class="space-y-1">
                     <span class="font-['Epilogue'] text-xs text-white font-semibold block">Únete a Zisify</span>
                     <ul class="pl-2.5 space-y-1.5 border-l border-[#31204F]">
-                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registra tu restaurante</a></li>
-                        <li><a href="#" class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registrarse como repartidor</a></li>
+                        <li><a href="#"
+                                class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registra
+                                tu restaurante</a></li>
+                        <li><a href="#"
+                                class="font-['Epilogue'] text-[11px] text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Registrarse
+                                como repartidor</a></li>
                     </ul>
                 </li>
-                <li><span class="font-['Epilogue'] text-xs text-[#52465E] cursor-not-allowed">Trabaja con nosotros (Próximamente)</span></li>
+                <li><span class="font-['Epilogue'] text-xs text-[#52465E] cursor-not-allowed">Trabaja con nosotros
+                        (Próximamente)</span></li>
             </ul>
         </div>
 
@@ -458,14 +474,21 @@
         <div class="col-span-1">
             <h5 class="font-['Epilogue'] text-[11px] font-bold text-white uppercase tracking-widest mb-4">Soporte</h5>
             <ul class="space-y-2.5 mb-6">
-                <li><a href="#" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro de ayuda</a></li>
-                <li><a routerLink="/privacy" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a></li>
-                <li><a routerLink="/terms" class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos y Condiciones</a></li>
+                <li><a href="#"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Centro
+                        de ayuda</a></li>
+                <li><a routerLink="/privacy"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Privacidad</a>
+                </li>
+                <li><a routerLink="/terms"
+                        class="font-['Epilogue'] text-xs text-[#9D96A8] hover:text-[#FAF8FB] transition-colors">Términos
+                        y Condiciones</a></li>
             </ul>
 
             <!-- En Desktop: Astronauta Zisify PNG va AQUÍ en la columna 4 debajo de Soporte -->
             <div class="hidden md:block pt-2">
-                <img [src]="astronautaUrl" alt="Astronauta Zisify" class="w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
+                <img [src]="astronautaUrl" alt="Astronauta Zisify"
+                    class="w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
             </div>
         </div>
 
@@ -475,7 +498,8 @@
             <div class="p-3 bg-[#221638] border border-[#31204F] rounded-2xl flex flex-col gap-2">
                 <div class="flex items-center gap-2">
                     <span class="text-xl">📖</span>
-                    <span class="font-['Epilogue'] text-[10px] font-bold text-white uppercase tracking-wider">Libro de Reclamaciones</span>
+                    <span class="font-['Epilogue'] text-[10px] font-bold text-white uppercase tracking-wider">Libro de
+                        Reclamaciones</span>
                 </div>
                 <p class="font-['Epilogue'] text-[9px] text-[#9D96A8] leading-relaxed">
                     Conforme al Código de Protección al Consumidor, ingresa aquí tus quejas o reclamos.
@@ -488,7 +512,8 @@
 
             <!-- En Mobile: Astronauta Zisify PNG va AQUÍ en la columna 2 a la derecha de Soporte para llenar el hueco libre -->
             <div class="block md:hidden pt-2 flex justify-center">
-                <img [src]="astronautaUrl" alt="Astronauta Zisify" class="w-36 sm:w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
+                <img [src]="astronautaUrl" alt="Astronauta Zisify"
+                    class="w-36 sm:w-44 h-auto object-contain drop-shadow-[0_12px_35px_rgba(195,3,100,0.45)] hover:scale-105 transition-all duration-300 pointer-events-none" />
             </div>
         </div>
 
@@ -504,5 +529,5 @@
 
 <!-- Modal Central de Autenticación estilo DoorDash -->
 @if (showAuthModal()) {
-    <app-auth-modal [initialTab]="authModalTab()" (close)="closeAuthModal()"></app-auth-modal>
+<app-auth-modal [initialTab]="authModalTab()" (close)="closeAuthModal()"></app-auth-modal>
 }

@@ -25,13 +25,13 @@
 }
 
 .hero-section {
-    background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786487239/ChatGPT_Image_11_ago_2026_12_55_14_p.m._d7odgn.png');
+    background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1789153026/hero-section-mobile_fduaki.png');
     background-size: cover;
     background-repeat: no-repeat;
-    /* En móvil y tablet SIEMPRE mantener la posición a la izquierda para enfocar al astronauta */
-    background-position: left center;
+    background-position: center center;
 
-    @media (min-width: 1024px) {
+    @media (min-width: 768px) {
+        background-image: url('https://res.cloudinary.com/dhgsvmcmc/image/upload/v1789153035/hero-section-wide_bwodgx.png');
         background-position: center center;
     }
 }
