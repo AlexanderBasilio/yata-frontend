@@ -48,3 +48,21 @@
   transform: skew(-10deg) scaleY(0.95);
   filter: blur(2.5px) contrast(180%);
 }
+
+.restaurant-closed {
+  filter: grayscale(0.85) opacity(0.7);
+  cursor: not-allowed !important;
+
+  &:hover {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  img {
+    transform: none !important;
+  }
+
+  &:active {
+    transform: none !important;
+  }
+}

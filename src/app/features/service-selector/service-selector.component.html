@@ -242,6 +242,7 @@
           @for (rest of homeShortcuts()!.nearbySection.items; track rest.id) {
             <div 
               data-analytics="home_select_restaurant" (click)="onRestaurantCardClick(rest)"
+              [class.restaurant-closed]="!isRestaurantOpen(rest)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <!-- Imagen Superior con Esquinas Redondeadas -->
@@ -251,9 +252,15 @@
                   [alt]="rest.name" 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
-                <span class="absolute top-2 left-2 bg-[#1A0A2E]/80 backdrop-blur-md text-[#FF6DB5] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#C30364]/40 font-epilogue">
-                  {{ getRestaurantBadge(rest, 'nearby') }}
-                </span>
+                @if (isRestaurantOpen(rest)) {
+                  <span class="absolute top-2 left-2 bg-[#1A0A2E]/80 backdrop-blur-md text-[#FF6DB5] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#C30364]/40 font-epilogue">
+                    {{ getRestaurantBadge(rest, 'nearby') }}
+                  </span>
+                } @else {
+                  <span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-lg z-10 font-epilogue">
+                    {{ rest.isTemporarilyClosed ? 'Cerrado temporalmente' : 'Cerrado' }}
+                  </span>
+                }
               </div>
 
               <!-- Info & Detalles -->
@@ -268,23 +275,32 @@
                   </p>
 
                   <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue">
+                    <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue"
+                          [class.!bg-gray-400]="!isRestaurantOpen(rest)">
                       ⭐ {{ rest.rating || 4.8 }}
                     </span>
 
                     @if (rest.specialties && rest.specialties.length > 0) {
-                      <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] font-bold px-2 py-0.5 rounded-full font-epilogue truncate max-w-[100px]">
+                      <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] font-bold px-2 py-0.5 rounded-full font-epilogue truncate max-w-[100px]"
+                            [class.!text-gray-500]="!isRestaurantOpen(rest)"
+                            [class.!bg-gray-100]="!isRestaurantOpen(rest)"
+                            [class.!border-gray-200]="!isRestaurantOpen(rest)">
                         {{ rest.specialties[0].name }}
                       </span>
                     }
                   </div>
                 </div>
 
-                <!-- Botón Inferior "Más detalles" -->
+                <!-- Botón Inferior "Más detalles" / "Cerrado" -->
                 <button 
                   type="button" 
+                  [disabled]="!isRestaurantOpen(rest)"
+                  [class.!bg-gray-300]="!isRestaurantOpen(rest)"
+                  [class.!text-gray-600]="!isRestaurantOpen(rest)"
+                  [class.!cursor-not-allowed]="!isRestaurantOpen(rest)"
+                  [class.!shadow-none]="!isRestaurantOpen(rest)"
                   class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white font-bold py-2 rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer text-center mt-auto font-epilogue">
-                  Más detalles
+                  {{ isRestaurantOpen(rest) ? 'Más detalles' : 'Cerrado' }}
                 </button>
               </div>
 
@@ -310,6 +326,7 @@
           @for (rest of homeShortcuts()!.newOptionsSection.items; track rest.id) {
             <div 
               data-analytics="home_select_restaurant" (click)="onRestaurantCardClick(rest)"
+              [class.restaurant-closed]="!isRestaurantOpen(rest)"
               class="min-w-[200px] w-[200px] sm:min-w-[220px] sm:w-[220px] bg-white rounded-3xl border border-gray-100 p-3 shadow-sm hover:shadow-md transition-all shrink-0 snap-start flex flex-col justify-between cursor-pointer group relative overflow-hidden">
               
               <div class="w-full h-32 rounded-2xl overflow-hidden bg-gray-100 mb-2 shrink-0 relative">
@@ -318,9 +335,15 @@
                   [alt]="rest.name" 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
-                <span class="absolute top-2 left-2 bg-[#1A0A2E]/80 backdrop-blur-md text-[#FF6DB5] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#C30364]/40 font-epilogue">
-                  {{ getRestaurantBadge(rest, 'newOptions') }}
-                </span>
+                @if (isRestaurantOpen(rest)) {
+                  <span class="absolute top-2 left-2 bg-[#1A0A2E]/80 backdrop-blur-md text-[#FF6DB5] text-[9px] font-bold px-2 py-0.5 rounded-full border border-[#C30364]/40 font-epilogue">
+                    {{ getRestaurantBadge(rest, 'newOptions') }}
+                  </span>
+                } @else {
+                  <span class="absolute top-2 right-2 bg-red-600 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-lg z-10 font-epilogue">
+                    {{ rest.isTemporarilyClosed ? 'Cerrado temporalmente' : 'Cerrado' }}
+                  </span>
+                }
               </div>
 
               <div class="flex-1 flex flex-col justify-between">
@@ -334,11 +357,15 @@
                   </p>
 
                   <div class="flex flex-wrap items-center gap-1.5 mb-3">
-                    <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue">
+                    <span class="bg-[#C30364] text-white font-bold text-[11px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm shrink-0 font-epilogue"
+                          [class.!bg-gray-400]="!isRestaurantOpen(rest)">
                       ⭐ {{ rest.rating || 4.9 }}
                     </span>
 
-                    <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] font-bold px-2 py-0.5 rounded-full font-epilogue">
+                    <span class="bg-[#FFF0F7] text-[#C30364] border border-[#C30364]/20 text-[10px] font-bold px-2 py-0.5 rounded-full font-epilogue"
+                          [class.!text-gray-500]="!isRestaurantOpen(rest)"
+                          [class.!bg-gray-100]="!isRestaurantOpen(rest)"
+                          [class.!border-gray-200]="!isRestaurantOpen(rest)">
                       🔥 Recomendado
                     </span>
                   </div>
@@ -346,8 +373,13 @@
 
                 <button 
                   type="button" 
+                  [disabled]="!isRestaurantOpen(rest)"
+                  [class.!bg-gray-300]="!isRestaurantOpen(rest)"
+                  [class.!text-gray-600]="!isRestaurantOpen(rest)"
+                  [class.!cursor-not-allowed]="!isRestaurantOpen(rest)"
+                  [class.!shadow-none]="!isRestaurantOpen(rest)"
                   class="w-full bg-[#C30364] hover:bg-[#E8368A] text-white font-bold py-2 rounded-xl text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer text-center mt-auto font-epilogue">
-                  Más detalles
+                  {{ isRestaurantOpen(rest) ? 'Más detalles' : 'Cerrado' }}
                 </button>
               </div>
 

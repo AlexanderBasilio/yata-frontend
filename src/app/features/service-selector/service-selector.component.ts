@@ -550,6 +550,12 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.portalCatalogService.getHomeShortcuts(zoneId, userId).subscribe({
       next: (data) => {
         if (data) {
+          if (data.nearbySection?.items) {
+            data.nearbySection.items = this.sortShortcutRestaurants(data.nearbySection.items);
+          }
+          if (data.newOptionsSection?.items) {
+            data.newOptionsSection.items = this.sortShortcutRestaurants(data.newOptionsSection.items);
+          }
           this.homeShortcuts.set(data);
         }
         this.isLoadingShortcuts.set(false);
@@ -623,9 +629,29 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ✅ VERIFICAR SI RESTAURANTE ESTÁ ABIERTO
+  isRestaurantOpen(restaurant: RestaurantSummaryResponse): boolean {
+    return Boolean((restaurant.isOpen ?? true) && !restaurant.isTemporarilyClosed);
+  }
+
+  // ✅ ORDENAR RESTAURANTES: ABIERTOS PRIMERO, CERRADOS AL FINAL
+  private sortShortcutRestaurants(items: RestaurantSummaryResponse[]): RestaurantSummaryResponse[] {
+    if (!items || !Array.isArray(items)) return [];
+    return [...items].sort((a, b) => {
+      const aOpen = this.isRestaurantOpen(a);
+      const bOpen = this.isRestaurantOpen(b);
+      if (aOpen && !bOpen) return -1;
+      if (!aOpen && bOpen) return 1;
+      return 0;
+    });
+  }
+
   // ✅ NAVEGACIÓN A RESTAURANTE (Secciones: Cerca de ti, Prueba nuevas opciones)
   onRestaurantCardClick(restaurant: RestaurantSummaryResponse) {
     if (!restaurant.id) return;
+    if (!this.isRestaurantOpen(restaurant)) {
+      return;
+    }
     this.router.navigate(['/food/restaurant', restaurant.id]);
   }
 
