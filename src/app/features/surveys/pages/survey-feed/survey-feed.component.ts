@@ -17,6 +17,7 @@ export class SurveyFeedComponent implements OnInit {
 
   surveys = signal<EnrichedSurveySummaryResponse[]>([]);
   isLoading = signal(true);
+  error = signal('');
 
   ngOnInit() {
     this.loadSurveys();
@@ -24,6 +25,7 @@ export class SurveyFeedComponent implements OnInit {
 
   loadSurveys() {
     this.isLoading.set(true);
+    this.error.set('');
     this.surveyService.getSurveysFeed().subscribe({
       next: (feed) => {
         this.surveys.set(feed || []);
@@ -31,6 +33,7 @@ export class SurveyFeedComponent implements OnInit {
       },
       error: () => {
         this.surveys.set([]);
+        this.error.set('No se pudieron cargar las encuestas. Inténtalo de nuevo.');
         this.isLoading.set(false);
       }
     });

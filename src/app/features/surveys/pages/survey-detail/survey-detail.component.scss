@@ -1,18 +1,17 @@
-:host {
-  display: block;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
+:host { display: block; background: #0d0518; min-height: 100vh; color: #faf8fb; font-family: 'Epilogue', sans-serif; }
+.survey-page { max-width: 720px; margin: auto; padding: 32px 24px 120px; }
+h1 { font-family: 'Inknut Antiqua', serif; font-size: 28px; line-height: 1.5; overflow-wrap: anywhere; margin: 24px 0; }
+h2 { font-size: 20px; }
+p { color: #bcb4c8; line-height: 1.65; }
+a { display: inline-block; color: #ff6db5; padding: 8px 0; margin-right: 24px; }
+.card { background: linear-gradient(145deg, #221638, #1a0a2e); border: 1px solid #31204f; border-radius: 16px; padding: 24px; }
+fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+legend { font-weight: 600; font-size: 18px; line-height: 1.5; margin-bottom: 16px; }
+.option { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #432d6a; border-radius: 8px; margin: 8px 0; cursor: pointer; }
+input { accent-color: #c30364; }
+textarea, input[type=number] { box-sizing: border-box; width: 100%; background: #1a0a2e; border: 1px solid #432d6a; border-radius: 8px; color: #faf8fb; padding: 16px; font: inherit; }
+button { border: 0; border-radius: 12px; background: linear-gradient(135deg, #c30364, #e8368a); padding: 14px 24px; color: white; font: inherit; cursor: pointer; }
+button:disabled { opacity: .5; cursor: wait; }
+:focus-visible { outline: 2px solid #ff6db5; outline-offset: 4px; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+.notice { padding: 16px; border: 1px solid #ff6db5; border-radius: 8px; margin: 16px 0; }

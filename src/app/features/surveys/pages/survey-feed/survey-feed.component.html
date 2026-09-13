@@ -1,14 +1,14 @@
 <div class="min-h-screen bg-[#0D0518] text-[#FAF8FB] font-sans pb-32">
-  
+
   <!-- Encabezado con Glow Zisify -->
   <div class="bg-gradient-to-b from-[#1A0A2E] to-[#0D0518] border-b border-[#31204F]/60 px-5 pt-6 pb-6 relative overflow-hidden">
     <div class="absolute top-0 right-0 w-48 h-48 bg-[#C30364] rounded-full blur-[90px] opacity-25 pointer-events-none"></div>
 
     <div class="max-w-xl mx-auto flex items-center justify-between relative z-10">
       <div class="flex items-center gap-3">
-        <button 
-          type="button" 
-          (click)="goBack()"
+        <button
+          type="button"
+          aria-label="Volver al inicio" (click)="goBack()"
           class="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white flex items-center justify-center border border-white/10 transition-all cursor-pointer">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
@@ -20,9 +20,9 @@
         </div>
       </div>
 
-      <button 
+      <button
         type="button"
-        (click)="loadSurveys()" 
+        aria-label="Actualizar encuestas" [disabled]="isLoading()" (click)="loadSurveys()"
         class="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 flex items-center justify-center border border-white/10 transition-all cursor-pointer">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -46,7 +46,7 @@
           </div>
         }
       </div>
-    } @else if (surveys().length === 0) {
+    } @else if (error()) { <p role="alert">{{ error() }}</p><button type="button" aria-label="Actualizar encuestas" [disabled]="isLoading()" (click)="loadSurveys()">Reintentar</button> } @else if (surveys().length === 0) {
       <!-- Empty State -->
       <div class="bg-gradient-to-b from-[#1A0A2E]/80 to-[#221638]/40 border border-[#31204F]/70 rounded-3xl p-8 text-center shadow-xl">
         <div class="w-16 h-16 rounded-2xl bg-[#C30364]/20 border border-[#FF6DB5]/30 text-[#FF6DB5] flex items-center justify-center mx-auto mb-4 text-2xl shadow-[0_0_20px_rgba(195,3,100,0.4)]">
@@ -58,9 +58,9 @@
         <p class="text-xs text-[#9D96A8] leading-relaxed max-w-sm mx-auto mb-6">
           Actualmente has completado todas las encuestas elegibles o están en periodo de enfriamiento. ¡Vuelve pronto para ganar más premios!
         </p>
-        <button 
-          type="button" 
-          (click)="goBack()"
+        <button
+          type="button"
+          aria-label="Volver al inicio" (click)="goBack()"
           class="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white font-semibold text-xs border border-white/15 transition-all">
           Volver al Inicio
         </button>
@@ -89,27 +89,25 @@
               {{ survey.description || 'Participa y ayúdanos a mejorar tu experiencia en Zisify.' }}
             </p>
 
-            <!-- Recompensa Prominente ("Gana 50 ZisiCoins + 100 XP") -->
-            <div class="bg-white/[0.04] border border-[#FF6DB5]/30 rounded-2xl p-3 mb-4 flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">🎁</span>
-                <div>
-                  <p class="text-[10px] uppercase font-bold tracking-wider text-[#FF6DB5]">Recompensa directa</p>
-                  <p class="text-xs font-bold text-white">
-                    Gana {{ survey.rewardDetail?.zisiCoins || 50 }} ZisiCoins + {{ survey.rewardDetail?.xp || 100 }} XP
+            @if (survey.rewardEnabled && survey.rewardDetail; as reward) {
+              <div class="bg-white/[0.04] border border-[#FF6DB5]/30 rounded-2xl p-3 mb-4">
+                <p class="text-xs text-[#FF6DB5]">Recompensa disponible</p>
+                @for (item of reward.items; track item.id) {
+                  <p class="text-sm">
+                    @switch (item.itemType) {
+                      @case ('ZISI_COINS') { {{ item.finalAmount | number }} ZisiCoins }
+                      @case ('XP_POINTS') { {{ item.finalAmount | number }} XP }
+                      @case ('DISCOUNT_VOUCHER') { Cupón de descuento }
+                      @case ('FREE_ITEM') { Producto gratis }
+                    }
                   </p>
-                </div>
+                }
+                @if (reward.requiresClaim) { <p class="text-xs text-[#9D96A8]">Requiere reclamar la recompensa.</p> }
               </div>
-              <div class="text-right">
-                <span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
-                  Garantizado
-                </span>
-              </div>
-            </div>
-
+            }
             <!-- Botón de Iniciar -->
-            <button 
-              type="button" 
+            <button
+              type="button"
               (click)="onStartSurvey(survey)"
               class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-bold text-xs shadow-[0_0_18px_rgba(195,3,100,0.5)] hover:shadow-[0_0_25px_rgba(232,54,138,0.8)] hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border border-[#FF6DB5]/40">
               <span>Comenzar Encuesta</span>
