@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { PortalNotificationService } from '../../core/services/portal/portal-notification.service';
 import { NotificationResponse } from '../../core/models/portal-notification.model';
+import { PortalRewardService } from '../../core/services/portal/portal-reward.service';
+import { MenuBadgeService } from '../../core/services/portal/menu-badge.service';
 
 @Component({
   selector: 'app-notifications',
@@ -13,12 +15,17 @@ import { NotificationResponse } from '../../core/models/portal-notification.mode
 })
 export class NotificationsComponent implements OnInit {
   private notificationService = inject(PortalNotificationService);
+  private rewardService = inject(PortalRewardService);
+  private menuBadges = inject(MenuBadgeService);
   private router = inject(Router);
 
   notifications = signal<NotificationResponse[]>([]);
   isLoading = signal(true);
   filterUnreadOnly = signal(false);
   isMarkingAll = signal(false);
+  claimingRewardId = signal<string | null>(null);
+  claimedRewardIds = signal<Set<string>>(new Set());
+  claimError = signal<string | null>(null);
 
   ngOnInit() {
     this.loadNotifications();
@@ -62,6 +69,38 @@ export class NotificationsComponent implements OnInit {
     } else if (item.reference?.type === 'ORDER') {
       this.router.navigate(['/orders']);
     }
+  }
+
+  isRewardClaim(item: NotificationResponse): boolean {
+    return item.actionType === 'CLAIM_REWARD' || item.action?.type === 'CLAIM';
+  }
+
+  getActionLabel(item: NotificationResponse): string | undefined {
+    return item.actionLabel || item.action?.label;
+  }
+
+  claimReward(item: NotificationResponse, event: Event) {
+    event.stopPropagation();
+    const rewardId = item.referenceId || item.reference?.id;
+    if (!rewardId || this.claimingRewardId() || this.claimedRewardIds().has(rewardId)) return;
+
+    this.claimError.set(null);
+    this.claimingRewardId.set(rewardId);
+    this.rewardService.claimReward(rewardId).subscribe({
+      next: () => {
+        this.claimingRewardId.set(null);
+        this.claimedRewardIds.update(ids => new Set(ids).add(rewardId));
+        this.menuBadges.set('rewards', Math.max(0, this.menuBadges.count('rewards') - 1));
+        if (!item.isRead) {
+          item.isRead = true;
+          this.notificationService.markAsRead(item.uuid).subscribe();
+        }
+      },
+      error: () => {
+        this.claimingRewardId.set(null);
+        this.claimError.set('No se pudo reclamar la recompensa. Inténtalo nuevamente.');
+      }
+    });
   }
 
   markAllAsRead() {

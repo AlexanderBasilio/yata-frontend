@@ -65,6 +65,12 @@
   <!-- Lista de Notificaciones -->
   <div class="max-w-xl mx-auto px-4 py-6">
 
+    @if (claimError()) {
+      <div role="alert" class="mb-4 rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-xs text-red-200">
+        {{ claimError() }}
+      </div>
+    }
+
     @if (isLoading()) {
       <div class="space-y-3">
         @for (i of [1, 2, 3, 4]; track i) {
@@ -145,9 +151,23 @@
                 {{ item.message }}
               </p>
 
-              @if (item.action?.label) {
+              @if (isRewardClaim(item) && (item.referenceId || item.reference?.id)) {
+                <button
+                  type="button"
+                  (click)="claimReward(item, $event)"
+                  [disabled]="claimingRewardId() === (item.referenceId || item.reference?.id) || claimedRewardIds().has((item.referenceId || item.reference?.id)!)"
+                  class="mt-2 inline-flex items-center gap-1 rounded-lg bg-[#C30364] px-3 py-1.5 text-[11px] font-bold text-white transition-all hover:brightness-110 disabled:cursor-default disabled:opacity-60">
+                  @if (claimingRewardId() === (item.referenceId || item.reference?.id)) {
+                    Reclamando...
+                  } @else if (claimedRewardIds().has((item.referenceId || item.reference?.id)!)) {
+                    Reclamada ✓
+                  } @else {
+                    {{ getActionLabel(item) || 'Reclamar' }}
+                  }
+                </button>
+              } @else if (getActionLabel(item)) {
                 <div class="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-[#FF6DB5] group-hover:underline">
-                  <span>{{ item.action!.label }}</span>
+                  <span>{{ getActionLabel(item) }}</span>
                   <span>→</span>
                 </div>
               }

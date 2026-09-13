@@ -79,7 +79,7 @@ export class PortalRewardService {
     return this.http.get<PendingRewardsCountResponse>(url).pipe(
       catchError(err => {
         console.warn('⚠️ Error al obtener pending count de recompensas:', err);
-        return of({ pendingCount: 0 });
+        return of({ count: 0 });
       })
     );
   }

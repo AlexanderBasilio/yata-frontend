@@ -4,6 +4,7 @@ import { Router, RouterModule } from '@angular/router';
 import { PortalRewardService } from '../../core/services/portal/portal-reward.service';
 import { PortalHomeSummaryService } from '../../core/services/portal/portal-home-summary.service';
 import { RewardResponse, ClaimRewardResponse } from '../../core/models/portal-reward.model';
+import { MenuBadgeService } from '../../core/services/portal/menu-badge.service';
 
 @Component({
   selector: 'app-rewards',
@@ -15,6 +16,7 @@ import { RewardResponse, ClaimRewardResponse } from '../../core/models/portal-re
 export class RewardsComponent implements OnInit {
   private rewardService = inject(PortalRewardService);
   private homeSummaryService = inject(PortalHomeSummaryService);
+  private menuBadges = inject(MenuBadgeService);
   private router = inject(Router);
 
   activeTab = signal<'PENDING' | 'HISTORY'>('PENDING');
@@ -29,6 +31,7 @@ export class RewardsComponent implements OnInit {
 
   // Modal de celebración de reclamo
   claimSuccessData = signal<ClaimRewardResponse | null>(null);
+  claimError = signal<string | null>(null);
 
   ngOnInit() {
     this.loadBalances();
@@ -79,6 +82,7 @@ export class RewardsComponent implements OnInit {
   onClaim(reward: RewardResponse) {
     if (this.claimingRewardId()) return;
     this.claimingRewardId.set(reward.id);
+    this.claimError.set(null);
 
     this.rewardService.claimReward(reward.id).subscribe({
       next: (res) => {
@@ -86,12 +90,13 @@ export class RewardsComponent implements OnInit {
         // Remover de pendientes
         const updated = this.pendingRewards().filter(r => r.id !== reward.id);
         this.pendingRewards.set(updated);
+        this.menuBadges.set('rewards', updated.length);
 
         // Acreditar saldo
         const coins = res?.zisiCoinsAwarded ?? reward.zisiCoins;
         const xp = res?.xpAwarded ?? reward.xp;
-        this.currentZisiCoins.update(c => c + coins);
-        this.currentXp.update(x => x + xp);
+        this.currentZisiCoins.set(res?.newBalanceZisiCoins ?? (this.currentZisiCoins() + coins));
+        this.currentXp.set(res?.newTotalXp ?? (this.currentXp() + xp));
 
         this.claimSuccessData.set(res || {
           rewardId: reward.id,
@@ -103,20 +108,8 @@ export class RewardsComponent implements OnInit {
       },
       error: (err) => {
         this.claimingRewardId.set(null);
-        console.warn('⚠️ Fallback en reclamo de recompensa:', err);
-        // Fallback optimista para UX impecable
-        const updated = this.pendingRewards().filter(r => r.id !== reward.id);
-        this.pendingRewards.set(updated);
-        this.currentZisiCoins.update(c => c + reward.zisiCoins);
-        this.currentXp.update(x => x + reward.xp);
-
-        this.claimSuccessData.set({
-          rewardId: reward.id,
-          status: 'CLAIMED',
-          zisiCoinsAwarded: reward.zisiCoins,
-          xpAwarded: reward.xp,
-          message: `¡Recompensa cobrada con éxito! +${reward.zisiCoins} ZisiCoins acreditados.`
-        });
+        console.warn('⚠️ Error al reclamar recompensa:', err);
+        this.claimError.set('No se pudo reclamar la recompensa. Inténtalo nuevamente.');
       }
     });
   }

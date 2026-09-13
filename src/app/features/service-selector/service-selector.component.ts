@@ -19,6 +19,7 @@ import mapboxgl from 'mapbox-gl';
 
 import { AccountDrawerComponent } from '../../shared/components/account-drawer/account-drawer.component';
 import { PortalHomeSummaryService } from '../../core/services/portal/portal-home-summary.service';
+import { PortalRewardService } from '../../core/services/portal/portal-reward.service';
 import { HomeSummaryResponse } from '../../core/models/portal-home-summary.model';
 
 interface Category {
@@ -63,6 +64,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private mapboxService = inject(MapboxService);
   private portalCatalogService = inject(PortalCatalogService);
   private portalHomeSummaryService = inject(PortalHomeSummaryService);
+  private portalRewardService = inject(PortalRewardService);
 
   // Menú lateral "Mi cuenta"
   isSidebarOpen = signal(false);
@@ -540,6 +542,10 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   refreshMenuBadges() {
     this.surveys.getSurveysFeed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       error: () => this.menuBadges.set('surveys', 0)
+    });
+    this.portalRewardService.getPendingCount().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ count }) => this.menuBadges.set('rewards', count),
+      error: () => this.menuBadges.set('rewards', 0)
     });
   }
 

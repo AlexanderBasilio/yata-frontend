@@ -21,6 +21,7 @@ export type ReferenceType =
 export type ActionType = 
   | 'NAVIGATE' 
   | 'CLAIM' 
+  | 'CLAIM_REWARD'
   | 'OPEN_MODAL' 
   | 'EXTERNAL_LINK' 
   | string;
@@ -43,6 +44,10 @@ export interface NotificationResponse {
   message: string;
   reference?: ReferenceDto;
   action?: ActionDto;
+  /** Action fields returned directly by Portal's notification DTO. */
+  actionType?: ActionType;
+  actionLabel?: string;
+  referenceId?: string;
   metadata?: Record<string, any>;
   isRead: boolean;
   createdAt: string;

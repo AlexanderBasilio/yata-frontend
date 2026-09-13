@@ -17,7 +17,7 @@ export interface RewardResponse {
 }
 
 export interface PendingRewardsCountResponse {
-  pendingCount: number;
+  count: number;
 }
 
 export interface ClaimRewardResponse {
