@@ -35,8 +35,17 @@ describe('Survey branching and validation', () => {
     expect(answerError({ ...q, maxSelections: 0 }, answer)).not.toBe('');
     expect(answerError(q, answer)).toBe('');
   });
+  it('accepts all backend question types with their corresponding values', () => {
+    for (const questionType of ['TEXT', 'LONG_TEXT'] as const) {
+      expect(answerError({ ...q, questionType }, { ...answer, selectedOptionIds: [], textValue: 'Respuesta' })).toBe('');
+    }
+    for (const questionType of ['NUMBER', 'RATING', 'SCALE'] as const) {
+      expect(answerError({ ...q, questionType }, { ...answer, selectedOptionIds: [], numericValue: 0 })).toBe('');
+    }
+    expect(answerError({ ...q, questionType: 'YES_NO' }, answer)).toBe('');
+  });
   it('blocks unknown question types and invalid numeric values', () => {
-    expect(answerError({ ...q, questionType: 'UNKNOWN' }, answer)).not.toBe('');
-    expect(answerError({ ...q, questionType: 'NUMERIC' }, { ...answer, selectedOptionIds: [], numericValue: NaN })).not.toBe('');
+    expect(answerError({ ...q, questionType: 'UNKNOWN' as QuestionResponse['questionType'] }, answer)).not.toBe('');
+    expect(answerError({ ...q, questionType: 'NUMBER' }, { ...answer, selectedOptionIds: [], numericValue: NaN })).not.toBe('');
   });
 });

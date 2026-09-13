@@ -1,3 +1,7 @@
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PortalSurveyService } from '../../core/services/portal/portal-survey.service';
+import { MenuBadgeService } from '../../core/services/portal/menu-badge.service';
 import { Component, inject, OnInit, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -51,6 +55,9 @@ export interface CategoryCarousel {
 })
 export class ServiceSelectorComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  readonly menuBadges = inject(MenuBadgeService);
+  private surveys = inject(PortalSurveyService);
+  private destroyRef = inject(DestroyRef);
   public authService = inject(AuthService);
   private customerService = inject(CustomerService);
   private mapboxService = inject(MapboxService);
@@ -62,6 +69,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   toggleSidebar() {
     this.isSidebarOpen.update(prev => !prev);
+    if (this.isSidebarOpen()) this.refreshMenuBadges();
   }
 
   closeSidebar() {
@@ -514,6 +522,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.refreshMenuBadges();
     this.customerName = 'ZISIFY';
     this.loadPortalHomeSummary();
     this.loadCustomerProfileAndAddresses();
@@ -523,7 +532,14 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     this.portalHomeSummaryService.getHomeSummary().subscribe(res => {
       if (res) {
         this.homeSummaryData.set(res);
+        this.menuBadges.set('rewards', res.rewards?.pendingClaimCount ?? 0);
       }
+    });
+  }
+
+  refreshMenuBadges() {
+    this.surveys.getSurveysFeed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      error: () => this.menuBadges.set('surveys', 0)
     });
   }
 

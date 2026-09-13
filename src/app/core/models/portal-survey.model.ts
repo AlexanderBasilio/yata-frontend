@@ -1,6 +1,6 @@
 export type SurveyStatus = 'DRAFT' | 'ACTIVE' | 'PAUSED' | 'CLOSED';
 export type SurveyResponseStatus = 'IN_PROGRESS' | 'SUBMITTED' | 'APPROVED' | 'REJECTED';
-export type QuestionType = string;
+export type QuestionType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'TEXT' | 'LONG_TEXT' | 'NUMBER' | 'RATING' | 'SCALE' | 'YES_NO';
 export type RewardItemType = 'ZISI_COINS' | 'XP_POINTS' | 'DISCOUNT_VOUCHER' | 'FREE_ITEM';
 export interface RewardItemResponse {
   id: number;

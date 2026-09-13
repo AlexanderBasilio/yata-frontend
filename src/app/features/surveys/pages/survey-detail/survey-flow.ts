@@ -5,12 +5,12 @@ export function hasAnswer(a: SubmitSurveyAnswerItem): boolean {
 }
 
 export function answerError(q: QuestionResponse, a: SubmitSurveyAnswerItem): string {
-  if (!['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'BOOLEAN', 'TEXT', 'RATING', 'NUMBER', 'NUMERIC'].includes(q.questionType)) {
+  if (!['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'YES_NO', 'TEXT', 'LONG_TEXT', 'RATING', 'NUMBER', 'SCALE'].includes(q.questionType)) {
     return 'Este tipo de pregunta aún no está disponible.';
   }
-  if (q.questionType === 'BOOLEAN' && !q.options?.length) return 'Esta pregunta no tiene opciones configuradas.';
+  if (q.questionType === 'YES_NO' && !q.options?.length) return 'Esta pregunta no tiene opciones configuradas.';
   if (!hasAnswer(a)) return q.isRequired ? 'Responde esta pregunta para continuar.' : '';
-  if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'BOOLEAN'].includes(q.questionType)) {
+  if (['SINGLE_CHOICE', 'MULTIPLE_CHOICE', 'YES_NO'].includes(q.questionType)) {
     const count = a.selectedOptionIds.length;
     if (a.selectedOptionIds.some(id => !q.options?.some(o => o.id === id))) return 'Selecciona una opción válida.';
     if (count < (q.minSelections ?? 1)) return 'Selecciona al menos ' + (q.minSelections ?? 1) + ' opciones.';

@@ -51,13 +51,16 @@
                 <label class="option"><input type="checkbox" [checked]="answer(q).selectedOptionIds.includes(option.id)" (change)="choose(q, option.id)"> {{ option.label }}</label>
               }
             }
-            @case ('BOOLEAN') {
+            @case ('YES_NO') {
               @for (option of q.options; track option.id) {
                 <label class="option"><input type="radio" [name]="'q-' + q.id" [checked]="answer(q).selectedOptionIds.includes(option.id)" (change)="choose(q, option.id)"> {{ option.label }}</label>
               }
             }
-            @case ('TEXT') {
+            @case ('LONG_TEXT') {
               <textarea aria-label="Tu respuesta" name="textValue" rows="5" [ngModel]="answer(q).textValue" (ngModelChange)="update(q, { textValue: $event })"></textarea>
+            }
+            @case ('TEXT') {
+              <input aria-label="Tu respuesta" type="text" name="textValue" [ngModel]="answer(q).textValue" (ngModelChange)="update(q, { textValue: $event })">
             }
             @case ('RATING') {
               <input aria-label="Tu calificación" type="number" step="any" name="numericValue" [ngModel]="answer(q).numericValue" (ngModelChange)="update(q, { numericValue: $event })">
@@ -65,7 +68,7 @@
             @case ('NUMBER') {
               <input aria-label="Tu respuesta numérica" type="number" step="any" name="numericValue" [ngModel]="answer(q).numericValue" (ngModelChange)="update(q, { numericValue: $event })">
             }
-            @case ('NUMERIC') {
+            @case ('SCALE') {
               <input aria-label="Tu respuesta numérica" type="number" step="any" name="numericValue" [ngModel]="answer(q).numericValue" (ngModelChange)="update(q, { numericValue: $event })">
             }
             @default { <p role="alert">Este tipo de pregunta aún no está disponible.</p> }

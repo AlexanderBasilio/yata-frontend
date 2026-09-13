@@ -16,9 +16,12 @@
       <button 
         type="button" 
         (click)="toggleSidebar()"
-        class="w-9 h-9 flex flex-col justify-center items-center gap-1.5 p-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-white border border-white/10 cursor-pointer focus:outline-none"
+        class="relative w-9 h-9 flex flex-col justify-center items-center gap-1.5 p-1 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all text-white border border-white/10 cursor-pointer focus:outline-none"
         [attr.aria-expanded]="isSidebarOpen()"
-        aria-label="Abrir menú de cuenta">
+        [attr.aria-label]="'Abrir menú de cuenta, ' + menuBadges.total() + ' pendientes'">
+        @if (!isSidebarOpen() && menuBadges.total() > 0) {
+          <span data-testid="menu-total-badge" class="absolute -top-2 -right-2 min-w-5 h-5 px-1 rounded-full bg-[#C30364] text-white text-[10px] font-bold flex items-center justify-center" aria-live="polite">{{ menuBadges.total() }}</span>
+        }
         <!-- Barra 1 (Superior) -->
         <span class="w-5 h-[2px] bg-white rounded-full transition-all duration-300 transform origin-center"
           [class.rotate-45]="isSidebarOpen()"
@@ -833,8 +836,8 @@
     [totalOrders]="displayTotalOrders()"
     [referrals]="displayReferrals()"
     [avatarUrl]="menAvatarUrl"
-    [notificationsCount]="notificationsUnreadCount()"
-    [rewardsPendingCount]="rewardsPendingCount()"
+
+
     (closeDrawer)="closeSidebar()">
   </app-account-drawer>
 

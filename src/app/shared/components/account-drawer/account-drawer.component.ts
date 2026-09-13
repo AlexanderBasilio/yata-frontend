@@ -1,3 +1,4 @@
+import { MenuBadgeService } from '../../../core/services/portal/menu-badge.service';
 import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
@@ -22,6 +23,7 @@ export interface DrawerMenuItem {
 })
 export class AccountDrawerComponent {
   private router = inject(Router);
+  readonly menuBadges = inject(MenuBadgeService);
   public authService = inject(AuthService);
 
   // Inputs
@@ -32,8 +34,8 @@ export class AccountDrawerComponent {
   totalOrders = input<number | string>(0);
   referrals = input<number | string>('0');
   avatarUrl = input<string>('');
-  notificationsCount = input<number | null>(null);
-  rewardsPendingCount = input<number | null>(null);
+
+
 
   // Outputs
   closeDrawer = output<void>();
@@ -45,8 +47,8 @@ export class AccountDrawerComponent {
    * Rutas reales conectadas para el menú lateral.
    */
   get dynamicMenuItems(): DrawerMenuItem[] {
-    const notifCount = this.notificationsCount();
-    const rewardCount = this.rewardsPendingCount();
+    const notifCount = this.menuBadges.total();
+    const rewardCount = this.menuBadges.count('rewards');
 
     return [
       {
@@ -61,7 +63,9 @@ export class AccountDrawerComponent {
         title: 'Mis pedidos',
         subtitle: 'Historial y estado de tus compras',
         icon: 'orders',
-        route: '/orders' // ✅ Ruta activa
+        route: '/orders',
+        badge: this.menuBadges.count('orders') > 0 ? String(this.menuBadges.count('orders')) : undefined,
+        badgeType: 'primary'
       },
       {
         id: 'notifications',
@@ -86,7 +90,9 @@ export class AccountDrawerComponent {
         title: 'Mis encuestas',
         subtitle: 'Opina y gana bonificaciones',
         icon: 'surveys',
-        route: '/surveys' // ✅ Ruta activa
+        route: '/surveys',
+        badge: this.menuBadges.count('surveys') > 0 ? String(this.menuBadges.count('surveys')) : undefined,
+        badgeType: 'primary'
       },
       {
         id: 'coupons',
@@ -94,7 +100,7 @@ export class AccountDrawerComponent {
         subtitle: 'Promociones y descuentos vigentes',
         icon: 'coupons',
         route: null, // ⏳ Listo para ruta real cuando backend lo habilite
-        badge: '2 activos',
+        badge: this.menuBadges.count('coupons') > 0 ? String(this.menuBadges.count('coupons')) : undefined,
         badgeType: 'primary'
       },
       {
@@ -103,7 +109,7 @@ export class AccountDrawerComponent {
         subtitle: 'Comparte tu código y acumula saldo',
         icon: 'referrals',
         route: null, // ⏳ Listo para ruta real cuando backend lo habilite
-        badge: 'Nuevo',
+        badge: this.menuBadges.count('referrals') > 0 ? String(this.menuBadges.count('referrals')) : undefined,
         badgeType: 'accent'
       }
     ];
