@@ -81,14 +81,22 @@ export class RewardsComponent implements OnInit {
 
   onClaim(reward: RewardResponse) {
     if (this.claimingRewardId()) return;
-    this.claimingRewardId.set(reward.id);
+
+    const rewardId = this.getRewardId(reward);
+    if (rewardId === null) {
+      console.warn('⚠️ La recompensa no contiene un identificador válido:', reward);
+      this.claimError.set('No se pudo identificar la recompensa. Actualiza la página e inténtalo nuevamente.');
+      return;
+    }
+
+    this.claimingRewardId.set(rewardId);
     this.claimError.set(null);
 
-    this.rewardService.claimReward(reward.id).subscribe({
+    this.rewardService.claimReward(rewardId).subscribe({
       next: (res) => {
         this.claimingRewardId.set(null);
         // Remover de pendientes
-        const updated = this.pendingRewards().filter(r => r.id !== reward.id);
+        const updated = this.pendingRewards().filter(r => this.getRewardId(r) !== rewardId);
         this.pendingRewards.set(updated);
         this.menuBadges.set('rewards', updated.length);
 
@@ -99,7 +107,7 @@ export class RewardsComponent implements OnInit {
         this.currentXp.set(res?.newTotalXp ?? (this.currentXp() + xp));
 
         this.claimSuccessData.set(res || {
-          rewardId: reward.id,
+          rewardId,
           status: 'CLAIMED',
           zisiCoinsAwarded: coins,
           xpAwarded: xp,
@@ -112,6 +120,10 @@ export class RewardsComponent implements OnInit {
         this.claimError.set('No se pudo reclamar la recompensa. Inténtalo nuevamente.');
       }
     });
+  }
+
+  getRewardId(reward: RewardResponse): string | number | null {
+    return reward.id ?? reward.uuid ?? reward.rewardId ?? null;
   }
 
   closeClaimModal() {

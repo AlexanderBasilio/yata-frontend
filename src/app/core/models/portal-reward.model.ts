@@ -2,8 +2,9 @@ export type RewardStatus = 'PENDING' | 'CLAIMED' | 'EXPIRED' | 'CANCELLED' | str
 export type RewardSourceType = 'SURVEY' | 'ORDER' | 'REFERRAL' | 'PROMOTION' | 'SYSTEM' | string;
 
 export interface RewardResponse {
-  id: string | number;
+  id?: string | number;
   uuid?: string;
+  rewardId?: string | number;
   sourceType: RewardSourceType;
   sourceReferenceId?: string;
   title: string;

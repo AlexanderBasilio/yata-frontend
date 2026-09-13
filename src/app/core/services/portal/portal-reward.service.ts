@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of, tap } from 'rxjs';
+import { Observable, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { 
   RewardResponse, 
@@ -89,7 +89,11 @@ export class PortalRewardService {
    * Reclamar recompensa individual y acreditar ZisiCoins y XP al balance
    */
   claimReward(rewardId: string | number): Observable<ClaimRewardResponse> {
-    const url = `${this.portalApiUrl}/portal/rewards/${rewardId}/claim`;
+    if (rewardId === null || rewardId === undefined || String(rewardId).trim() === '') {
+      return throwError(() => new Error('No se puede reclamar una recompensa sin identificador.'));
+    }
+
+    const url = `${this.portalApiUrl}/portal/rewards/${encodeURIComponent(String(rewardId))}/claim`;
     console.group('⚡ [POST HTTP] Reclamando Recompensa:', rewardId);
     console.groupEnd();
     return this.http.post<ClaimRewardResponse>(url, {});
