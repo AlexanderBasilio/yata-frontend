@@ -101,8 +101,8 @@ export class RewardsComponent implements OnInit {
         this.menuBadges.set('rewards', updated.length);
 
         // Acreditar saldo
-        const coins = res?.zisiCoinsAwarded ?? reward.zisiCoins;
-        const xp = res?.xpAwarded ?? reward.xp;
+        const coins = this.getClaimedAmount(res, 'ZISI_COINS') || reward.zisiCoins || 0;
+        const xp = this.getClaimedAmount(res, 'XP_POINTS') || reward.xp || 0;
         this.currentZisiCoins.set(res?.newBalanceZisiCoins ?? (this.currentZisiCoins() + coins));
         this.currentXp.set(res?.newTotalXp ?? (this.currentXp() + xp));
 
@@ -124,6 +124,20 @@ export class RewardsComponent implements OnInit {
 
   getRewardId(reward: RewardResponse): string | number | null {
     return reward.id ?? reward.uuid ?? reward.rewardId ?? null;
+  }
+
+  getClaimedAmount(
+    claim: ClaimRewardResponse | null | undefined,
+    itemType: 'ZISI_COINS' | 'XP_POINTS'
+  ): number {
+    const claimedItems = claim?.claimedItems?.filter(item => item.itemType === itemType) ?? [];
+    if (claimedItems.length > 0) {
+      return claimedItems.reduce((total, item) => total + (Number(item.finalAmount) || 0), 0);
+    }
+
+    return itemType === 'ZISI_COINS'
+      ? Number(claim?.zisiCoinsAwarded) || 0
+      : Number(claim?.xpAwarded) || 0;
   }
 
   closeClaimModal() {
