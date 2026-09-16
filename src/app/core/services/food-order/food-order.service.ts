@@ -26,11 +26,15 @@ export class FoodOrderService {
     return this.http.post<OrderSummaryResponse>(`${this.apiUrl}/summary-calculation`, request);
   }
 
+  releaseRewardReservation(reservationId: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/checkout/release-reward/${encodeURIComponent(reservationId)}`, {});
+  }
+
   /**
    * PASO B: Confirma el pedido y guarda la orden en base de datos.
    * Se llama al final del checkout ("Realizar Pedido").
    */
   confirmOrder(request: CheckoutRequest): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(`${this.apiUrl}/confirm`, request);
+    return this.http.post<OrderResponse>(this.apiUrl, request);
   }
 }

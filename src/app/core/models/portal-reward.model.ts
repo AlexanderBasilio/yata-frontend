@@ -21,6 +21,24 @@ export interface PendingRewardsCountResponse {
   count: number;
 }
 
+/** Platform's benefit DTO, separate from the legacy Portal reward DTO. */
+export interface AvailableBenefitResponse {
+  uuid?: string;
+  id?: string;
+  rewardId?: string;
+  status: 'PENDING_CLAIM' | 'CLAIMED' | 'EXPIRED' | 'CANCELLED';
+  usageStatus: 'NOT_APPLICABLE' | 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED';
+  source?: { type: string; id: string };
+  definition?: { code: string; name: string };
+  items: RewardItemResponse[];
+  requiresClaim?: boolean;
+  requiresUsage?: boolean;
+  claimedAt?: string | null;
+  usedAt?: string | null;
+  expiresAt?: string | null;
+  createdAt?: string;
+}
+
 export interface ClaimRewardResponse {
   rewardId: string | number;
   message?: string;
@@ -34,7 +52,7 @@ export interface ClaimRewardResponse {
   newTotalXp?: number;
 }
 
-export type RewardItemType = 'ZISI_COINS' | 'XP_POINTS' | 'DISCOUNT_VOUCHER' | 'FREE_ITEM' | string;
+export type RewardItemType = 'ZISI_COINS' | 'XP_POINTS' | 'FREE_DELIVERY' | 'DISCOUNT_VOUCHER' | 'FREE_ITEM' | string;
 
 export interface RewardItemResponse {
   id: number;

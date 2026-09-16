@@ -3,7 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, catchError, of, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { 
-  RewardResponse, 
+  RewardResponse,
+  AvailableBenefitResponse,
   PendingRewardsCountResponse, 
   ClaimRewardResponse 
 } from '../../models/portal-reward.model';
@@ -14,6 +15,12 @@ import { RestPageResponse } from '../../models/portal-notification.model';
 })
 export class PortalRewardService {
   private http = inject(HttpClient);
+
+  getAvailableBenefits(): Observable<AvailableBenefitResponse[]> {
+    return this.http.get<AvailableBenefitResponse[]>(
+      `${environment.platformUrl}/api/v1/rewards/available-benefits`
+    );
+  }
 
   private get portalApiUrl(): string {
     return environment.portalUrl || 'https://zisify-portal-production-b174.up.railway.app/api/v1';

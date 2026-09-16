@@ -39,6 +39,9 @@ export interface LocationResponse {
 }
 
 export interface CheckoutRequest {
+    rewardId?: string;
+    benefitReservationId?: string;
+    checkoutSessionId?: string;
     cartId: string;
 
     // --- Datos del Cliente ---
@@ -56,6 +59,8 @@ export interface CheckoutRequest {
 }
 
 export interface AppliedDiscount {
+    rewardId?: string | null;
+    benefitReservationId?: string | null;
     type: string;
     displayName: string;
     amount: number;
@@ -63,6 +68,9 @@ export interface AppliedDiscount {
 }
 
 export interface OrderSummaryResponse {
+    rewardId?: string | null;
+    benefitReservationId?: string | null;
+    discountNote?: string | null;
     validatedSubtotal: number;
     deliveryFee: number;
     serviceFee: number;
@@ -73,6 +81,8 @@ export interface OrderSummaryResponse {
 }
 
 export interface OrderResponse {
+    rewardId?: string | null;
+    benefitReservationId?: string | null;
     orderId: string; // UUID público
     orderCode: string; // YT-XXXX human readable
     subtotalAmount: number;
@@ -96,6 +106,8 @@ export interface OrderResponse {
 }
 
 export interface SummaryRequest {
+    rewardId?: string;
+    checkoutSessionId?: string;
     cartId: string;
     location: LocationRequest;
 }

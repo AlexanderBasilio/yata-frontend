@@ -106,6 +106,12 @@
         </form>
     </div>
 
+    <div *ngIf="summaryError" role="alert" class="mb-4 p-4 rounded-lg border border-[#DC2626] text-[#FAF8FB]">
+        <p>{{ summaryError }}</p>
+        <button type="button" (click)="calculateSummary()" [disabled]="isLoadingSummary || isProcessingOrder"
+            class="mt-2 underline text-[#FF6DB5]">Reintentar cálculo</button>
+    </div>
+
     <!-- STEP 2: Pagos y Detalles -->
     <div *ngIf="currentStep === 2" class="step-content animate-fade-in grid grid-cols-1 md:grid-cols-2 gap-8">
 
@@ -170,6 +176,35 @@
             <div class="bg-[#221638] p-6 rounded-xl border border-[#31204F] shadow-lg sticky top-4">
                 <h3 class="text-lg font-bold font-['Inknut_Antiqua'] text-[#FAF8FB] mb-4">Resumen del Pedido</h3>
 
+                <section class="mb-4 p-3 rounded-lg border border-[#31204F] bg-[#1A0A2E]" aria-label="Beneficios disponibles">
+                    <button type="button" (click)="loadBenefits()" [attr.aria-expanded]="showBenefits"
+                        aria-controls="checkout-benefits" [disabled]="isLoadingBenefits || isLoadingSummary || isProcessingOrder"
+                        class="text-[#FF6DB5] text-sm font-semibold disabled:opacity-50">
+                        Ver mis recompensas o beneficios
+                    </button>
+                    <div *ngIf="showBenefits" id="checkout-benefits" class="mt-3 space-y-3">
+                        <p *ngIf="isLoadingBenefits" role="status" class="text-sm text-[#9D96A8]">Cargando beneficios...</p>
+                        <p *ngIf="benefitError" role="alert" class="text-sm text-[#FAF8FB]">{{ benefitError }}</p>
+                        <p *ngIf="!isLoadingBenefits && !benefitError && !availableBenefits.length" class="text-sm text-[#9D96A8]">
+                            No tienes beneficios de envío gratis disponibles.
+                        </p>
+                        <button *ngFor="let benefit of availableBenefits" type="button"
+                            (click)="selectReward(benefitId(benefit))"
+                            [disabled]="isLoadingSummary || isProcessingOrder || selectedRewardId === benefitId(benefit)"
+                            [attr.aria-pressed]="selectedRewardId === benefitId(benefit)"
+                            class="block w-full text-left p-3 rounded-lg border border-[#31204F] text-[#FAF8FB] hover:border-[#C30364] disabled:opacity-50">
+                            <span class="block text-sm">{{ benefit.definition?.name || 'Envío gratis' }}</span>
+                            <span class="block text-xs text-[#9D96A8]">Envío gratis</span>
+                            <span *ngIf="benefit.expiresAt" class="block text-xs text-[#9D96A8]">Vence: {{ benefit.expiresAt | date:'dd/MM/yyyy' }}</span>
+                        </button>
+                    </div>
+                    <div *ngIf="selectedRewardId" class="mt-3 text-sm text-[#FAF8FB]">
+                        <p>{{ orderSummary?.benefitReservationId ? 'Beneficio aplicado a este pedido' : 'Beneficio seleccionado' }}</p>
+                        <button type="button" (click)="selectReward()" [disabled]="isLoadingSummary || isProcessingOrder"
+                            class="mt-2 text-[#FF6DB5] underline disabled:opacity-50">Quitar beneficio</button>
+                    </div>
+                    <p *ngIf="isLoadingSummary" role="status" class="mt-2 text-sm text-[#9D96A8]">Actualizando total...</p>
+                </section>
                 <div *ngIf="orderSummary; else loadingSummary">
                     <div class="flex justify-between mb-2 text-[#9D96A8]">
                         <span>Subtotal</span>
@@ -202,17 +237,19 @@
                         <span class="text-[#C30364]">S/ {{ orderSummary.totalAmount | number:'1.2-2' }}</span>
                     </div>
 
+                    <p *ngIf="orderSummary.discountNote" role="status" class="text-sm text-[#FAF8FB] mb-4">{{ orderSummary.discountNote }}</p>
+
                     <!-- Propina Note -->
                     <p class="text-[11px] text-[#9D96A8] leading-relaxed mb-6 italic">
                         💡 La propina es 100% voluntaria. Si desea dejar propina, esta se entrega en efectivo directamente al repartidor al momento de recibir su pedido.
                     </p>
 
                     <div class="flex gap-3">
-                        <button data-analytics="checkout_back" (click)="goToStep1()"
+                        <button data-analytics="checkout_back" (click)="goToStep1()" [disabled]="isLoadingSummary || isProcessingOrder"
                             class="px-4 py-3 bg-transparent border border-[#C30364] text-[#C30364] rounded-lg font-medium hover:bg-[#C30364]/10 transition-colors">
                             Atrás
                         </button>
-                        <button data-analytics="checkout_confirm_order" (click)="confirmOrder()" [disabled]="detailsForm.invalid || isProcessingOrder"
+                        <button data-analytics="checkout_confirm_order" (click)="confirmOrder()" [disabled]="detailsForm.invalid || isProcessingOrder || isLoadingSummary || !!summaryError"
                             class="flex-1 bg-gradient-to-br from-[#C30364] to-[#E8368A] text-[#FAF8FB] py-3 rounded-lg font-bold hover:shadow-[0_4px_20px_rgba(195,3,100,0.40)] disabled:opacity-50 disabled:shadow-none transition-all">
                             <span *ngIf="!isProcessingOrder">Realizar Pedido</span>
                             <span *ngIf="isProcessingOrder">Procesando...</span>
@@ -225,7 +262,8 @@
                         <div
                             class="w-8 h-8 border-4 border-[#31204F] border-t-[#C30364] rounded-full animate-spin mb-2">
                         </div>
-                        <p>Calculando total...</p>
+                        <p>{{ isLoadingSummary ? 'Calculando total...' : 'Recalcula el resumen para continuar.' }}</p>
+                        <button type="button" (click)="goToStep1()" [disabled]="isLoadingSummary || isProcessingOrder" class="mt-3 text-[#FF6DB5] underline">Volver a ubicación</button>
                     </div>
                 </ng-template>
             </div>

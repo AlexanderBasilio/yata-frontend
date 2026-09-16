@@ -1,4 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild, inject, OnDestroy, NgZone, ChangeDetectorRef, signal, computed } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
+import { PortalRewardService } from '../../../../core/services/portal/portal-reward.service';
+import { AvailableBenefitResponse } from '../../../../core/models/portal-reward.model';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -9,7 +12,6 @@ import { FoodOrderService } from '../../../../core/services/food-order/food-orde
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import {
     CheckoutRequest,
-    LocationRequest,
     PaymentMethod,
     OrderSummaryResponse,
     SummaryRequest,
@@ -40,6 +42,17 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     private ngZone = inject(NgZone);
     private cdr = inject(ChangeDetectorRef);
     private analytics = inject(AnalyticsService);
+
+    private rewardService = inject(PortalRewardService);
+    private destroyed = false;
+    private reservationId: string | undefined;
+    readonly checkoutSessionId = crypto.randomUUID();
+    selectedRewardId: string | undefined;
+    availableBenefits: AvailableBenefitResponse[] = [];
+    showBenefits = false;
+    isLoadingBenefits = false;
+    benefitError = '';
+    summaryError = '';
 
     // Signals
     clientName = signal<string>('');
@@ -172,6 +185,11 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.destroyed = true;
+        // Order creation may already be consuming the reservation.
+        if (!this.confirmedOrder && !this.isProcessingOrder) {
+            void this.releaseReservation().catch(() => console.warn('No se pudo liberar el beneficio al salir.'));
+        }
         if (this.map) {
             this.map.remove();
         }
@@ -338,84 +356,122 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
     // --- NAVEGACIÓN ENTRE PASOS ---
 
-    // Paso 1 -> Paso 2
+    benefitId(benefit: AvailableBenefitResponse): string {
+        return benefit.rewardId || benefit.uuid || benefit.id || '';
+    }
+
+    async loadBenefits() {
+        if (this.isLoadingBenefits || this.isProcessingOrder || this.isLoadingSummary) return;
+        this.showBenefits = true;
+        this.isLoadingBenefits = true;
+        this.benefitError = '';
+        try {
+            const benefits = await firstValueFrom(this.rewardService.getAvailableBenefits());
+            this.availableBenefits = benefits.filter(benefit =>
+                this.benefitId(benefit) && benefit.usageStatus === 'AVAILABLE' &&
+                benefit.status !== 'EXPIRED' && benefit.status !== 'CANCELLED' &&
+                (!benefit.requiresClaim || benefit.status === 'CLAIMED') &&
+                (!benefit.expiresAt || Date.parse(benefit.expiresAt) > Date.now()) &&
+                benefit.items?.some(item => item.itemType === 'FREE_DELIVERY')
+            );
+        } catch {
+            this.benefitError = 'No pudimos cargar tus beneficios. Intenta nuevamente.';
+        } finally {
+            this.isLoadingBenefits = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+        }
+    }
+
+    private async releaseReservation() {
+        const reservationId = this.reservationId;
+        if (!reservationId) return;
+        await firstValueFrom(this.orderService.releaseRewardReservation(reservationId));
+        if (this.reservationId === reservationId) this.reservationId = undefined;
+    }
+
+    async selectReward(rewardId?: string) {
+        if (this.isLoadingSummary || this.isProcessingOrder || this.destroyed) return;
+        this.isLoadingSummary = true;
+        this.summaryError = '';
+        try {
+            await this.releaseReservation();
+            this.orderSummary = null;
+            this.selectedRewardId = rewardId;
+        } catch {
+            this.summaryError = 'No pudimos liberar el beneficio anterior. Reintenta antes de cambiarlo.';
+            this.isLoadingSummary = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+            return;
+        }
+        if (this.destroyed) return;
+        this.isLoadingSummary = false;
+        await this.calculateSummary();
+    }
+
     goToStep2() {
         if (this.locationForm.invalid) return;
+        void this.calculateSummary();
+    }
+
+    async goToStep1() {
+        if (this.isLoadingSummary || this.isProcessingOrder) return;
         this.isLoadingSummary = true;
-        this.calculateSummary();
+        this.summaryError = '';
+        try {
+            await this.releaseReservation();
+            this.selectedRewardId = undefined;
+            this.orderSummary = null;
+            if (this.destroyed) return;
+            this.currentStep = 1;
+            this.analytics.trackCheckoutStep('delivery');
+            setTimeout(() => { if (!this.destroyed) this.initializeMap(); }, 100);
+        } catch {
+            this.summaryError = 'No pudimos liberar el beneficio. Intenta volver nuevamente.';
+        } finally {
+            this.isLoadingSummary = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+        }
     }
 
-    // Volver al Paso 1
-    goToStep1() {
-        this.currentStep = 1;
-        this.analytics.trackCheckoutStep('delivery');
-        setTimeout(() => this.initializeMap(), 100);
-    }
-
-    calculateSummary() {
+    async calculateSummary() {
+        if (!this.cartId || this.locationForm.invalid || this.isLoadingSummary || this.isProcessingOrder || this.destroyed) return;
+        this.isLoadingSummary = true;
+        this.summaryError = '';
+        this.orderSummary = null;
         const loc = this.locationForm.value;
-        const locationReq: LocationRequest = {
-            address: loc.address,
-            latitude: Number(loc.latitude.toFixed(8)),
-            longitude: Number(loc.longitude.toFixed(8)),
-            city: loc.city || 'Lima',
-            region: loc.region || 'Lima',
-            reference: loc.reference || ''
-        };
-
-        if (!this.cartId) return;
-
         const request: SummaryRequest = {
             cartId: this.cartId,
-            location: locationReq // Usamos 'location' como vimos en el DTO
-        };
-
-        // Cargar/actualizar datos del usuario de Platform en paralelo
-        const userId = this.authService.getUserId();
-        if (userId) {
-            this.authService.getProfile(userId).subscribe({
-                next: (user) => {
-                    if (user) {
-                        const clientNameConcatenado = `${user.firstName || ''} ${user.lastName || ''}`.trim();
-                        if (!this.detailsForm.get('clientName')?.value) {
-                            this.detailsForm.patchValue({ clientName: clientNameConcatenado });
-                        }
-                        if (!this.detailsForm.get('clientPhoneNumber')?.value) {
-                            this.detailsForm.patchValue({ clientPhoneNumber: user.phoneNumber || '' });
-                        }
-                        this.cdr.detectChanges();
-                    }
-                },
-                error: (err) => console.error('❌ Error cargando perfil en calculateSummary:', err)
-            });
-        }
-
-        console.log('🚀 Enviando solicitud de resumen:', JSON.stringify(request, null, 2));
-
-        this.orderService.calculateSummary(request).subscribe({
-            next: (res) => {
-                console.log('✅ Resumen recibido:', res); // Log de éxito
-                this.orderSummary = res;
-                this.currentStep = 2; // Actualizamos el paso primero
-                this.analytics.trackCheckoutStep('review');
-                this.isLoadingSummary = false;
-                this.cdr.detectChanges(); // Forzamos actualización de la vista
+            location: {
+                address: loc.address,
+                latitude: Number(Number(loc.latitude).toFixed(8)),
+                longitude: Number(Number(loc.longitude).toFixed(8)),
+                city: loc.city || 'Lima',
+                region: loc.region || 'Lima',
+                reference: loc.reference || ''
             },
-            error: (err) => {
-                console.error('❌ Error calculando resumen:', err);
-                this.analytics.trackError('checkout_summary', err?.status);
-                if (err.error) {
-                    console.error('📦 Detalle del error:', JSON.stringify(err.error, null, 2));
-                    alert(`Error: ${err.error.message || 'Datos inválidos'}`);
-                } else {
-                    alert('Error al calcular costos de envío. Revisa tu conexión.');
-                }
-                this.isLoadingSummary = false;
+            rewardId: this.selectedRewardId,
+            checkoutSessionId: this.checkoutSessionId
+        };
+        try {
+            const res = await firstValueFrom(this.orderService.calculateSummary(request));
+            this.reservationId = res.benefitReservationId || undefined;
+            if (this.destroyed) {
+                await this.releaseReservation();
+                return;
             }
-        });
+            this.orderSummary = res;
+            this.currentStep = 2;
+            this.analytics.trackCheckoutStep('review');
+        } catch {
+            this.summaryError = 'No pudimos calcular el total. Reintenta para continuar con tu pedido.';
+        } finally {
+            this.isLoadingSummary = false;
+            if (!this.destroyed) this.cdr.detectChanges();
+        }
     }
 
     confirmOrder() {
+        if (this.isProcessingOrder || this.isLoadingSummary || !this.orderSummary || this.summaryError) return;
         if (this.detailsForm.invalid || !this.locationForm.valid || !this.cartId) {
             this.detailsForm.markAllAsTouched();
             return;
@@ -427,6 +483,9 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
         const request: CheckoutRequest = {
             cartId: this.cartId,
+            rewardId: this.orderSummary.rewardId || undefined,
+            benefitReservationId: this.orderSummary.benefitReservationId || undefined,
+            checkoutSessionId: this.checkoutSessionId,
             clientName: formVal.clientName,
             clientPhoneNumber: formVal.clientPhoneNumber,
             isOver18: formVal.isOver18,
@@ -446,6 +505,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             next: (res) => {
                 // Éxito: Establecemos el pedido confirmado y pasamos al paso 3
                 this.confirmedOrder = res;
+                this.reservationId = undefined;
                 this.analytics.trackOrderCreated();
                 this.analytics.trackCheckoutStep('order_created');
                 localStorage.removeItem('yata_confirmed_order');
@@ -455,7 +515,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
 
                 this.isProcessingOrder = false;
                 this.currentStep = 3;
-                this.cdr.detectChanges();
+                if (!this.destroyed) this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error('❌ Error creando pedido:', err);
