@@ -1,20 +1,24 @@
-export type RewardStatus = 'PENDING' | 'CLAIMED' | 'EXPIRED' | 'CANCELLED' | string;
-export type RewardSourceType = 'SURVEY' | 'ORDER' | 'REFERRAL' | 'PROMOTION' | 'SYSTEM' | string;
+export type RewardStatus = 'PENDING_CLAIM' | 'PENDING' | 'CLAIMED' | 'EXPIRED' | 'CANCELLED' | string;
+export type RewardSourceType = 'SURVEY' | 'ORDER' | 'REFERRAL' | 'PROMOTION' | 'SYSTEM' | 'EVENT' | 'ADMIN_GRANT' | string;
 
 export interface RewardResponse {
   id?: string | number;
   uuid?: string;
   rewardId?: string | number;
-  sourceType: RewardSourceType;
+  sourceType?: RewardSourceType;
+  source?: { type: RewardSourceType; id: string };
+  definition?: { code: string; name: string };
+  items?: RewardItemResponse[];
+  usageStatus?: 'NOT_APPLICABLE' | 'AVAILABLE' | 'RESERVED' | 'USED' | 'EXPIRED';
   sourceReferenceId?: string;
-  title: string;
+  title?: string;
   description?: string;
-  zisiCoins: number;
-  xp: number;
+  zisiCoins?: number;
+  xp?: number;
   status: RewardStatus;
-  expiresAt?: string;
-  claimedAt?: string;
-  createdAt: string;
+  expiresAt?: string | null;
+  claimedAt?: string | null;
+  createdAt?: string;
 }
 
 export interface PendingRewardsCountResponse {
@@ -44,6 +48,8 @@ export interface ClaimRewardResponse {
   message?: string;
   claimedAt?: string;
   claimedItems?: RewardItemResponse[];
+  items?: RewardItemResponse[];
+  definition?: { code: string; name: string };
   // Campos legacy, mantenidos mientras conviven ambas versiones del backend.
   status?: RewardStatus;
   zisiCoinsAwarded?: number;

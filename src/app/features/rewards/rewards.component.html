@@ -16,7 +16,7 @@
         </button>
         <div>
           <h1 class="text-xl font-bold font-['Inknut_Antiqua'] text-white">Recompensas</h1>
-          <p class="text-xs text-[#9D96A8]">Reclama tus ZisiCoins y XP</p>
+          <p class="text-xs text-[#9D96A8]">Reclama tus recompensas y beneficios</p>
         </div>
       </div>
     </div>
@@ -114,25 +114,21 @@
             <div class="bg-gradient-to-b from-[#1A0A2E] to-[#221638] border border-[#31204F] hover:border-[#C30364]/60 rounded-3xl p-5 shadow-xl transition-all relative overflow-hidden group">
               <div class="flex items-start justify-between gap-3 mb-2">
                 <div class="flex items-center gap-2">
-                  <span class="text-xl">{{ getSourceIcon(reward.sourceType) }}</span>
+                  <span class="text-xl" aria-hidden="true">{{ getRewardIcon(reward) }}</span>
                   <div>
                     <span class="text-[9px] uppercase font-bold text-[#FF6DB5] tracking-wider block">
-                      {{ getSourceLabel(reward.sourceType) }}
+                      {{ getSourceLabel(getRewardSource(reward)) }}
                     </span>
                     <h3 class="text-sm font-bold text-white font-['Inknut_Antiqua']">
-                      {{ reward.title }}
+                      {{ getRewardName(reward) }}
                     </h3>
                   </div>
                 </div>
 
-                <!-- Puntos a Reclamar -->
-                <div class="text-right">
-                  <p class="text-sm font-bold text-[#FF6DB5] font-['Inknut_Antiqua'] leading-none">
-                    +{{ reward.zisiCoins }} Z-Coins
-                  </p>
-                  <p class="text-[10px] text-amber-300 font-semibold mt-0.5">
-                    +{{ reward.xp }} XP
-                  </p>
+                <div class="text-right flex-shrink-0">
+                  @for (item of getRewardItems(reward); track item.id) {
+                    <p class="text-xs font-semibold text-[#FF6DB5]">{{ getItemDisplay(item).badge }}</p>
+                  }
                 </div>
               </div>
 
@@ -140,6 +136,15 @@
                 <p class="text-xs text-[#9D96A8] leading-relaxed mb-4">
                   {{ reward.description }}
                 </p>
+              }
+
+              @if (reward.expiresAt) {
+                <p class="text-xs text-[#9D96A8] mb-2">Vence el {{ formatDate(reward.expiresAt) }}</p>
+              }
+              @for (item of getRewardItems(reward); track item.id) {
+                @if (getItemDisplay(item).detail) {
+                  <p class="text-xs text-[#9D96A8] mb-2">{{ getItemDisplay(item).detail }}</p>
+                }
               }
 
               <!-- Botón Reclamar Recompensa -->
@@ -181,10 +186,10 @@
           @for (reward of historyRewards(); track getRewardId(reward)) {
             <div class="p-4 rounded-2xl bg-[#1A0A2E] border border-[#31204F] flex items-center justify-between gap-3">
               <div class="flex items-center gap-2.5">
-                <span class="text-lg">{{ getSourceIcon(reward.sourceType) }}</span>
+                <span class="text-lg" aria-hidden="true">{{ getRewardIcon(reward) }}</span>
                 <div>
                   <h4 class="text-xs font-bold text-white truncate font-['Epilogue']">
-                    {{ reward.title }}
+                    {{ getRewardName(reward) }}
                   </h4>
                   <p class="text-[10px] text-[#9D96A8]">
                     Reclamado el {{ formatDate(reward.claimedAt || reward.createdAt) }}
@@ -193,12 +198,9 @@
               </div>
 
               <div class="text-right flex-shrink-0">
-                <span class="text-xs font-bold text-green-400 font-['Inknut_Antiqua'] block">
-                  +{{ reward.zisiCoins }} Z-Coins
-                </span>
-                <span class="text-[10px] text-amber-300 font-semibold">
-                  +{{ reward.xp }} XP
-                </span>
+                @for (item of getRewardItems(reward); track item.id) {
+                  <span class="text-xs font-semibold text-[#FF6DB5] block">{{ getItemDisplay(item).badge }}</span>
+                }
               </div>
             </div>
           }
@@ -213,7 +215,7 @@
     <div class="fixed inset-0 z-[160] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div class="bg-gradient-to-b from-[#221638] to-[#1A0A2E] border-2 border-[#C30364] rounded-3xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.9),0_0_40px_rgba(195,3,100,0.5)] text-center max-w-xs w-full relative">
         <div class="w-16 h-16 rounded-full bg-[#C30364]/20 border border-[#FF6DB5]/50 text-[#FF6DB5] flex items-center justify-center mx-auto mb-4 text-3xl shadow-[0_0_20px_rgba(195,3,100,0.6)] animate-bounce">
-          🪙
+          {{ getClaimIcon(data) }}
         </div>
 
         <h3 class="text-lg font-bold text-white font-['Inknut_Antiqua'] mb-1">
@@ -221,20 +223,14 @@
         </h3>
 
         <div class="my-3 py-2 px-4 rounded-xl bg-white/[0.04] border border-white/10">
-          @if (getClaimedAmount(data, 'ZISI_COINS') > 0) {
-            <p class="text-base font-bold text-[#FF6DB5] font-['Inknut_Antiqua']">
-              +{{ getClaimedAmount(data, 'ZISI_COINS') }} Zisi Coins
-            </p>
-          }
-          @if (getClaimedAmount(data, 'XP_POINTS') > 0) {
-            <p class="text-xs font-semibold text-amber-300">
-              +{{ getClaimedAmount(data, 'XP_POINTS') }} XP
-            </p>
+          <p class="text-sm font-bold text-[#FAF8FB]">{{ data.definition?.name || (claimedReward() ? getRewardName(claimedReward()!) : 'Recompensa') }}</p>
+          @for (item of getClaimedItems(data); track item.id) {
+            <p class="text-xs font-semibold text-[#FF6DB5] mt-1">{{ getItemDisplay(item).badge }}</p>
           }
         </div>
 
         <p class="text-xs text-[#FAF8FB]/90 leading-relaxed mb-5 font-['Epilogue']">
-          {{ data.message || 'Se han transferido a tu saldo de gamificación exitosamente.' }}
+          {{ getClaimMessage(data) }}
         </p>
 
         <button 
