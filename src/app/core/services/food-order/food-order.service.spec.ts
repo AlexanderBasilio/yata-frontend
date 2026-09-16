@@ -35,10 +35,10 @@ describe('Checkout benefit endpoints', () => {
         req.flush(null);
     });
 
-    it('creates an order at the supplied checkout endpoint with benefit traceability', () => {
+    it('preserves the existing /confirm endpoint with benefit traceability', () => {
         const body = { rewardId: 'reward', benefitReservationId: 'reservation', checkoutSessionId: 'session' } as CheckoutRequest;
         TestBed.inject(FoodOrderService).confirmOrder(body).subscribe();
-        const req = http.expectOne(`${environment.restaurantServiceUrl}/api/orders`);
+        const req = http.expectOne(`${environment.restaurantServiceUrl}/api/orders/confirm`);
         expect(req.request.method).toBe('POST');
         expect(req.request.body).toEqual(body);
         req.flush({});

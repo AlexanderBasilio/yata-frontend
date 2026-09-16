@@ -35,6 +35,6 @@ export class FoodOrderService {
    * Se llama al final del checkout ("Realizar Pedido").
    */
   confirmOrder(request: CheckoutRequest): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(this.apiUrl, request);
+    return this.http.post<OrderResponse>(`${this.apiUrl}/confirm`, request);
   }
 }
