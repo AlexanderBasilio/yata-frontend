@@ -1,8 +1,10 @@
-import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { HttpInterceptorFn, HttpErrorResponse, HttpContextToken } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
+
+export const HANDLE_ERRORS_LOCALLY = new HttpContextToken<boolean>(() => false);
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
@@ -10,6 +12,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
+            if (req.context.get(HANDLE_ERRORS_LOCALLY) && error.status !== 401) {
+                return throwError(() => error);
+            }
             if (error.status === 401 || error.status === 403) {
                 // Token expirado o inválido
                 console.error('UNAUTHORIZED 401/403:', error);

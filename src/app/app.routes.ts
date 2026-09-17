@@ -1,8 +1,18 @@
 import { Routes } from '@angular/router';
 import { storeHoursGuard } from './core/guards/store-hours.guard';
 import { authGuard } from './core/guards/auth.guard';
+import { pendingReferralGuard } from './core/guards/pending-referral.guard';
 
 export const routes: Routes = [
+  {
+    path: 'r/:code',
+    loadComponent: () => import('./features/referrals/referral-link.component').then(m => m.ReferralLinkComponent)
+  },
+  {
+    path: 'referrals',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/referrals/referrals.component').then(m => m.ReferralsComponent)
+  },
   // ============================================
   // 1. ROOT - REDIRIGE A LANDING
   // ============================================
@@ -34,7 +44,7 @@ export const routes: Routes = [
   // ============================================
   {
     path: 'home',
-    canActivate: [authGuard],
+    canActivate: [authGuard, pendingReferralGuard],
     loadComponent: () => import('./features/service-selector/service-selector.component')
       .then(m => m.ServiceSelectorComponent)
   },

@@ -1,0 +1,79 @@
+<main class="referrals-page">
+  <nav><a routerLink="/home">← Inicio</a><a routerLink="/rewards">Mis recompensas ↗</a></nav>
+  <header><span class="eyebrow">CRECE TU CÍRCULO</span><h1>Mis referidos</h1><p>Invita a tus amigos y comparte lo bueno de Zisify.</p></header>
+  @if (feedback()) { <p class="notice success" role="status">{{ feedback() }}</p> }
+  @if (error()) { <div class="notice error" role="alert"><p>{{ error() }}</p><button type="button" (click)="load()" [disabled]="loading() || busy()">Actualizar información</button></div> }
+  @if (loading()) {
+    <p class="card" role="status">Cargando tus referidos…</p>
+  } @else {
+    @if (eligibility(); as eligibility) {
+      <section class="card invitation" aria-label="Código de invitación">
+        @if (eligibility.alreadyReferred) {
+          <h2>✓ Invitación aplicada</h2><p>Tu código de invitación: <strong>{{ eligibility.appliedReferralCode }}</strong></p>
+          <p>Al completar tu primer pedido válido, tu invitador podrá recibir su recompensa.</p>
+        } @else if (eligibility.canApplyCode) {
+          <h2>¿Te invitaron a Zisify?</h2>
+          @if (!formOpen()) {
+            <p>Vincula tu invitación antes de realizar tu primer pedido.</p>
+            <button type="button" (click)="formOpen.set(true)">Tengo un código de invitación</button>
+          } @else {
+            <form (ngSubmit)="validation()?.valid ? apply() : validate()">
+              <label for="referral-code">Código de invitación</label>
+              <input id="referral-code" name="code" [ngModel]="code" (ngModelChange)="changeCode($event)" [disabled]="busy()" minlength="3" maxlength="32" required autocomplete="off" spellcheck="false" aria-describedby="invitation-help" />
+              <p id="invitation-help">Al completar tu primer pedido válido, tu amigo podrá recibir su recompensa.</p>
+              @if (validation(); as result) {
+                <p role="status" [class.invalid]="!result.valid">{{ result.message }}
+                  @if (result.valid && result.referrerName) { <strong>{{ result.referrerName }} te invitó a Zisify.</strong> }
+                </p>
+              }
+              <div class="actions"><button type="submit" [disabled]="busy() || code.trim().length < 3">{{ busy() ? 'Procesando…' : validation()?.valid ? 'Aceptar invitación' : 'Continuar' }}</button>
+              <button class="quiet" type="button" (click)="dismiss()" [disabled]="busy()">Ahora no</button></div>
+            </form>
+          }
+        } @else {
+          <h2>Código de invitación</h2><p>{{ eligibility.reason || 'Tu cuenta ya no puede vincular un código de invitación.' }}</p>
+        }
+      </section>
+    }
+    @if (profile(); as profile) {
+      <div class="overview">
+        <section class="card code-card">
+          <span class="eyebrow">INVITA AMIGOS</span><h2>Tu código de referido</h2>
+          @if (profile.isEligible && profile.referralCode) {
+            <p class="personal-code">{{ profile.referralCode }}</p>
+            <div class="actions"><button type="button" (click)="copy(profile.referralCode)">Copiar código</button><button type="button" (click)="share()" [disabled]="!profile.shareUrl">Compartir</button></div>
+            @if (profile.shareUrl) { <p class="share-url">{{ profile.shareUrl }}</p> }
+          } @else {
+            <p>{{ profile.ineligibilityReason || 'Tu código para invitar todavía no está disponible.' }}</p>
+          }
+        </section>
+        <section class="card">
+          <span class="eyebrow">RECOMPENSA</span><h2>Invitar tiene su premio</h2>
+          @if (reward()?.active === false) {
+            <p>El programa de referidos no está activo en este momento.</p>
+          } @else if (profile.activeRewardDescription || reward()?.rewardDefinitionName) {
+            <p class="reward-description">{{ profile.activeRewardDescription || reward()?.rewardDefinitionName }}</p>
+            <p>Tu recompensa se genera cuando tu amigo completa su primer pedido válido y se confirma su recepción.</p>
+          } @else { <p>La información de la recompensa vigente aún no está disponible.</p> }
+          <a routerLink="/rewards">Ver mis recompensas →</a>
+        </section>
+      </div>
+      <section class="stats" aria-label="Resumen de referidos">
+        <div><strong>{{ profile.totalInvited }}</strong><span>Invitados</span></div>
+        <div><strong>{{ profile.totalPending }}</strong><span>Pendientes</span></div>
+        <div><strong>{{ profile.totalQualified }}</strong><span>Completados</span></div>
+      </section>
+      <section class="card friends"><h2>Mis amigos</h2><p>Los referidos pendientes aún no cumplen las condiciones para generar una recompensa.</p>
+        @if (!profile.friends.length) {
+          <div class="empty"><strong>Tu círculo empieza contigo</strong><p>Cuando un amigo vincule tu código, aparecerá aquí.</p></div>
+        } @else {
+          <ul>@for (friend of profile.friends; track friend.referredUserId) {
+            <li><div><strong>{{ friend.name }}</strong><p>Invitado: {{ friend.joinedAt | date:'dd/MM/yyyy' }}</p>
+              @if (friend.qualifiedAt) { <p>Completado: {{ friend.qualifiedAt | date:'dd/MM/yyyy' }}</p> }
+            </div><span class="status" [class.completed]="friend.status === 'QUALIFIED'">{{ labels[friend.status] || 'Estado no disponible' }}</span></li>
+          }</ul>
+        }
+      </section>
+    }
+  }
+</main>

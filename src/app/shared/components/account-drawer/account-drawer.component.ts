@@ -106,9 +106,9 @@ export class AccountDrawerComponent {
       {
         id: 'referrals',
         title: 'Mis referidos',
-        subtitle: 'Comparte tu código y acumula saldo',
+        subtitle: 'Invita amigos y descubre tus beneficios',
         icon: 'referrals',
-        route: null, // ⏳ Listo para ruta real cuando backend lo habilite
+        route: '/referrals',
         badge: this.menuBadges.count('referrals') > 0 ? String(this.menuBadges.count('referrals')) : undefined,
         badgeType: 'accent'
       }
