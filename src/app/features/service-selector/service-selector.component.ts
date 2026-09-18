@@ -89,6 +89,19 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   // Modal Promocional de Lanzamiento (se abre siempre al iniciar sesión / cargar inicio)
   showPromoModal = signal(true);
+  promoSlide = signal(0);
+  promoPaused = signal(false);
+  private promoTimer?: ReturnType<typeof setInterval>;
+
+  selectPromoSlide(index: number) {
+    this.promoSlide.set(index);
+    this.promoPaused.set(true);
+  }
+
+  onReferNow() {
+    this.closePromoModal();
+    void this.router.navigate(['/referrals']);
+  }
 
   // 🎯 Nuevo Home Summary (Header + Notifications + Rewards)
   homeSummaryData = signal<HomeSummaryResponse | null>(null);
@@ -207,11 +220,12 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   });
 
   closePromoModal() {
+    clearInterval(this.promoTimer);
     this.showPromoModal.set(false);
   }
 
   onAprovecharOferta() {
-    this.showPromoModal.set(false);
+    this.closePromoModal();
     this.router.navigate(['/food/catalog']);
   }
 
@@ -524,6 +538,12 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.promoPaused.set(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    this.promoTimer = setInterval(() => {
+      if (!this.promoPaused() && !document.hidden) {
+        this.promoSlide.update(index => (index + 1) % 2);
+      }
+    }, 7000);
     this.refreshMenuBadges();
     this.customerName = 'ZISIFY';
     this.loadPortalHomeSummary();
@@ -554,6 +574,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    clearInterval(this.promoTimer);
     this.cleanupMap();
   }
 

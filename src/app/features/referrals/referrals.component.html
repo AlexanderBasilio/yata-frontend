@@ -1,6 +1,17 @@
 <main class="referrals-page">
   <nav><a routerLink="/home">← Inicio</a><a routerLink="/rewards">Mis recompensas ↗</a></nav>
   <header><span class="eyebrow">CRECE TU CÍRCULO</span><h1>Mis referidos</h1><p>Invita a tus amigos y comparte lo bueno de Zisify.</p></header>
+  <section class="card" aria-label="Requisitos para referir">
+    <span class="eyebrow">ANTES DE INVITAR</span>
+    <h2>¿Cómo activo mi código?</h2>
+    @if (reward()?.requireGoogleAuth !== false) {
+      <p><strong>Inicia sesión con Google.</strong> Si ingresaste con correo y contraseña, debes ingresar con Google para poder referir.</p>
+    }
+    @if ((reward()?.referrerMinOrders ?? 1) > 0) {
+      <p><strong>Completa al menos {{ reward()?.referrerMinOrders ?? 1 }} {{ (reward()?.referrerMinOrders ?? 1) === 1 ? 'pedido' : 'pedidos' }}.</strong> Tu cuenta debe cumplir este requisito para habilitar las invitaciones.</p>
+    }
+    <p>Cuando cumplas los requisitos y el programa esté activo, encontrarás aquí tu código y los botones para copiarlo o compartirlo.</p>
+  </section>
   @if (feedback()) { <p class="notice success" role="status">{{ feedback() }}</p> }
   @if (error()) { <div class="notice error" role="alert"><p>{{ error() }}</p><button type="button" (click)="load()" [disabled]="loading() || busy()">Actualizar información</button></div> }
   @if (loading()) {
