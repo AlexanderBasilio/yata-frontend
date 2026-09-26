@@ -13,7 +13,7 @@ describe('ServiceAccessService', () => {
   let service: ServiceAccessService;
   let token: string | null;
   const originalPath = serviceAccessConfig.path;
-  const endpoint = `${environment.platformUrl}/api/v1/service-access`;
+  const endpoint = `${environment.platformUrl}/api/v1/service-access?ngsw-bypass=true`;
 
   beforeEach(() => {
     serviceAccessConfig.path = '/api/v1/service-access';
@@ -36,7 +36,7 @@ describe('ServiceAccessService', () => {
           let result: boolean | undefined;
           service.check().subscribe(value => result = value);
           const request = http.expectOne(endpoint);
-          expect(request.request.headers.get('ngsw-bypass')).toBe('true');
+          expect(request.request.params.get('ngsw-bypass')).toBe('true');
           request.flush({ state, access, message: 'Estado', nextOpeningAt: null });
           expect(result).toBe((state === 'OPEN' && access === 'PUBLIC') || (signedIn && access === 'DEVELOPER'));
         });
@@ -81,6 +81,8 @@ describe('ServiceAccessService', () => {
   it('exempts only exact entry points, not similarly prefixed business paths', () => {
     expect(isAccessExempt('/auth/login?next=/home')).toBeTrue();
     expect(isAccessExempt('/closed')).toBeTrue();
+    expect(isAccessExempt('/zisify')).toBeTrue();
+    expect(isAccessExempt('')).toBeTrue();
     expect(isAccessExempt('/closed-orders')).toBeFalse();
     expect(isAccessExempt('/auth/login/private')).toBeFalse();
     expect(isAccessExempt('/wallet')).toBeFalse();
