@@ -3,6 +3,8 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
+import { serviceAccessConfig } from '../services/store/service-access.config';
+import { isBackendUrl } from './api-url';
 
 export const HANDLE_ERRORS_LOCALLY = new HttpContextToken<boolean>(() => false);
 
@@ -12,6 +14,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
+            if (serviceAccessConfig.path && isBackendUrl(req.url) && error.status === 503 &&
+                ['SERVICE_MAINTENANCE', 'SERVICE_CLOSED'].includes(error.error?.code)) {
+                void router.navigateByUrl('/closed');
+                return throwError(() => error);
+            }
             if (req.context.get(HANDLE_ERRORS_LOCALLY) && error.status !== 401) {
                 return throwError(() => error);
             }

@@ -1,9 +1,10 @@
+import { serviceAccessGuard } from './core/guards/service-access.guard';
 import { Routes } from '@angular/router';
 import { storeHoursGuard } from './core/guards/store-hours.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { pendingReferralGuard } from './core/guards/pending-referral.guard';
 
-export const routes: Routes = [
+const applicationRoutes: Routes = [
   {
     path: 'r/:code',
     loadComponent: () => import('./features/referrals/referral-link.component').then(m => m.ReferralLinkComponent)
@@ -209,3 +210,6 @@ export const routes: Routes = [
     redirectTo: ''
   }
 ];
+
+// Apply to every child navigation, including lazy-loaded routes.
+export const routes: Routes = [{ path: '', canActivateChild: [serviceAccessGuard], children: applicationRoutes }];

@@ -1,17 +1,21 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { interval, Subscription } from 'rxjs';
 import { StoreHoursService } from '../../../../core/services/store/store-hours.service';
+import { ServiceAccessService } from '../../../../core/services/store/service-access.service';
+import { ServiceUnavailableComponent } from './service-unavailable.component';
+import { TeamAccessComponent } from './team-access.component';
 
 @Component({
   selector: 'app-closed-store',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ServiceUnavailableComponent, TeamAccessComponent],
   templateUrl: './closed-store.html',
   styleUrl: './closed-store.scss'
 })
 export class ClosedStoreComponent implements OnInit, OnDestroy {
+  readonly backendAccessEnabled = inject(ServiceAccessService).enabled;
   currentTime = signal<string>('');
   isOpen = signal<boolean>(false);
   openingTime = signal<string>('');
@@ -26,6 +30,7 @@ export class ClosedStoreComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    if (this.backendAccessEnabled) return;
     this.updateTime();
     // Actualizar cada minuto
     this.timeSubscription = interval(60000).subscribe(() => {

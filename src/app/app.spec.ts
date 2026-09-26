@@ -4,6 +4,7 @@ import { App } from './app';
 import { provideRouter } from '@angular/router';
 import { AnalyticsService } from './core/services/analytics/analytics.service';
 import { AppUpdateService } from './core/services/app-update/app-update.service';
+import { ServiceAccessService } from './core/services/store/service-access.service';
 import { BottomNavComponent } from './shared/components/bottom-nav/bottom-nav.component';
 import { AppNoticesComponent } from './shared/components/app-notices/app-notices.component';
 
@@ -18,7 +19,8 @@ describe('App', () => {
       imports: [App],
       providers: [provideZonelessChangeDetection(), provideRouter([]),
         { provide: AnalyticsService, useValue: { initialize: jasmine.createSpy('analyticsInitialize') } },
-        { provide: AppUpdateService, useValue: { initialize: jasmine.createSpy('updateInitialize') } }
+        { provide: AppUpdateService, useValue: { initialize: jasmine.createSpy('updateInitialize') } },
+        { provide: ServiceAccessService, useValue: { startMonitoring: jasmine.createSpy('startMonitoring') } }
       ]
     }).overrideComponent(App, {
       remove: { imports: [BottomNavComponent, AppNoticesComponent] },

@@ -1,8 +1,11 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { StoreHoursService } from '../services/store/store-hours.service';
+import { ServiceAccessService } from '../services/store/service-access.service';
 
 export const storeHoursGuard: CanActivateFn = (route, state) => {
+  // The global guard becomes the sole authority after backend integration.
+  if (inject(ServiceAccessService).enabled) return true;
   const router = inject(Router);
   const storeHoursService = inject(StoreHoursService);
 

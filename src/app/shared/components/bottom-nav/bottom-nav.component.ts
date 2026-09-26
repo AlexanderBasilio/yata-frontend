@@ -24,7 +24,7 @@ export class BottomNavComponent {
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {
                 // Ocultar en auth y en landing pública (usamos urlAfterRedirects para capturar redirecciones de / a /zisify)
-                if (event.urlAfterRedirects.includes('/auth') || event.urlAfterRedirects.includes('/zisify') || event.urlAfterRedirects === '/') {
+                if (event.urlAfterRedirects.split(/[?#]/)[0] === '/closed' || event.urlAfterRedirects.includes('/auth') || event.urlAfterRedirects.includes('/zisify') || event.urlAfterRedirects === '/') {
                     this.showNav = false;
                 } else {
                     // Mostrar solo si está logueado
