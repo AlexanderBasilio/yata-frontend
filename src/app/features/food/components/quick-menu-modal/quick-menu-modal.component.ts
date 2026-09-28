@@ -1,7 +1,8 @@
-import { Component, input, output, signal, computed } from '@angular/core';
+import { Component, input, output, signal, computed, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Restaurant, RestaurantQuickMenuResponse, QuickMenuItemResponse } from '../../../../core/models/restaurant.model';
+import { BottomNavService } from '../../../../core/services/bottom-nav/bottom-nav.service';
 
 export interface SelectedQuickItem {
   item: QuickMenuItemResponse;
@@ -15,11 +16,21 @@ export interface SelectedQuickItem {
   templateUrl: './quick-menu-modal.component.html',
   styleUrl: './quick-menu-modal.component.scss'
 })
-export class QuickMenuModalComponent {
+export class QuickMenuModalComponent implements OnInit, OnDestroy {
+  private bottomNavService = inject(BottomNavService);
+
   restaurant = input<Restaurant | null>(null);
   quickMenu = input<RestaurantQuickMenuResponse | null>(null);
   isLoading = input<boolean>(false);
   close = output<void>();
+
+  ngOnInit(): void {
+    this.bottomNavService.hide();
+  }
+
+  ngOnDestroy(): void {
+    this.bottomNavService.show();
+  }
 
   // Filtro o búsqueda rápida dentro de la carta
   searchTerm = signal('');

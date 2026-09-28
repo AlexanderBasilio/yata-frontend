@@ -1,9 +1,10 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule, Event, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { CartService } from '../../../core/services/cart/cart.service';
 import { FoodCartService } from '../../../core/services/food-cart/food-cart.service';
+import { BottomNavService } from '../../../core/services/bottom-nav/bottom-nav.service';
 
 @Component({
     selector: 'app-bottom-nav',
@@ -17,18 +18,26 @@ export class BottomNavComponent {
     public authService = inject(AuthService);
     public cartService = inject(CartService);
     public foodCartService = inject(FoodCartService);
+    public bottomNavService = inject(BottomNavService);
 
-    showNav = true;
+    private routeAllowsNav = signal<boolean>(true);
+
+    get showNav(): boolean {
+        return this.routeAllowsNav() && !this.bottomNavService.isTemporarilyHidden();
+    }
 
     constructor() {
         this.router.events.subscribe((event: Event) => {
             if (event instanceof NavigationEnd) {
+                // Restablecer ocultamiento temporal al cambiar de ruta
+                this.bottomNavService.show();
+
                 // Ocultar en auth y en landing pública (usamos urlAfterRedirects para capturar redirecciones de / a /zisify)
                 if (event.urlAfterRedirects.split(/[?#]/)[0] === '/closed' || event.urlAfterRedirects.includes('/auth') || event.urlAfterRedirects.includes('/zisify') || event.urlAfterRedirects === '/') {
-                    this.showNav = false;
+                    this.routeAllowsNav.set(false);
                 } else {
                     // Mostrar solo si está logueado
-                    this.showNav = this.authService.isLoggedIn();
+                    this.routeAllowsNav.set(this.authService.isLoggedIn());
                 }
             }
         });

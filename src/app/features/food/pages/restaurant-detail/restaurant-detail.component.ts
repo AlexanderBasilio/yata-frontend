@@ -10,6 +10,7 @@ import { DishCardComponent } from '../../components/dish-card/dish-card.componen
 import { DishModalComponent } from '../../components/dish-modal/dish-modal.component';
 import { QuickMenuModalComponent } from '../../components/quick-menu-modal/quick-menu-modal.component';
 import { AnalyticsService } from '../../../../core/services/analytics/analytics.service';
+import { BottomNavService } from '../../../../core/services/bottom-nav/bottom-nav.service';
 
 @Component({
   selector: 'app-restaurant-detail',
@@ -24,6 +25,7 @@ export class RestaurantDetailComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private analytics = inject(AnalyticsService);
+  private bottomNavService = inject(BottomNavService);
 
   restaurant = signal<Restaurant | null>(null);
   dishes = signal<Dish[]>([]);
@@ -107,6 +109,7 @@ export class RestaurantDetailComponent implements OnInit {
   isLoadingQuickMenu = signal(false);
 
   openQuickMenu() {
+    this.bottomNavService.hide();
     this.showQuickMenuModal.set(true);
     const rest = this.restaurant();
     if (!rest?.id) return;
@@ -131,6 +134,7 @@ export class RestaurantDetailComponent implements OnInit {
 
   closeQuickMenu() {
     this.showQuickMenuModal.set(false);
+    this.bottomNavService.show();
   }
 
   isLoadingRestaurant = signal(true);
