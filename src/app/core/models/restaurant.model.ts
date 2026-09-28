@@ -27,6 +27,12 @@ export interface Restaurant {
   isTemporarilyClosed: boolean;
   isOpen: boolean;
 
+  // Teléfono / Contacto
+  phone?: string;
+  phoneNumber?: string;
+  contactPhone?: string;
+  whatsappNumber?: string;
+
   schedule?: RestaurantSchedule;
 }
 
@@ -115,3 +121,23 @@ export interface SelectionOption {
   priceAdjustment: number;
   isAvailable: boolean;
 }
+
+// ✅ NUEVO: DTO para Resumen del Catálogo / Carta Rápida
+export interface QuickMenuItemResponse {
+  id: string;
+  name: string;
+  price: number;
+  listPrice?: number | null;
+}
+
+export interface QuickMenuCategoryResponse {
+  categoryName: string;
+  items: QuickMenuItemResponse[];
+}
+
+export interface RestaurantQuickMenuResponse {
+  restaurantId: string;
+  restaurantName: string;
+  categories: QuickMenuCategoryResponse[];
+}
+

@@ -50,20 +50,30 @@
       {{ fullAddress() }}
     </p>
 
-    <!-- Rating e info adicional -->
-    <div class="flex items-center gap-4 text-sm text-gray-600">
-      <div class="flex items-center gap-1">
-        <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
-          <path
-            d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
-        </svg>
-        <span class="font-semibold">{{ (restaurant()?.rating || 0).toFixed(1) }}</span>
-        <span class="text-gray-500">({{ restaurant()?.reviewCount || 0 }})</span>
+    <!-- Rating e info adicional + Botón Carta Rápida -->
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div class="flex items-center gap-4 text-sm text-gray-600">
+        <div class="flex items-center gap-1">
+          <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
+            <path
+              d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+          </svg>
+          <span class="font-semibold">{{ (restaurant()?.rating || 0).toFixed(1) }}</span>
+          <span class="text-gray-500">({{ restaurant()?.reviewCount || 0 }})</span>
+        </div>
+        <span>•</span>
+        <span>{{ restaurant()!.preparationTime }} min</span>
+        <span>•</span>
+        <span>S/ {{ (restaurant()?.minimumOrder || 0).toFixed(2) }} mínimo</span>
       </div>
-      <span>•</span>
-      <span>{{ restaurant()!.preparationTime }} min</span>
-      <span>•</span>
-      <span>S/ {{ (restaurant()?.minimumOrder || 0).toFixed(2) }} mínimo</span>
+
+      <!-- Botón Resumen del Catálogo / Carta Rápida -->
+      <button data-analytics="restaurant_quick_menu_header" (click)="openQuickMenu()"
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] border border-[#C30364]/40 shadow-sm transition-all cursor-pointer active:scale-95 group">
+        <span class="text-sm">📄</span>
+        <span>Ver Carta Rápida</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-[#C30364] text-[10px] text-white font-semibold">Resumen</span>
+      </button>
     </div>
   </div>
 
@@ -106,6 +116,15 @@
         </div>
       }
     </div>
+
+    <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
+
+    <!-- Botón Carta Rápida en barra sticky -->
+    <button data-analytics="restaurant_quick_menu_bar" (click)="openQuickMenu()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-pink-50 border border-[#C30364]/40 text-[#C30364] text-xs font-bold shadow-sm transition-all cursor-pointer active:scale-95 shrink-0">
+      <span>📄</span>
+      <span class="whitespace-nowrap">Carta Rápida</span>
+    </button>
 
     <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
 
@@ -213,6 +232,15 @@
   <!-- Modal de detalle del platillo -->
   @if (showDishModal() && selectedDish()) {
   <app-dish-modal [dish]="selectedDish()!" (close)="closeDishModal()" (addToCart)="onAddToCart($event)" />
+  }
+
+  <!-- Modal Resumen del Catálogo / Carta Rápida -->
+  @if (showQuickMenuModal()) {
+  <app-quick-menu-modal
+    [restaurant]="restaurant()"
+    [quickMenu]="quickMenuData()"
+    [isLoading]="isLoadingQuickMenu()"
+    (close)="closeQuickMenu()" />
   }
 
 </div>

@@ -1,0 +1,78 @@
+:host {
+  display: contents;
+}
+
+.traditional-menu-card {
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7),
+              0 0 35px rgba(195, 3, 100, 0.25);
+  background: radial-gradient(circle at top, #200d38 0%, #160826 65%, #0e0419 100%);
+}
+
+.menu-ornament-border {
+  border-style: double;
+  border-width: 3px;
+  border-color: rgba(195, 3, 100, 0.25);
+}
+
+.menu-item-row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Scrollbar sutil para la carta */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: #31204F transparent;
+
+  &::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #31204F;
+    border-radius: 9999px;
+
+    &:hover {
+      background: #C30364;
+    }
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

@@ -4,16 +4,17 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { RestaurantService } from '../../../../core/services/restaurant/restaurant.service';
 import { FoodCartService } from '../../../../core/services/food-cart/food-cart.service';
-import { Restaurant, Dish } from '../../../../core/models/restaurant.model';
+import { Restaurant, Dish, RestaurantQuickMenuResponse } from '../../../../core/models/restaurant.model';
 import { AddToCartRequest, FoodCart } from '../../../../core/models/food-cart.model';
 import { DishCardComponent } from '../../components/dish-card/dish-card.component';
 import { DishModalComponent } from '../../components/dish-modal/dish-modal.component';
+import { QuickMenuModalComponent } from '../../components/quick-menu-modal/quick-menu-modal.component';
 import { AnalyticsService } from '../../../../core/services/analytics/analytics.service';
 
 @Component({
   selector: 'app-restaurant-detail',
   standalone: true,
-  imports: [CommonModule, DishCardComponent, DishModalComponent],
+  imports: [CommonModule, DishCardComponent, DishModalComponent, QuickMenuModalComponent],
   templateUrl: './restaurant-detail.component.html',
   styleUrl: './restaurant-detail.component.scss'
 })
@@ -98,6 +99,38 @@ export class RestaurantDetailComponent implements OnInit {
       }, 100);
     }
     this.showCategoriesModal.set(false);
+  }
+
+  // Modal Resumen del Catálogo / Carta Rápida
+  showQuickMenuModal = signal(false);
+  quickMenuData = signal<RestaurantQuickMenuResponse | null>(null);
+  isLoadingQuickMenu = signal(false);
+
+  openQuickMenu() {
+    this.showQuickMenuModal.set(true);
+    const rest = this.restaurant();
+    if (!rest?.id) return;
+
+    // Solo consultar el endpoint si no ha sido cargado aún para este restaurante
+    if (this.quickMenuData()?.restaurantId === rest.id) {
+      return;
+    }
+
+    this.isLoadingQuickMenu.set(true);
+    this.restaurantService.getQuickMenu(rest.id).subscribe({
+      next: (data) => {
+        this.quickMenuData.set(data);
+        this.isLoadingQuickMenu.set(false);
+      },
+      error: (error) => {
+        console.error('❌ Error cargando carta rápida:', error);
+        this.isLoadingQuickMenu.set(false);
+      }
+    });
+  }
+
+  closeQuickMenu() {
+    this.showQuickMenuModal.set(false);
   }
 
   isLoadingRestaurant = signal(true);

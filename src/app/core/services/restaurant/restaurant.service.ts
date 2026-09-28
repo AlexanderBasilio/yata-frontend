@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
-import { Restaurant, Dish, DishSummary } from '../../models/restaurant.model';
+import { Restaurant, Dish, DishSummary, RestaurantQuickMenuResponse } from '../../models/restaurant.model';
 
 export interface Specialty {
   name: string;
@@ -100,6 +100,16 @@ export class RestaurantService {
    */
   getDishById(dishId: string): Observable<Dish> {
     return this.http.get<Dish>(`${this.dishApiUrl}/${dishId}`);
+  }
+
+  /**
+   * ✅ NUEVO: Resumen del Catálogo / Carta Rápida (sin fotos ni modifiers)
+   * GET /api/dishes/restaurant/{restaurantId}/quick-menu
+   */
+  getQuickMenu(restaurantId: string): Observable<RestaurantQuickMenuResponse> {
+    return this.http.get<RestaurantQuickMenuResponse>(
+      `${this.dishApiUrl}/restaurant/${restaurantId}/quick-menu`
+    );
   }
 
   /**
