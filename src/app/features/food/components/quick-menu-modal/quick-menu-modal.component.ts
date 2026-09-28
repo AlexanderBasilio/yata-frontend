@@ -93,12 +93,38 @@ export class QuickMenuModalComponent implements OnInit, OnDestroy {
     return total;
   });
 
+  // Número de WhatsApp oficial para pedidos
+  readonly whatsappTargetPhone = '51993861207';
+  readonly whatsappFormattedPhone = '+51 993 861 207';
+
   // Cargo adicional por atención WhatsApp
   readonly whatsappServiceFee = 0.60;
 
   // Total estimado por WhatsApp (subtotal + cargo)
   whatsappEstimatedTotal = computed(() => {
     return this.selectedSubtotal() + this.whatsappServiceFee;
+  });
+
+  // Mensaje estructurado prellenado para WhatsApp
+  prefilledWhatsappMessage = computed(() => {
+    const restName = this.quickMenu()?.restaurantName || this.restaurant()?.name || 'el Restaurante';
+    const items = Array.from(this.selectedItemsMap().values());
+
+    let message = `👋 ¡Hola! Vengo desde Zisify y deseo realizar el siguiente pedido a *${restName}*:\n\n`;
+    message += `🍽️ *Detalle del Pedido:*\n`;
+
+    items.forEach(i => {
+      const lineTotal = (i.item.price * i.quantity).toFixed(2);
+      message += `• ${i.quantity}x ${i.item.name} - S/ ${lineTotal}\n`;
+    });
+
+    message += `\n📋 *Resumen Económico:*\n`;
+    message += `• Subtotal platos: S/ ${this.selectedSubtotal().toFixed(2)}\n`;
+    message += `• Cargo adicional atención WhatsApp: S/ ${this.whatsappServiceFee.toFixed(2)}\n`;
+    message += `• *Total estimado:* S/ ${this.whatsappEstimatedTotal().toFixed(2)}\n\n`;
+    message += `📍 Por favor confírmenme el costo de envío a mi dirección y los métodos de pago disponibles. ¡Muchas gracias!`;
+
+    return message;
   });
 
   toggleItemSelection(item: QuickMenuItemResponse) {
@@ -199,45 +225,20 @@ export class QuickMenuModalComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Confirmación final y redirección a WhatsApp
+   * Confirmación final y redirección a WhatsApp con mensaje prellenado al número +51 993 861 207
    */
   proceedToWhatsapp() {
     this.showWhatsappConfirm.set(false);
 
-    const restName = this.quickMenu()?.restaurantName || this.restaurant()?.name || 'el Restaurante';
-    const items = Array.from(this.selectedItemsMap().values());
-
-    // Construcción del mensaje estricto: nombre restaurante, platos seleccionados (sin modifiers), precios y costo adicional
-    let message = `👋 ¡Hola! Vengo desde Zisify y deseo realizar el siguiente pedido a *${restName}*:\n\n`;
-    message += `🍽️ *Detalle del Pedido:*\n`;
-
-    items.forEach(i => {
-      const lineTotal = (i.item.price * i.quantity).toFixed(2);
-      message += `• ${i.quantity}x ${i.item.name} - S/ ${lineTotal}\n`;
-    });
-
-    message += `\n📋 *Resumen Económico:*\n`;
-    message += `• Subtotal platos: S/ ${this.selectedSubtotal().toFixed(2)}\n`;
-    message += `• Cargo adicional atención WhatsApp: S/ ${this.whatsappServiceFee.toFixed(2)}\n`;
-    message += `• *Total estimado:* S/ ${this.whatsappEstimatedTotal().toFixed(2)}\n\n`;
-    message += `📍 Por favor confírmenme el costo de envío a mi ubicación y los métodos de pago. ¡Gracias!`;
-
-    // Obtener teléfono del restaurante
-    const rest = this.restaurant();
-    const rawPhone = (rest as any)?.phoneNumber || (rest as any)?.phone || (rest as any)?.contactPhone || (rest as any)?.whatsappNumber || '';
-    let cleanPhone = rawPhone.toString().replace(/\D/g, '');
-
-    // Si es un número peruano de 9 dígitos (9xxxxxxxx), anteponer 51
-    if (cleanPhone.length === 9 && cleanPhone.startsWith('9')) {
-      cleanPhone = `51${cleanPhone}`;
-    }
-
+    const message = this.prefilledWhatsappMessage();
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = cleanPhone
-      ? `https://wa.me/${cleanPhone}?text=${encodedMessage}`
-      : `https://wa.me/?text=${encodedMessage}`;
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${this.whatsappTargetPhone}&text=${encodedMessage}`;
 
-    window.open(whatsappUrl, '_blank');
+    // Intentar abrir en nueva pestaña/app de WhatsApp con fallback a location.href
+    const newWindow = window.open(whatsappUrl, '_blank');
+    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+      window.location.href = whatsappUrl;
+    }
   }
 
   private showToast(msg: string) {
