@@ -545,7 +545,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
     celularCopied = false;
     async copyCelular() {
         try {
-            await navigator.clipboard.writeText('963434580');
+            await navigator.clipboard.writeText('993861207');
             this.celularCopied = true;
             this.cdr.detectChanges();
             setTimeout(() => {
@@ -554,7 +554,7 @@ export class CheckoutComponent implements OnInit, OnDestroy {
             }, 3000);
         } catch (err) {
             console.error('Error al copiar celular:', err);
-            alert('No se pudo copiar el número automáticamente. El número es 963434580');
+            alert('No se pudo copiar el número automáticamente. El número es 993861207');
         }
     }
 

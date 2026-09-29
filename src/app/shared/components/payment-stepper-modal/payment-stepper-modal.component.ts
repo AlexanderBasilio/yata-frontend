@@ -158,12 +158,12 @@ export class PaymentStepperModalComponent implements OnInit, OnDestroy {
 
   async copyCelular(): Promise<void> {
     try {
-      await navigator.clipboard.writeText('963434580');
+      await navigator.clipboard.writeText('993861207');
       this.celularCopied.set(true);
       setTimeout(() => this.celularCopied.set(false), 3000);
     } catch (err) {
       console.error('Error al copiar celular:', err);
-      alert('No se pudo copiar automáticamente. El número de Yape es 963434580');
+      alert('No se pudo copiar automáticamente. El número de Yape es 993861207');
     }
   }
 
