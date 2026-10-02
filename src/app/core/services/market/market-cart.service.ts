@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpContext } from '@angular/common/http';
 import { Observable, catchError, map, of, tap, throwError } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
@@ -9,12 +9,15 @@ import {
   MarketProximityConflictError,
   UpdateMarketCartItemRequest
 } from '../../models/market.model';
+import { AuthService } from '../auth/auth.service';
+import { HANDLE_ERRORS_LOCALLY } from '../../interceptors/error.interceptor';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MarketCartService {
   private http = inject(HttpClient);
+  private authService = inject(AuthService);
   private readonly baseUrl = `${environment.apiUrl}/api/market/customer/cart`;
   private readonly LOCAL_CART_KEY = 'yata_market_cart';
 
@@ -34,128 +37,188 @@ export class MarketCartService {
 
   constructor() {
     this.restoreLocalCart();
-    this.getCart().subscribe();
+    // NOTA CRÍTICA: NUNCA ejecutar getCart().subscribe() en el constructor.
+    // Solo se debe consultar cuando el usuario esté autenticado o ingrese al flujo de compra.
   }
 
-  // 1. Obtener carrito activo
+  // 1. Obtener carrito activo (solo consulta HTTP si el usuario está autenticado)
   getCart(): Observable<MarketCartResponse | null> {
-    return this.http.get<MarketCartResponse>(this.baseUrl).pipe(
-      tap(cart => {
-        this.cart.set(cart);
-        this.totalItems.set(cart?.totalItemsCount ?? 0);
-        this.saveLocalCart(cart);
-      }),
-      catchError((error: HttpErrorResponse) => {
-        if (error.status === 404 || error.status === 0 || error.status === 401) {
-          // Usar carrito local si el backend no responde o devuelve 404
-          const cached = this.getLocalCart();
-          if (cached) {
-            this.cart.set(cached);
-            this.totalItems.set(cached.totalItemsCount);
-            return of(cached);
-          }
-          return of(null);
-        }
-        console.warn('⚠️ Error al consultar carrito de mercado:', error);
-        return of(this.getLocalCart());
+    if (!this.authService.isLoggedIn()) {
+      const cached = this.getLocalCart();
+      this.cart.set(cached);
+      this.totalItems.set(cached?.totalItemsCount ?? 0);
+      return of(cached);
+    }
+
+    return this.http
+      .get<MarketCartResponse>(this.baseUrl, {
+        context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
-    );
+      .pipe(
+        tap(cart => {
+          this.cart.set(cart);
+          this.totalItems.set(cart?.totalItemsCount ?? 0);
+          this.saveLocalCart(cart);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404 || error.status === 0 || error.status === 401 || error.status === 403) {
+            const cached = this.getLocalCart();
+            if (cached) {
+              this.cart.set(cached);
+              this.totalItems.set(cached.totalItemsCount);
+              return of(cached);
+            }
+            return of(null);
+          }
+          console.warn('⚠️ Error al consultar carrito de mercado:', error);
+          return of(this.getLocalCart());
+        })
+      );
   }
 
   // 2. Agregar ítem al carrito
-  addItem(request: AddMarketCartItemRequest, storeName?: string, productName?: string, unitPrice?: number, imageUrl?: string): Observable<MarketCartResponse> {
+  addItem(
+    request: AddMarketCartItemRequest,
+    storeName?: string,
+    productName?: string,
+    unitPrice?: number,
+    imageUrl?: string
+  ): Observable<MarketCartResponse> {
     this.isAdding.set(true);
 
-    return this.http.post<MarketCartResponse>(`${this.baseUrl}/items`, request).pipe(
-      tap(updatedCart => {
-        this.cart.set(updatedCart);
-        this.totalItems.set(updatedCart.totalItemsCount);
-        this.saveLocalCart(updatedCart);
-        this.isAdding.set(false);
-      }),
-      catchError((error: HttpErrorResponse) => {
-        this.isAdding.set(false);
+    if (!this.authService.isLoggedIn()) {
+      // Si no ha iniciado sesión, guardamos en el carrito local temporal
+      this.isAdding.set(false);
+      const fallbackCart = this.emulateAddToCart(request, storeName, productName, unitPrice, imageUrl);
+      this.cart.set(fallbackCart);
+      this.totalItems.set(fallbackCart.totalItemsCount);
+      this.saveLocalCart(fallbackCart);
+      return of(fallbackCart);
+    }
 
-        // 🚨 DETECTAR STORE_OUT_OF_PROXIMITY_RANGE (código de error 400 multitienda > 100m)
-        const errorBody = error.error as MarketProximityConflictError;
-        if (error.status === 400 && errorBody?.errorCode === 'STORE_OUT_OF_PROXIMITY_RANGE') {
-          const currentAnchorName = this.cart()?.stores?.[0]?.storeName || 'tu tienda anterior';
-          this.conflictData.set({
-            request,
-            currentStoreName: currentAnchorName,
-            newStoreName: storeName || 'este puesto',
-            errorMessage: errorBody.message || `No es posible combinar pedidos a más de 100 metros de distancia.`
-          });
-          this.showConflictModal.set(true);
-          return throwError(() => error);
-        }
-
-        // Fallback local: Si el backend falla o está en desarrollo, emulamos la adición en memoria/localStorage
-        console.warn('⚠️ Endpoint de carrito falló, actualizando estado localmente:', error);
-        const fallbackCart = this.emulateAddToCart(request, storeName, productName, unitPrice, imageUrl);
-        this.cart.set(fallbackCart);
-        this.totalItems.set(fallbackCart.totalItemsCount);
-        this.saveLocalCart(fallbackCart);
-        return of(fallbackCart);
+    return this.http
+      .post<MarketCartResponse>(`${this.baseUrl}/items`, request, {
+        context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
-    );
+      .pipe(
+        tap(updatedCart => {
+          this.cart.set(updatedCart);
+          this.totalItems.set(updatedCart.totalItemsCount);
+          this.saveLocalCart(updatedCart);
+          this.isAdding.set(false);
+        }),
+        catchError((error: HttpErrorResponse) => {
+          this.isAdding.set(false);
+
+          // 🚨 DETECTAR STORE_OUT_OF_PROXIMITY_RANGE (código de error 400 multitienda > 100m)
+          const errorBody = error.error as MarketProximityConflictError;
+          if (error.status === 400 && errorBody?.errorCode === 'STORE_OUT_OF_PROXIMITY_RANGE') {
+            const currentAnchorName = this.cart()?.stores?.[0]?.storeName || 'tu tienda anterior';
+            this.conflictData.set({
+              request,
+              currentStoreName: currentAnchorName,
+              newStoreName: storeName || 'este puesto',
+              errorMessage: errorBody.message || `No es posible combinar pedidos a más de 100 metros de distancia.`
+            });
+            this.showConflictModal.set(true);
+            return throwError(() => error);
+          }
+
+          // Fallback local ante errores de conexión
+          console.warn('⚠️ Endpoint de carrito falló, actualizando estado localmente:', error);
+          const fallbackCart = this.emulateAddToCart(request, storeName, productName, unitPrice, imageUrl);
+          this.cart.set(fallbackCart);
+          this.totalItems.set(fallbackCart.totalItemsCount);
+          this.saveLocalCart(fallbackCart);
+          return of(fallbackCart);
+        })
+      );
   }
 
   // 3. Modificar cantidad
   updateItemQuantity(cartItemId: string, quantity: number): Observable<MarketCartResponse> {
     const payload: UpdateMarketCartItemRequest = { quantity };
-    return this.http.patch<MarketCartResponse>(`${this.baseUrl}/items/${cartItemId}`, payload).pipe(
-      tap(cart => {
-        this.cart.set(cart);
-        this.totalItems.set(cart.totalItemsCount);
-        this.saveLocalCart(cart);
-      }),
-      catchError(err => {
-        console.warn('⚠️ Error en updateItemQuantity, ajustando localmente:', err);
-        const cart = this.emulateUpdateQuantity(cartItemId, quantity);
-        this.cart.set(cart);
-        this.totalItems.set(cart?.totalItemsCount ?? 0);
-        this.saveLocalCart(cart);
-        return of(cart!);
+
+    if (!this.authService.isLoggedIn()) {
+      const cart = this.emulateUpdateQuantity(cartItemId, quantity);
+      this.cart.set(cart);
+      this.totalItems.set(cart?.totalItemsCount ?? 0);
+      this.saveLocalCart(cart);
+      return of(cart!);
+    }
+
+    return this.http
+      .patch<MarketCartResponse>(`${this.baseUrl}/items/${cartItemId}`, payload, {
+        context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
-    );
+      .pipe(
+        tap(cart => {
+          this.cart.set(cart);
+          this.totalItems.set(cart.totalItemsCount);
+          this.saveLocalCart(cart);
+        }),
+        catchError(err => {
+          console.warn('⚠️ Error en updateItemQuantity, ajustando localmente:', err);
+          const cart = this.emulateUpdateQuantity(cartItemId, quantity);
+          this.cart.set(cart);
+          this.totalItems.set(cart?.totalItemsCount ?? 0);
+          this.saveLocalCart(cart);
+          return of(cart!);
+        })
+      );
   }
 
   // 4. Eliminar ítem
   removeItem(cartItemId: string): Observable<MarketCartResponse> {
-    return this.http.delete<MarketCartResponse>(`${this.baseUrl}/items/${cartItemId}`).pipe(
-      tap(cart => {
-        this.cart.set(cart);
-        this.totalItems.set(cart.totalItemsCount);
-        this.saveLocalCart(cart);
-      }),
-      catchError(err => {
-        console.warn('⚠️ Error en removeItem, ajustando localmente:', err);
-        const cart = this.emulateRemoveItem(cartItemId);
-        this.cart.set(cart);
-        this.totalItems.set(cart?.totalItemsCount ?? 0);
-        this.saveLocalCart(cart);
-        return of(cart!);
+    if (!this.authService.isLoggedIn()) {
+      const cart = this.emulateRemoveItem(cartItemId);
+      this.cart.set(cart);
+      this.totalItems.set(cart?.totalItemsCount ?? 0);
+      this.saveLocalCart(cart);
+      return of(cart!);
+    }
+
+    return this.http
+      .delete<MarketCartResponse>(`${this.baseUrl}/items/${cartItemId}`, {
+        context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
-    );
+      .pipe(
+        tap(cart => {
+          this.cart.set(cart);
+          this.totalItems.set(cart.totalItemsCount);
+          this.saveLocalCart(cart);
+        }),
+        catchError(err => {
+          console.warn('⚠️ Error en removeItem, ajustando localmente:', err);
+          const cart = this.emulateRemoveItem(cartItemId);
+          this.cart.set(cart);
+          this.totalItems.set(cart?.totalItemsCount ?? 0);
+          this.saveLocalCart(cart);
+          return of(cart!);
+        })
+      );
   }
 
   // 5. Vaciar carrito completo
   clearCart(): Observable<void> {
-    return this.http.delete<void>(this.baseUrl).pipe(
-      tap(() => {
-        this.cart.set(null);
-        this.totalItems.set(0);
-        localStorage.removeItem(this.LOCAL_CART_KEY);
-      }),
-      catchError(err => {
-        console.warn('⚠️ Error limpiando carrito en servidor, limpiando localmente:', err);
-        this.cart.set(null);
-        this.totalItems.set(0);
-        localStorage.removeItem(this.LOCAL_CART_KEY);
-        return of(void 0);
+    this.cart.set(null);
+    this.totalItems.set(0);
+    localStorage.removeItem(this.LOCAL_CART_KEY);
+
+    if (!this.authService.isLoggedIn()) {
+      return of(void 0);
+    }
+
+    return this.http
+      .delete<void>(this.baseUrl, {
+        context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
-    );
+      .pipe(
+        catchError(err => {
+          console.warn('⚠️ Error limpiando carrito en servidor, limpiado localmente:', err);
+          return of(void 0);
+        })
+      );
   }
 
   // Resolver conflicto: Vaciar y comprar aquí
@@ -307,7 +370,6 @@ export class MarketCartService {
       store.items = store.items.filter(i => i.itemId !== cartItemId);
     });
 
-    // Quitar tiendas vacías
     current.stores = current.stores.filter(s => s.items.length > 0);
     this.recalculateCart(current);
     return current;
@@ -332,7 +394,6 @@ export class MarketCartService {
 
     cart.distinctStoresCount = cart.stores.length;
     cart.productsSubtotal = grandSubtotal;
-    // S/ 0.50 por puesto adicional más allá del 1ro
     cart.estimatedConsolidationFee = cart.distinctStoresCount > 1 ? (cart.distinctStoresCount - 1) * 0.5 : 0;
     cart.estimatedTotal = grandSubtotal + cart.estimatedConsolidationFee;
     cart.totalItemsCount = totalItems;

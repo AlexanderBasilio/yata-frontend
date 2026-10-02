@@ -19,14 +19,24 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 void router.navigateByUrl('/closed');
                 return throwError(() => error);
             }
-            if (req.context.get(HANDLE_ERRORS_LOCALLY) && error.status !== 401) {
+
+            // Si el servicio solicitó manejar sus errores localmente, no interceptar
+            if (req.context.get(HANDLE_ERRORS_LOCALLY)) {
                 return throwError(() => error);
             }
+
             if (error.status === 401 || error.status === 403) {
-                // Token expirado o inválido
-                console.error('UNAUTHORIZED 401/403:', error);
-                authService.logout();
-                router.navigate(['/auth/login']);
+                // Solo cerrar sesión y redirigir si el usuario realmente estaba autenticado
+                // y no se encuentra ya en rutas públicas o de autenticación
+                const currentUrl = router.url || '';
+                const isPublicOrAuth = currentUrl.includes('/auth') || currentUrl.includes('/zisify') || currentUrl === '' || currentUrl === '/';
+
+                if (authService.isLoggedIn() && !isPublicOrAuth) {
+                    console.error('UNAUTHORIZED 401/403: Sesión expirada o no autorizada', error);
+                    authService.logout();
+                    router.navigate(['/auth/login']);
+                }
+                return throwError(() => error);
             }
             // Manejar errores de servidor o de red
             else if (error.status === 500 || error.status === 0) {
