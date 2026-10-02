@@ -152,6 +152,15 @@ const applicationRoutes: Routes = [
   },
 
   // ============================================
+  // 5.5 SERVICIO DE MERCADO (PROTEGIDO)
+  // ============================================
+  {
+    path: 'market',
+    canActivate: [authGuard],
+    loadChildren: () => import('./features/market/market.routes').then(m => m.MARKET_ROUTES)
+  },
+
+  // ============================================
   // 5. RUTAS LEGACY (compatibilidad)
   // ============================================
   {

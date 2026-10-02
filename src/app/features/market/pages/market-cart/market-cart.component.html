@@ -1,0 +1,220 @@
+<div class="min-h-screen bg-[#FAF8FB] text-[#1A0A2E] font-sans pb-32">
+
+  <!-- Header -->
+  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 px-4 py-3.5 shadow-xs">
+    <div class="max-w-2xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-95 flex items-center justify-center text-gray-700 transition-all cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-base font-bold font-['Inknut_Antiqua'] text-[#1A0A2E] leading-tight">
+            Carrito de Mercado
+          </h1>
+          <p class="text-[11px] text-gray-500 font-medium">
+            {{ cart()?.totalItemsCount || 0 }} productos de {{ cart()?.distinctStoresCount || 0 }} puesto(s)
+          </p>
+        </div>
+      </div>
+
+      @if (!isEmpty()) {
+        <button
+          type="button"
+          (click)="onClearCart()"
+          class="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-full transition-all cursor-pointer"
+        >
+          Vaciar
+        </button>
+      }
+    </div>
+  </header>
+
+  <!-- Content -->
+  <main class="max-w-2xl mx-auto px-4 py-4 space-y-4">
+
+    <!-- EMPTY STATE -->
+    @if (isEmpty()) {
+      <div class="bg-white rounded-3xl p-8 text-center border border-gray-100 shadow-sm max-w-md mx-auto my-12 animate-fade-in">
+        <div class="w-20 h-20 rounded-full bg-pink-50 border border-pink-100 flex items-center justify-center mx-auto mb-4 text-4xl shadow-inner">
+          🛒
+        </div>
+        <h2 class="text-lg font-bold text-[#1A0A2E] mb-1">Tu carrito de mercado está vacío</h2>
+        <p class="text-xs text-gray-500 mb-6 max-w-xs mx-auto">
+          Explora bodegas, puestos de verduras, carnes y lácteos frescos en tu zona.
+        </p>
+        <button
+          type="button"
+          (click)="goToMarket()"
+          class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white font-bold text-xs shadow-md hover:brightness-110 active:scale-98 transition-all cursor-pointer"
+        >
+          Explorar Puestos de Mercado
+        </button>
+      </div>
+    } @else {
+
+      <!-- MULTI-STORE ITEMS LIST -->
+      @for (store of cart()?.stores; track store.storeId) {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden animate-slide-up">
+
+          <!-- Store Group Header -->
+          <div class="px-4 py-3 bg-gray-50/80 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🏪</span>
+              <div>
+                <h3 class="text-xs sm:text-sm font-bold text-[#1A0A2E]">{{ store.storeName }}</h3>
+                @if (store.storeAddress) {
+                  <p class="text-[10px] text-gray-400">{{ store.storeAddress }}</p>
+                }
+              </div>
+            </div>
+            <span class="text-xs font-bold text-[#C30364]">
+              Subtotal: S/ {{ store.storeSubtotal | number: '1.2-2' }}
+            </span>
+          </div>
+
+          <!-- Items list in this store -->
+          <div class="divide-y divide-gray-100 p-2 sm:p-3">
+            @for (item of store.items; track item.itemId) {
+              <div class="py-3 px-1 flex items-center justify-between gap-3">
+
+                <!-- Image & Details -->
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    <img
+                      [src]="item.primaryImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80'"
+                      [alt]="item.productName"
+                      class="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-xs sm:text-sm font-bold text-[#1A0A2E] truncate">
+                      {{ item.productName }}
+                    </h4>
+
+                    @if (item.variantNameSnapshot) {
+                      <span class="inline-block text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-0.5">
+                        {{ item.variantNameSnapshot }}
+                      </span>
+                    }
+
+                    @if (item.itemNotes) {
+                      <p class="text-[10px] text-gray-400 italic truncate mt-0.5">
+                        Nota: "{{ item.itemNotes }}"
+                      </p>
+                    }
+
+                    <div class="mt-1 flex items-baseline gap-1">
+                      <span class="text-xs font-extrabold text-[#C30364]">
+                        S/ {{ item.effectiveUnitPrice | number: '1.2-2' }}
+                      </span>
+                      <span class="text-[10px] text-gray-400">
+                        x {{ item.quantity }} {{ item.selectedMeasurement === 'KG' ? 'kg' : 'und' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Stepper & Actions -->
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center bg-gray-50 rounded-full p-0.5 border border-gray-200">
+                    <button
+                      type="button"
+                      (click)="onUpdateQuantity(item, -1)"
+                      class="w-6 h-6 rounded-full bg-white hover:bg-gray-200 active:scale-90 flex items-center justify-center text-xs font-bold text-gray-700 transition-all cursor-pointer shadow-xs"
+                    >
+                      -
+                    </button>
+                    <span class="text-xs font-bold text-[#1A0A2E] px-2 min-w-6 text-center">
+                      {{ item.quantity }}
+                    </span>
+                    <button
+                      type="button"
+                      (click)="onUpdateQuantity(item, 1)"
+                      class="w-6 h-6 rounded-full bg-[#C30364] text-white hover:brightness-110 active:scale-90 flex items-center justify-center text-xs font-bold transition-all cursor-pointer shadow-xs"
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <!-- Trash -->
+                  <button
+                    type="button"
+                    (click)="onRemoveItem(item)"
+                    class="w-7 h-7 rounded-lg text-gray-300 hover:text-red-500 active:scale-90 flex items-center justify-center transition-all cursor-pointer"
+                    title="Eliminar producto"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- MULTI-STORE CONSOLIDATION SUMMARY CARD -->
+      <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs space-y-3">
+        <h3 class="text-xs font-bold text-[#1A0A2E] uppercase tracking-wider">
+          Resumen del Pedido Multitienda
+        </h3>
+
+        <div class="space-y-1.5 text-xs text-gray-600">
+          <div class="flex justify-between">
+            <span>Subtotal Productos</span>
+            <span class="font-bold text-[#1A0A2E]">S/ {{ cart()?.productsSubtotal | number: '1.2-2' }}</span>
+          </div>
+
+          <!-- Multi-store Consolidation Fee (Regla de negocio: S/ 0.50 por puesto adicional) -->
+          @if ((cart()?.distinctStoresCount || 0) > 1) {
+            <div class="flex justify-between text-indigo-700 bg-indigo-50 p-2 rounded-xl border border-indigo-100">
+              <div class="flex items-center gap-1.5">
+                <span>🔄 Recolección Multitienda ({{ (cart()?.distinctStoresCount || 1) - 1 }} puesto(s) extra)</span>
+              </div>
+              <span class="font-bold">+S/ {{ cart()?.estimatedConsolidationFee | number: '1.2-2' }}</span>
+            </div>
+          }
+
+          @if (cart()?.totalWeightGrams) {
+            <div class="flex justify-between text-[11px] text-gray-400">
+              <span>Peso acumulado estimado</span>
+              <span>{{ ((cart()?.totalWeightGrams || 0) / 1000) | number: '1.2-2' }} kg</span>
+            </div>
+          }
+
+          <div class="border-t border-gray-100 pt-2 flex justify-between items-baseline">
+            <span class="text-sm font-bold text-[#1A0A2E]">Total Estimado</span>
+            <span class="text-lg font-extrabold text-[#C30364]">
+              S/ {{ cart()?.estimatedTotal | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="proceedToCheckout()"
+          class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <span>Continuar con el Pago</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
+        </button>
+      </div>
+
+    }
+
+  </main>
+
+  <!-- Proximity conflict modal -->
+  <app-proximity-conflict-modal></app-proximity-conflict-modal>
+
+</div>

@@ -1,0 +1,210 @@
+export type MeasurementType =
+  | 'UNIT'
+  | 'KG'
+  | 'GRAM'
+  | 'LITER'
+  | 'MILLILITER'
+  | 'PACKAGE'
+  | 'BUNCH'
+  | string;
+
+export type PricingMode = 'FIXED' | 'WEIGHT_BASED' | 'VARIABLE' | string;
+
+export interface MarketSectionCustomerDto {
+  id: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
+  iconUrl?: string;
+  displayOrder?: number;
+}
+
+export interface MarketStoreScheduleDto {
+  monday?: string;
+  tuesday?: string;
+  wednesday?: string;
+  thursday?: string;
+  friday?: string;
+  saturday?: string;
+  sunday?: string;
+  [key: string]: any;
+}
+
+export interface MarketStoreSummaryDto {
+  id: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  logoUrl?: string;
+  coverImageUrl?: string;
+  address?: string;
+  district?: string;
+  city?: string;
+  zoneId?: string;
+  latitude?: number;
+  longitude?: number;
+  phone?: string;
+  isOpen?: boolean;
+  isTemporarilyClosed?: boolean;
+  openingTime?: string;
+  closingTime?: string;
+  distanceMeters?: number;
+  schedule?: MarketStoreScheduleDto;
+  rating?: number;
+  reviewsCount?: number;
+  estimatedDeliveryMinutes?: string;
+  sections?: MarketSectionCustomerDto[];
+}
+
+export interface MarketCategoryCustomerDto {
+  id: string;
+  sectionId?: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
+}
+
+export interface MarketProductVariantDto {
+  id: string;
+  name: string;
+  sku?: string;
+  price?: number;
+  weightGrams?: number;
+  imageUrl?: string;
+  isAvailable?: boolean;
+}
+
+export interface MarketProductOptionDto {
+  id: string;
+  name: string;
+  additionalPrice?: number;
+  isDefault?: boolean;
+}
+
+export interface MarketProductOptionGroupDto {
+  id: string;
+  name: string;
+  minSelection?: number;
+  maxSelection?: number;
+  isRequired?: boolean;
+  options: MarketProductOptionDto[];
+}
+
+export interface MarketStoreProductPriceOfferDto {
+  measurementType: MeasurementType;
+  price: number;
+  isDefault?: boolean;
+}
+
+export interface MarketStoreProductCustomerDto {
+  storeProductId: string;
+  storeId: string;
+  storeName?: string;
+  productId: string;
+  productName: string;
+  productSlug?: string;
+  description?: string;
+  brandName?: string;
+  measurementType?: MeasurementType;
+  allowedSaleUnits?: MeasurementType[];
+  pricingMode?: PricingMode;
+  priceUnit?: MeasurementType;
+  hasVariants?: boolean;
+  variants?: MarketProductVariantDto[];
+  optionGroups?: MarketProductOptionGroupDto[];
+  prices?: MarketStoreProductPriceOfferDto[];
+  weightGrams?: number;
+  primaryImageUrl?: string;
+  categoryId?: string;
+  categoryName?: string;
+
+  // Render fields:
+  // true -> Counter [- 1 +] and "Agregar" direct button
+  // false -> "Agregar" opens configuration modal (variants, cuts, weight)
+  allowsDirectQuickAdd?: boolean;
+
+  // Primary card price:
+  primaryPrice?: number;
+  primaryPriceUnit?: MeasurementType;
+
+  // Fallbacks:
+  sellsByUnit?: boolean;
+  unitPrice?: number;
+  sellsByWeight?: boolean;
+  pricePerKg?: number;
+  price?: number;
+  isAvailable?: boolean;
+}
+
+// ============================================
+// CART MODELS
+// ============================================
+
+export interface AddMarketCartItemRequest {
+  storeId: string;
+  productId: string;
+  variantId?: string;
+  selectedMeasurement?: MeasurementType;
+  quantity: number;
+  selectedOptionsJson?: string;
+  optionsAdditionalPrice?: number;
+  itemNotes?: string;
+}
+
+export interface UpdateMarketCartItemRequest {
+  quantity: number;
+}
+
+export interface MarketCartItemDto {
+  itemId: string;
+  storeId: string;
+  storeName: string;
+  variantId?: string;
+  variantNameSnapshot?: string;
+  productId: string;
+  productName: string;
+  productSlug?: string;
+  primaryImageUrl?: string;
+  measurementType?: MeasurementType;
+  selectedMeasurement?: MeasurementType;
+  weightGrams?: number;
+  volumeCm3?: number;
+  quantity: number;
+  unitPrice: number;
+  optionsAdditionalPrice?: number;
+  effectiveUnitPrice: number;
+  selectedOptionsJson?: string;
+  itemNotes?: string;
+  subtotal: number;
+}
+
+export interface MarketCartStoreGroupDto {
+  storeId: string;
+  storeName: string;
+  storeAddress?: string;
+  storeSubtotal: number;
+  itemsCount: number;
+  items: MarketCartItemDto[];
+}
+
+export interface MarketCartResponse {
+  cartId: string;
+  userId?: string;
+  anchorStoreId?: string;
+  totalItemsCount: number;
+  distinctStoresCount: number;
+  totalWeightGrams: number;
+  totalVolumeCm3: number;
+  productsSubtotal: number;
+  estimatedConsolidationFee: number;
+  estimatedTotal: number;
+  stores: MarketCartStoreGroupDto[];
+}
+
+export interface MarketProximityConflictError {
+  status: number;
+  errorCode: 'STORE_OUT_OF_PROXIMITY_RANGE' | string;
+  message: string;
+}

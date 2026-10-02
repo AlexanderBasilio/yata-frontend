@@ -4,6 +4,7 @@ import { Router, RouterModule, Event, NavigationEnd } from '@angular/router';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { CartService } from '../../../core/services/cart/cart.service';
 import { FoodCartService } from '../../../core/services/food-cart/food-cart.service';
+import { MarketCartService } from '../../../core/services/market/market-cart.service';
 import { BottomNavService } from '../../../core/services/bottom-nav/bottom-nav.service';
 
 @Component({
@@ -18,6 +19,7 @@ export class BottomNavComponent {
     public authService = inject(AuthService);
     public cartService = inject(CartService);
     public foodCartService = inject(FoodCartService);
+    public marketCartService = inject(MarketCartService);
     public bottomNavService = inject(BottomNavService);
 
     private routeAllowsNav = signal<boolean>(true);
@@ -48,6 +50,9 @@ export class BottomNavComponent {
     }
 
     getCartRoute(): string {
+        if (this.router.url.includes('/market')) {
+            return '/market/cart';
+        }
         if (this.router.url.includes('/food')) {
             return '/food/cart';
         }
@@ -58,6 +63,9 @@ export class BottomNavComponent {
     }
 
     get cartItemCount(): number {
+        if (this.router.url.includes('/market')) {
+            return this.marketCartService.totalItems();
+        }
         if (this.router.url.includes('/food')) {
             return this.foodCartService.totalItems();
         }

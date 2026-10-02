@@ -1,0 +1,42 @@
+.product-card {
+  transition: all 450ms cubic-bezier(0.2, 0.8, 0.25, 1);
+  transform-origin: center left;
+  user-select: none;
+}
+
+.prev-card {
+  transform: translateY(12px) translateX(16px) rotate(-6deg) scale(0.84);
+  opacity: 0.72;
+  z-index: 5;
+
+  &:hover {
+    transform: translateY(10px) translateX(10px) rotate(-4deg) scale(0.88);
+    opacity: 0.92;
+  }
+}
+
+.active-card {
+  transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+  opacity: 1;
+  z-index: 15;
+}
+
+.next-card {
+  transform: translateY(-12px) translateX(16px) rotate(6deg) scale(0.84);
+  opacity: 0.72;
+  z-index: 5;
+
+  &:hover {
+    transform: translateY(-10px) translateX(10px) rotate(4deg) scale(0.88);
+    opacity: 0.92;
+  }
+}
+
+@media (max-width: 640px) {
+  .prev-card {
+    transform: translateY(8px) translateX(10px) rotate(-5deg) scale(0.82);
+  }
+  .next-card {
+    transform: translateY(-8px) translateX(10px) rotate(5deg) scale(0.82);
+  }
+}
