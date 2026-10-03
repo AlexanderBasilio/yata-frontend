@@ -109,6 +109,7 @@ export interface MarketStoreProductPriceOfferDto {
   measurementType?: MeasurementType;
   zisifyPrice?: number;
   price?: number;
+  estimatedPiecePrice?: number;
   isDefault?: boolean;
 }
 

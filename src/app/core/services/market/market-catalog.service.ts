@@ -127,6 +127,18 @@ export class MarketCatalogService {
       );
   }
 
+  // 6.1. Ver detalle individual de un producto en un comercio (para modal de personalización o enlace directo)
+  getProductDetail(storeId: string, productId: string): Observable<MarketStoreProductCustomerDto | null> {
+    return this.http
+      .get<MarketStoreProductCustomerDto>(`${this.baseUrl}/stores/${storeId}/products/${productId}`)
+      .pipe(
+        catchError(err => {
+          console.warn(`⚠️ Error al obtener detalle de producto ${productId} en tienda ${storeId}:`, err);
+          return of(null);
+        })
+      );
+  }
+
   // 7. Productos más demandados de mercado en la zona del cliente
   getTrendingProducts(zoneIds?: string[]): Observable<MarketStoreProductCustomerDto[]> {
     let params = new HttpParams();

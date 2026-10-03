@@ -5,7 +5,8 @@ import {
   Output,
   OnInit,
   signal,
-  computed
+  computed,
+  inject
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -16,6 +17,7 @@ import {
   MarketStoreProductCustomerDto,
   MarketStoreProductPriceOfferDto
 } from '../../../../core/models/market.model';
+import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
 
 export interface SaleUnitOption {
   unit: 'KG' | 'UNIT';
@@ -33,7 +35,19 @@ export interface SaleUnitOption {
   styleUrl: './product-config-modal.component.scss'
 })
 export class ProductConfigModalComponent implements OnInit {
-  @Input({ required: true }) product!: MarketStoreProductCustomerDto;
+  private catalogService = inject(MarketCatalogService);
+  private _inputProduct!: MarketStoreProductCustomerDto;
+  currentProduct = signal<MarketStoreProductCustomerDto | null>(null);
+
+  @Input({ required: true })
+  set product(val: MarketStoreProductCustomerDto) {
+    this._inputProduct = val;
+    this.currentProduct.set(val);
+  }
+  get product(): MarketStoreProductCustomerDto {
+    return this.currentProduct() || this._inputProduct;
+  }
+
   @Input({ required: true }) storeId!: string;
   @Input() initialVariantId?: string;
 
@@ -42,7 +56,8 @@ export class ProductConfigModalComponent implements OnInit {
 
   // 1. Variantes activas únicamente (filtrando las no activas para evitar opciones como Tangelo si el puesto no las vende)
   activeVariants = computed<MarketProductVariantDto[]>(() => {
-    const list = this.product?.variants || [];
+    const prod = this.currentProduct() || this.product;
+    const list = prod?.variants || [];
     return list.filter(v => v.isActive !== false && v.isAvailable !== false);
   });
 
@@ -56,14 +71,20 @@ export class ProductConfigModalComponent implements OnInit {
   // 2. Ofertas de precio de la variante seleccionada
   kgOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
     const v = this.selectedVariant();
-    if (!v?.prices) return null;
-    return v.prices.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+    if (v?.prices && v.prices.length > 0) {
+      return v.prices.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+    }
+    const prod = this.currentProduct() || this.product;
+    return prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
   });
 
   unitOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
     const v = this.selectedVariant();
-    if (!v?.prices) return null;
-    return v.prices.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
+    if (v?.prices && v.prices.length > 0) {
+      return v.prices.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
+    }
+    const prod = this.currentProduct() || this.product;
+    return prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
   });
 
   // Precios dinámicos reactivos de la variante actual
@@ -76,12 +97,13 @@ export class ProductConfigModalComponent implements OnInit {
     if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
       return null;
     }
+    const prod = this.currentProduct() || this.product;
     // Fallback únicamente para productos simples sin variantes o sin lista prices
-    const pOffer = this.product.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG');
+    const pOffer = prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG');
     if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
-    if (this.product.pricePerKg) return this.product.pricePerKg;
-    if (this.product.primaryPriceUnit === 'KG') {
-      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
+    if (prod?.pricePerKg) return prod.pricePerKg;
+    if (prod?.primaryPriceUnit === 'KG') {
+      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
     }
     return null;
   });
@@ -95,15 +117,16 @@ export class ProductConfigModalComponent implements OnInit {
     if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
       return null;
     }
+    const prod = this.currentProduct() || this.product;
     // Fallback únicamente para productos simples sin variantes o sin lista prices
-    const pOffer = this.product.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT');
+    const pOffer = prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT');
     if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
-    if (this.product.unitPrice) return this.product.unitPrice;
-    if (this.product.primaryPriceUnit === 'UNIT') {
-      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
+    if (prod?.unitPrice) return prod.unitPrice;
+    if (prod?.primaryPriceUnit === 'UNIT') {
+      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
     }
     if (!this.kgPrice()) {
-      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
+      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
     }
     return null;
   });
@@ -227,6 +250,22 @@ export class ProductConfigModalComponent implements OnInit {
         }
       });
       this.selectedOptionsMap.set(initialMap);
+    }
+
+    // 4. Refrescar detalles y ofertas actualizadas desde el nuevo endpoint individual
+    if (this.storeId && this.product?.productId) {
+      this.catalogService.getProductDetail(this.storeId, this.product.productId).subscribe(fresh => {
+        if (fresh) {
+          this.currentProduct.set(fresh);
+          const currentVarId = this.selectedVariant()?.id;
+          if (currentVarId && fresh.variants) {
+            const updatedVar = fresh.variants.find(v => v.id === currentVarId);
+            if (updatedVar) {
+              this.selectedVariant.set(updatedVar);
+            }
+          }
+        }
+      });
     }
   }
 
