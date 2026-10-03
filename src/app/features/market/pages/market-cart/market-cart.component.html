@@ -78,86 +78,198 @@
             </span>
           </div>
 
-          <!-- Items list in this store -->
-          <div class="divide-y divide-gray-100 p-2 sm:p-3">
-            @for (item of store.items; track item.itemId) {
-              <div class="py-3 px-1 flex items-center justify-between gap-3">
-
-                <!-- Image & Details -->
-                <div class="flex items-center gap-3 min-w-0 flex-1">
-                  <div class="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
-                    <img
-                      [src]="item.primaryImageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80'"
-                      [alt]="item.productName"
-                      class="w-full h-full object-contain"
-                    />
+          <!-- Items list in this store (Hierarchical Tree or Flat fallback) -->
+          @if (store.sections && store.sections.length > 0) {
+            <div class="space-y-3 p-2 sm:p-3">
+              @for (section of store.sections; track section.sectionId) {
+                <div class="rounded-xl border border-gray-100 overflow-hidden bg-white shadow-xs">
+                  <!-- Section Header -->
+                  <div class="px-3 py-2 bg-gradient-to-r from-pink-50/70 to-purple-50/50 border-b border-gray-100 flex items-center justify-between">
+                    <span class="text-xs font-bold text-[#1A0A2E] flex items-center gap-1.5">
+                      <span>📂</span> {{ section.sectionName }}
+                    </span>
+                    <span class="text-[11px] font-bold text-[#C30364]">
+                      Subtotal: S/ {{ section.sectionSubtotal | number: '1.2-2' }}
+                    </span>
                   </div>
-                  <div class="min-w-0 flex-1">
-                    <h4 class="text-xs sm:text-sm font-bold text-[#1A0A2E] truncate">
-                      {{ item.productName }}
-                    </h4>
 
-                    @if (item.variantNameSnapshot) {
-                      <span class="inline-block text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-0.5">
-                        {{ item.variantNameSnapshot }}
-                      </span>
+                  <!-- Categories within this Section -->
+                  <div class="divide-y divide-gray-100">
+                    @for (category of section.categories; track category.categoryId) {
+                      <div class="p-2 sm:p-3">
+                        <div class="flex items-center justify-between mb-2 px-1">
+                          <span class="text-[11px] font-bold text-gray-600 flex items-center gap-1">
+                            <span>🏷️</span> {{ category.categoryName }}
+                          </span>
+                          <span class="text-[10px] font-semibold text-gray-500">
+                            Subtotal: S/ {{ category.categorySubtotal | number: '1.2-2' }}
+                          </span>
+                        </div>
+
+                        <!-- Items in this category -->
+                        <div class="divide-y divide-gray-50">
+                          @for (item of category.items; track item.itemId) {
+                            <div class="py-2.5 px-1 flex items-center justify-between gap-3">
+                              <!-- Image & Details -->
+                              <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                  <img
+                                    [src]="item.primaryImageUrl || 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1790993532/sinStockProductos_bawofc.png'"
+                                    [alt]="item.productName"
+                                    class="w-full h-full object-contain"
+                                  />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                  <h4 class="text-xs font-bold text-[#1A0A2E] truncate">
+                                    {{ item.productName }}
+                                  </h4>
+
+                                  @if (item.variantNameSnapshot) {
+                                    <span class="inline-block text-[10px] font-semibold text-[#C30364] bg-pink-50 px-2 py-0.5 rounded-full mt-0.5">
+                                      {{ item.variantNameSnapshot }}
+                                    </span>
+                                  }
+
+                                  @if (item.itemNotes) {
+                                    <p class="text-[10px] text-gray-400 italic truncate mt-0.5">
+                                      Nota: "{{ item.itemNotes }}"
+                                    </p>
+                                  }
+
+                                  <div class="mt-0.5 flex items-baseline gap-1">
+                                    <span class="text-xs font-extrabold text-[#C30364]">
+                                      S/ {{ item.effectiveUnitPrice | number: '1.2-2' }}
+                                    </span>
+                                    <span class="text-[10px] text-gray-400">
+                                      x {{ item.quantity }} {{ item.selectedMeasurement === 'KG' ? 'kg' : 'unid' }}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- Stepper & Actions -->
+                              <div class="flex items-center gap-2">
+                                <div class="flex items-center bg-gray-50 rounded-full p-0.5 border border-gray-200">
+                                  <button
+                                    type="button"
+                                    (click)="onUpdateQuantity(item, item.selectedMeasurement === 'KG' ? -0.5 : -1)"
+                                    class="w-6 h-6 rounded-full bg-white hover:bg-gray-200 active:scale-90 flex items-center justify-center text-xs font-bold text-gray-700 transition-all cursor-pointer shadow-xs"
+                                  >
+                                    −
+                                  </button>
+                                  <span class="text-xs font-bold text-[#1A0A2E] px-2 min-w-6 text-center">
+                                    {{ item.quantity }}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    (click)="onUpdateQuantity(item, item.selectedMeasurement === 'KG' ? 0.5 : 1)"
+                                    class="w-6 h-6 rounded-full bg-[#C30364] text-white hover:brightness-110 active:scale-90 flex items-center justify-center text-xs font-bold transition-all cursor-pointer shadow-xs"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+
+                                <!-- Trash -->
+                                <button
+                                  type="button"
+                                  (click)="onRemoveItem(item)"
+                                  class="w-7 h-7 rounded-lg text-gray-300 hover:text-red-500 active:scale-90 flex items-center justify-center transition-all cursor-pointer"
+                                  title="Eliminar producto"
+                                >
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
                     }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else if (store.items && store.items.length > 0) {
+            <!-- Flat items fallback -->
+            <div class="divide-y divide-gray-100 p-2 sm:p-3">
+              @for (item of store.items; track item.itemId) {
+                <div class="py-3 px-1 flex items-center justify-between gap-3">
+                  <!-- Image & Details -->
+                  <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                      <img
+                        [src]="item.primaryImageUrl || 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1790993532/sinStockProductos_bawofc.png'"
+                        [alt]="item.productName"
+                        class="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="text-xs sm:text-sm font-bold text-[#1A0A2E] truncate">
+                        {{ item.productName }}
+                      </h4>
 
-                    @if (item.itemNotes) {
-                      <p class="text-[10px] text-gray-400 italic truncate mt-0.5">
-                        Nota: "{{ item.itemNotes }}"
-                      </p>
-                    }
+                      @if (item.variantNameSnapshot) {
+                        <span class="inline-block text-[10px] font-semibold text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-0.5">
+                          {{ item.variantNameSnapshot }}
+                        </span>
+                      }
 
-                    <div class="mt-1 flex items-baseline gap-1">
-                      <span class="text-xs font-extrabold text-[#C30364]">
-                        S/ {{ item.effectiveUnitPrice | number: '1.2-2' }}
-                      </span>
-                      <span class="text-[10px] text-gray-400">
-                        x {{ item.quantity }} {{ item.selectedMeasurement === 'KG' ? 'kg' : 'und' }}
-                      </span>
+                      @if (item.itemNotes) {
+                        <p class="text-[10px] text-gray-400 italic truncate mt-0.5">
+                          Nota: "{{ item.itemNotes }}"
+                        </p>
+                      }
+
+                      <div class="mt-1 flex items-baseline gap-1">
+                        <span class="text-xs font-extrabold text-[#C30364]">
+                          S/ {{ item.effectiveUnitPrice | number: '1.2-2' }}
+                        </span>
+                        <span class="text-[10px] text-gray-400">
+                          x {{ item.quantity }} {{ item.selectedMeasurement === 'KG' ? 'kg' : 'und' }}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Stepper & Actions -->
-                <div class="flex items-center gap-2">
-                  <div class="flex items-center bg-gray-50 rounded-full p-0.5 border border-gray-200">
+                  <!-- Stepper & Actions -->
+                  <div class="flex items-center gap-2">
+                    <div class="flex items-center bg-gray-50 rounded-full p-0.5 border border-gray-200">
+                      <button
+                        type="button"
+                        (click)="onUpdateQuantity(item, -1)"
+                        class="w-6 h-6 rounded-full bg-white hover:bg-gray-200 active:scale-90 flex items-center justify-center text-xs font-bold text-gray-700 transition-all cursor-pointer shadow-xs"
+                      >
+                        -
+                      </button>
+                      <span class="text-xs font-bold text-[#1A0A2E] px-2 min-w-6 text-center">
+                        {{ item.quantity }}
+                      </span>
+                      <button
+                        type="button"
+                        (click)="onUpdateQuantity(item, 1)"
+                        class="w-6 h-6 rounded-full bg-[#C30364] text-white hover:brightness-110 active:scale-90 flex items-center justify-center text-xs font-bold transition-all cursor-pointer shadow-xs"
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    <!-- Trash -->
                     <button
                       type="button"
-                      (click)="onUpdateQuantity(item, -1)"
-                      class="w-6 h-6 rounded-full bg-white hover:bg-gray-200 active:scale-90 flex items-center justify-center text-xs font-bold text-gray-700 transition-all cursor-pointer shadow-xs"
+                      (click)="onRemoveItem(item)"
+                      class="w-7 h-7 rounded-lg text-gray-300 hover:text-red-500 active:scale-90 flex items-center justify-center transition-all cursor-pointer"
+                      title="Eliminar producto"
                     >
-                      -
-                    </button>
-                    <span class="text-xs font-bold text-[#1A0A2E] px-2 min-w-6 text-center">
-                      {{ item.quantity }}
-                    </span>
-                    <button
-                      type="button"
-                      (click)="onUpdateQuantity(item, 1)"
-                      class="w-6 h-6 rounded-full bg-[#C30364] text-white hover:brightness-110 active:scale-90 flex items-center justify-center text-xs font-bold transition-all cursor-pointer shadow-xs"
-                    >
-                      +
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
                     </button>
                   </div>
-
-                  <!-- Trash -->
-                  <button
-                    type="button"
-                    (click)="onRemoveItem(item)"
-                    class="w-7 h-7 rounded-lg text-gray-300 hover:text-red-500 active:scale-90 flex items-center justify-center transition-all cursor-pointer"
-                    title="Eliminar producto"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
                 </div>
-
-              </div>
-            }
-          </div>
+              }
+            </div>
+          }
         </div>
       }
 

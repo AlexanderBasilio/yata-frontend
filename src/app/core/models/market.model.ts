@@ -74,6 +74,9 @@ export interface MarketProductVariantDto {
   weightGrams?: number;
   imageUrl?: string;
   isAvailable?: boolean;
+  prices?: MarketStoreProductPriceOfferDto[];
+  priceDisplaySummary?: string;
+  allowedSaleUnits?: MeasurementType[];
 }
 
 export interface MarketProductOptionDto {
@@ -117,6 +120,8 @@ export interface MarketStoreProductCustomerDto {
   prices?: MarketStoreProductPriceOfferDto[];
   weightGrams?: number;
   primaryImageUrl?: string;
+  sectionId?: string;
+  sectionName?: string;
   categoryId?: string;
   categoryName?: string;
 
@@ -127,9 +132,12 @@ export interface MarketStoreProductCustomerDto {
 
   // Primary card price:
   primaryPrice?: number;
+  // Unidad del precio a mostrar en el card (ej: UNIT -> "/ unid", KG -> "/ kg")
   primaryPriceUnit?: MeasurementType;
+  // Resumen listo para imprimir (ej: "Desde S/ 3.40 / kg o S/ 0.80 / unid" o "S/ 3.40 / kg")
+  priceDisplaySummary?: string;
 
-  // Fallbacks:
+  // Fallbacks / compatibility:
   sellsByUnit?: boolean;
   unitPrice?: number;
   sellsByWeight?: boolean;
@@ -139,7 +147,7 @@ export interface MarketStoreProductCustomerDto {
 }
 
 // ============================================
-// CART MODELS
+// CART MODELS (HIERARCHICAL & LEGACY)
 // ============================================
 
 export interface AddMarketCartItemRequest {
@@ -160,15 +168,20 @@ export interface UpdateMarketCartItemRequest {
 export interface MarketCartItemDto {
   itemId: string;
   storeId: string;
-  storeName: string;
+  storeName?: string;
   variantId?: string;
   variantNameSnapshot?: string;
   productId: string;
   productName: string;
   productSlug?: string;
   primaryImageUrl?: string;
+  sectionId?: string;
+  sectionName?: string;
+  categoryId?: string;
+  categoryName?: string;
   measurementType?: MeasurementType;
   selectedMeasurement?: MeasurementType;
+  priceUnit?: MeasurementType;
   weightGrams?: number;
   volumeCm3?: number;
   quantity: number;
@@ -180,6 +193,22 @@ export interface MarketCartItemDto {
   subtotal: number;
 }
 
+export interface MarketCartCategoryGroupDto {
+  categoryId: string;
+  categoryName: string;
+  categorySubtotal: number;
+  itemsCount: number;
+  items: MarketCartItemDto[];
+}
+
+export interface MarketCartSectionGroupDto {
+  sectionId: string;
+  sectionName: string;
+  sectionSubtotal: number;
+  itemsCount: number;
+  categories: MarketCartCategoryGroupDto[];
+}
+
 export interface MarketCartStoreGroupDto {
   storeId: string;
   storeName: string;
@@ -187,6 +216,7 @@ export interface MarketCartStoreGroupDto {
   storeSubtotal: number;
   itemsCount: number;
   items: MarketCartItemDto[];
+  sections?: MarketCartSectionGroupDto[];
 }
 
 export interface MarketCartResponse {

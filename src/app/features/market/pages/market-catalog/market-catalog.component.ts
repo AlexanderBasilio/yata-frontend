@@ -15,8 +15,10 @@ import { CustomerService } from '../../../../core/services/customer/customer.ser
 import {
   AddMarketCartItemRequest,
   MarketCategoryCustomerDto,
+  MarketProductVariantDto,
   MarketSectionCustomerDto,
   MarketStoreProductCustomerDto,
+  MarketStoreProductPriceOfferDto,
   MarketStoreSummaryDto
 } from '../../../../core/models/market.model';
 import { ProductConfigModalComponent } from '../../components/product-config-modal/product-config-modal.component';
@@ -789,5 +791,29 @@ export class MarketCatalogComponent implements OnInit {
 
   asProduct(data: any): MarketStoreProductCustomerDto {
     return data as MarketStoreProductCustomerDto;
+  }
+
+  onVariantDropdownChange(variantId: string, product: MarketStoreProductCustomerDto) {
+    this.selectedVariantId.set(variantId);
+    this.productToConfigure.set(product);
+    this.showConfigModal.set(true);
+  }
+
+  getVariantDisplay(variant: MarketProductVariantDto, product: MarketStoreProductCustomerDto): string {
+    if (variant.priceDisplaySummary) {
+      return `${variant.name} — ${variant.priceDisplaySummary}`;
+    }
+
+    if (variant.prices && variant.prices.length > 0) {
+      const parts = variant.prices.map((p: MarketStoreProductPriceOfferDto) => {
+        const u = p.measurementType === 'KG' ? '/ kg' : '/ unid';
+        return `S/ ${p.price.toFixed(2)} ${u}`;
+      });
+      return `${variant.name} — ${parts.join(' · ')}`;
+    }
+
+    const price = variant.price || product.primaryPrice || product.price || 0;
+    const unit = product.primaryPriceUnit === 'KG' ? '/ kg' : '/ unid';
+    return `${variant.name} — S/ ${price.toFixed(2)} ${unit}`;
   }
 }

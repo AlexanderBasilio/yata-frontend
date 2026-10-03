@@ -269,14 +269,14 @@
                             <div class="variant-selector-wrapper">
                               <select
                                 [ngModel]="selectedVariantId()"
-                                (ngModelChange)="selectedVariantId.set($event)"
+                                (ngModelChange)="onVariantDropdownChange($event, product)"
                                 class="variant-select"
                                 [disabled]="idx !== currentActiveIndex()"
                                 (click)="$event.stopPropagation()"
                               >
                                 @for (v of product.variants; track v.id) {
                                   <option [value]="v.id">
-                                    {{ v.name }} - S/ {{ (v.price || product.price || 0) | number:'1.2-2' }}
+                                    {{ getVariantDisplay(v, product) }}
                                   </option>
                                 }
                               </select>
@@ -286,7 +286,7 @@
                           <!-- Price & Stock Availability -->
                           <div class="price-stock-row">
                             <span class="product-price">
-                              {{ formatPrice(product.primaryPrice || product.price) }}
+                              {{ product.priceDisplaySummary || formatPrice(product.primaryPrice || product.price) }}
                             </span>
                             <span class="product-stock-tag">
                               <span class="stock-dot"></span> Disponible
@@ -405,6 +405,7 @@
     <app-product-config-modal
       [product]="prod"
       [storeId]="activeStore()?.id || prod.storeId"
+      [initialVariantId]="selectedVariantId() || undefined"
       (confirm)="onConfigModalConfirm($event)"
       (close)="onCloseConfigModal()"
     />

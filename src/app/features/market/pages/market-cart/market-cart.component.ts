@@ -23,7 +23,9 @@ export class MarketCartComponent implements OnInit {
   }
 
   onUpdateQuantity(item: MarketCartItemDto, change: number) {
-    const newQty = item.quantity + change;
+    const isKg = item.selectedMeasurement === 'KG';
+    const step = isKg ? (change > 0 ? 0.5 : -0.5) : (change > 0 ? 1 : -1);
+    const newQty = isKg ? +(item.quantity + step).toFixed(1) : item.quantity + step;
     if (newQty <= 0) {
       this.onRemoveItem(item);
     } else {
