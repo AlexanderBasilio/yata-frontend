@@ -1,39 +1,42 @@
-<div class="min-h-screen bg-[#FAF8FB] text-[#1A0A2E] flex flex-col font-sans pb-28 select-none overflow-x-hidden relative">
+<div class="market-page">
 
-  <!-- TOP HEADER & SEARCH BAR -->
-  <header class="pt-4 px-4 sm:px-6 pb-2 sticky top-0 z-30 bg-[#FAF8FB]/90 backdrop-blur-md">
-    <div class="max-w-4xl mx-auto flex items-center gap-3">
+  <!-- ======================================================== -->
+  <!-- TOP HEADER & SEARCH BAR                                  -->
+  <!-- ======================================================== -->
+  <header class="market-header">
+    <div class="header-container">
       <!-- Back button -->
       <button
         type="button"
         (click)="goBack()"
-        class="w-10 h-10 rounded-2xl bg-white shadow-xs border border-gray-100 flex items-center justify-center text-[#1A0A2E] hover:text-[#C30364] active:scale-95 transition-all cursor-pointer flex-shrink-0"
-        aria-label="Volver al inicio"
+        class="header-back-btn"
+        [attr.aria-label]="viewMode() === 'products' ? 'Volver a comercios' : 'Volver al inicio'"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <!-- Search Input (Pill style matching Image 1) -->
-      <div class="relative flex-1">
-        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+      <!-- Search Input (Pill style matching Reference) -->
+      <div class="search-box">
+        <div class="search-icon">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
         </div>
         <input
           type="text"
-          [(ngModel)]="searchQuery"
-          (input)="onSearchChange()"
-          placeholder="Buscar en el mercado, bodegas..."
-          class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200/80 rounded-full text-xs sm:text-sm font-medium text-gray-800 placeholder-gray-400 shadow-xs focus:outline-none focus:border-[#C30364] focus:ring-2 focus:ring-[#C30364]/15 transition-all"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event); onSearchChange()"
+          [placeholder]="viewMode() === 'products' ? 'Buscar en ' + (activeStore()?.name || 'la bodega') + '...' : 'Buscar en el mercado, bodegas...'"
+          class="search-input"
         />
         @if (searchQuery()) {
           <button
             type="button"
             (click)="searchQuery.set(''); onSearchChange()"
-            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600"
+            class="search-clear-btn"
+            aria-label="Limpiar búsqueda"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -42,24 +45,52 @@
         }
       </div>
     </div>
+
+    <!-- Active Store Header Banner in Estado 2 (Morphological Transition) -->
+    @if (viewMode() === 'products' && activeStore(); as store) {
+      <div class="store-active-banner">
+        <div class="store-banner-inner">
+          <div class="store-banner-avatar">
+            @if (store.logoUrl) {
+              <img [src]="store.logoUrl" [alt]="store.name" class="w-full h-full object-cover" />
+            } @else {
+              <span class="avatar-fallback">{{ store.name.substring(0, 2).toUpperCase() }}</span>
+            }
+          </div>
+          <div class="store-banner-info">
+            <div class="store-banner-title-row">
+              <h2 class="store-banner-name">{{ store.name }}</h2>
+              <button type="button" (click)="returnToStores()" class="store-change-btn">
+                ← Comercios
+              </button>
+            </div>
+            <div class="store-banner-meta">
+              <span class="meta-status">
+                <span class="status-dot"></span> Abierto
+              </span>
+              <span class="meta-divider">•</span>
+              <span class="meta-delivery">🕒 {{ store.estimatedDeliveryMinutes || '25-40 min' }}</span>
+              <span class="meta-divider">•</span>
+              <span class="meta-rating">⭐ {{ store.rating || '4.8' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </header>
 
-  <!-- MAIN DISCOVERY CONTAINER -->
-  <main class="flex-1 max-w-4xl w-full mx-auto px-3 sm:px-6 flex flex-col justify-center relative">
+  <!-- ======================================================== -->
+  <!-- MAIN LAYOUT: DIAL VIEWPORT & LATERAL COLUMNS             -->
+  <!-- ======================================================== -->
+  <main class="market-main">
+    <div class="market-layout" [class.is-products-mode]="viewMode() === 'products'">
 
-    <div class="grid grid-cols-12 gap-3 sm:gap-6 items-center my-auto min-h-[580px] sm:min-h-[640px]">
-
-      <!-- ========================================================= -->
-      <!-- COLUMNA IZQUIERDA: RULETA VERTICAL DE COMERCIOS (75-80%) -->
-      <!-- ========================================================= -->
-      <section
-        class="col-span-8 sm:col-span-8 relative flex items-center justify-center min-h-[560px] py-4"
-        (wheel)="onWheel($event)"
-        (touchstart)="onTouchStart($event)"
-        (touchend)="onTouchEnd($event)"
-      >
-        <!-- Curved guide line on the left (matches pink arc in Image 1) -->
-        <div class="absolute left-1 sm:left-4 top-6 bottom-6 w-12 pointer-events-none flex items-center justify-center opacity-70 z-0">
+      <!-- ======================================================== -->
+      <!-- DIAL COLUMN (RULETA TIPO RELOJ CILÍNDRICO VERTICAL)       -->
+      <!-- ======================================================== -->
+      <div class="dial-column">
+        <!-- Visual Curved Guide Line (matches Reference Images 1 & 2) -->
+        <div class="dial-arc-guide" aria-hidden="true">
           <svg class="h-full w-full overflow-visible" viewBox="0 0 100 500" fill="none" preserveAspectRatio="none">
             <path
               d="M 60,10 C 10,160 10,340 60,490"
@@ -72,255 +103,311 @@
           </svg>
         </div>
 
-        <!-- Wheel Cards Stack -->
-        @if (isLoading()) {
-          <div class="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
-            <div class="w-10 h-10 border-3 border-[#C30364] border-t-transparent rounded-full animate-spin"></div>
-            <p class="text-xs font-semibold">Buscando puestos de mercado...</p>
-          </div>
-        } @else if (stores().length === 0) {
-          <div class="text-center py-16 px-4 bg-white/70 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-sm max-w-xs mx-auto">
-            <div class="text-3xl mb-2">🏪</div>
-            <h4 class="text-sm font-bold text-[#1A0A2E]">No hay puestos en esta sección</h4>
-            <p class="text-xs text-gray-500 mt-1">Prueba seleccionando otra sección o limpiando la búsqueda.</p>
-            <button
-              type="button"
-              (click)="selectedSectionId.set(null); loadStores()"
-              class="mt-3 text-xs font-bold text-[#C30364] bg-pink-50 py-1.5 px-3 rounded-full hover:bg-pink-100"
-            >
-              Ver todos los puestos
-            </button>
-          </div>
-        } @else {
-          <div class="relative w-full max-w-[340px] flex flex-col items-center">
-
-            <!-- 1. TOP CARD (Previous Store - Tilted along the arc) -->
-            @if (prevStore(); as pStore) {
-              <div
-                (click)="prevStoreSlide()"
-                class="roulette-card prev-card w-[86%] sm:w-[90%] bg-white rounded-2xl p-2 sm:p-2.5 shadow-md border border-gray-100 cursor-pointer transition-all duration-500 hover:opacity-100 flex flex-col gap-1.5"
-              >
-                <!-- Compact cover -->
-                <div class="h-16 sm:h-20 w-full rounded-xl overflow-hidden bg-gray-100 relative">
-                  <img
-                    [src]="pStore.coverImageUrl || 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=600&q=80'"
-                    [alt]="pStore.name"
-                    class="w-full h-full object-cover"
-                  />
-                  <div class="absolute inset-0 bg-black/10"></div>
-                </div>
-
-                <div class="px-1">
-                  <h4 class="text-xs font-bold text-[#1A0A2E] truncate">{{ pStore.name }}</h4>
-                  <p class="text-[10px] text-gray-500 truncate">Ubicación: {{ pStore.address || pStore.district }}</p>
-                  <p class="text-[9px] font-semibold text-emerald-600 mt-0.5">
-                    Abierto 🏪 - {{ pStore.openingTime || '7:00 AM' }} - {{ pStore.closingTime || '10:00 PM' }}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  (click)="$event.stopPropagation(); viewStore(pStore)"
-                  class="w-full py-1.5 rounded-full bg-[#C30364] text-white font-bold text-[10px] tracking-wide active:scale-95 transition-all text-center"
-                >
-                  Ver Tienda
-                </button>
-              </div>
-            }
-
-            <!-- 2. CENTER ACTIVE CARD (Active Store - Prominent, matches Image 1) -->
-            @if (currentStore(); as cStore) {
-              <div
-                class="roulette-card active-card w-full bg-white rounded-3xl shadow-[0_16px_40px_rgba(26,10,46,0.12)] border border-gray-100/80 p-3 sm:p-4 my-2 sm:my-3 z-10 transition-all duration-500 relative group"
-              >
-                <!-- Cover photo banner with rounded top -->
-                <div class="h-36 sm:h-44 w-full rounded-2xl overflow-hidden bg-gray-100 relative shadow-inner">
-                  <img
-                    [src]="cStore.coverImageUrl || 'https://images.unsplash.com/photo-1534723452862-4c874018d66d?w=800&q=80'"
-                    [alt]="cStore.name"
-                    class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
-                  />
-                  <!-- Distance badge -->
-                  @if (cStore.distanceMeters) {
-                    <span class="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/20">
-                      📍 {{ (cStore.distanceMeters / 1000) | number: '1.1-1' }} km
-                    </span>
-                  }
-                </div>
-
-                <!-- Store Info Body -->
-                <div class="pt-3 px-1 space-y-1.5">
-                  <h3 class="text-base sm:text-lg font-bold text-[#1A0A2E] leading-tight">
-                    {{ cStore.name }}
-                  </h3>
-
-                  <!-- Rating -->
-                  <div class="flex items-center gap-1.5 text-xs text-gray-600">
-                    <span class="text-amber-400 text-sm">⭐</span>
-                    <span class="font-bold text-[#1A0A2E]">{{ cStore.rating || 4.8 }} stars</span>
-                    <span class="text-gray-400">({{ cStore.reviewsCount || 120 }} reviews)</span>
-                  </div>
-
-                  <!-- Location -->
-                  <div class="flex items-center gap-1.5 text-xs text-gray-500">
-                    <span class="text-[#C30364]">📍</span>
-                    <span class="truncate">Ubicación: {{ cStore.address || cStore.district }}</span>
-                  </div>
-
-                  <!-- Operational status & hours -->
-                  <div class="flex items-center gap-1.5 text-xs">
-                    <span class="font-bold text-emerald-600">Abierto</span>
-                    <span class="text-gray-400">🏪 - {{ cStore.openingTime || '7:00 AM' }} - {{ cStore.closingTime || '10:00 PM' }}</span>
-                  </div>
-                </div>
-
-                <!-- Primary Action Button: "Ver Tienda" -->
-                <button
-                  type="button"
-                  (click)="viewStore(cStore)"
-                  class="mt-3.5 w-full py-3 px-4 rounded-full bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-bold text-xs sm:text-sm tracking-wide shadow-[0_4px_16px_rgba(195,3,100,0.4)] hover:shadow-[0_6px_22px_rgba(195,3,100,0.6)] hover:brightness-110 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                  <span>Ver Tienda</span>
-                </button>
-              </div>
-            }
-
-            <!-- 3. BOTTOM CARD (Next Store - Tilted along the arc) -->
-            @if (nextStore(); as nStore) {
-              <div
-                (click)="nextStoreSlide()"
-                class="roulette-card next-card w-[86%] sm:w-[90%] bg-white rounded-2xl p-2 sm:p-2.5 shadow-md border border-gray-100 cursor-pointer transition-all duration-500 hover:opacity-100 flex flex-col gap-1.5"
-              >
-                <!-- Compact cover -->
-                <div class="h-16 sm:h-20 w-full rounded-xl overflow-hidden bg-gray-100 relative">
-                  <img
-                    [src]="nStore.coverImageUrl || 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80'"
-                    [alt]="nStore.name"
-                    class="w-full h-full object-cover"
-                  />
-                  <div class="absolute inset-0 bg-black/10"></div>
-                </div>
-
-                <div class="px-1">
-                  <h4 class="text-xs font-bold text-[#1A0A2E] truncate">{{ nStore.name }}</h4>
-                  <p class="text-[10px] text-gray-500 truncate">Ubicación: {{ nStore.address || nStore.district }}</p>
-                  <p class="text-[9px] font-semibold text-emerald-600 mt-0.5">
-                    Abierto 🏪 - {{ nStore.openingTime || '7:00 AM' }} - {{ nStore.closingTime || '10:00 PM' }}
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  (click)="$event.stopPropagation(); viewStore(nStore)"
-                  class="w-full py-1.5 rounded-full bg-[#C30364] text-white font-bold text-[10px] tracking-wide active:scale-95 transition-all text-center"
-                >
-                  Ver Tienda
-                </button>
-              </div>
-            }
-
-            <!-- Mini prev/next step buttons for desktop convenience -->
-            <div class="flex items-center gap-4 mt-2">
-              <button
-                type="button"
-                (click)="prevStoreSlide()"
-                class="w-8 h-8 rounded-full bg-white shadow-xs border border-gray-200 text-gray-500 hover:text-[#C30364] flex items-center justify-center active:scale-90 transition-all cursor-pointer"
-                title="Puesto anterior"
-              >
-                ▲
-              </button>
-              <span class="text-[11px] font-bold text-gray-400">
-                {{ selectedStoreIndex() + 1 }} / {{ stores().length }}
-              </span>
-              <button
-                type="button"
-                (click)="nextStoreSlide()"
-                class="w-8 h-8 rounded-full bg-white shadow-xs border border-gray-200 text-gray-500 hover:text-[#C30364] flex items-center justify-center active:scale-90 transition-all cursor-pointer"
-                title="Siguiente puesto"
-              >
-                ▼
-              </button>
+        <!-- Semantic Dial Viewport (Region / Carousel) -->
+        <section
+          class="dial-viewport"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Ruleta interactiva de comercios y productos"
+          [style.--active-index]="currentActiveIndex()"
+          [style.--drag-offset]="dragOffsetProgress()"
+          [class.is-dragging]="isDragging()"
+          (pointerdown)="onPointerDown($event)"
+          (pointermove)="onPointerMove($event)"
+          (pointerup)="onPointerUp($event)"
+          (pointercancel)="onPointerCancel($event)"
+          (wheel)="onWheel($event)"
+        >
+          @if (isLoading()) {
+            <div class="dial-loader">
+              <div class="spinner"></div>
+              <p class="loader-text">Cargando catálogo...</p>
             </div>
+          } @else {
+            <ul class="dial-track" role="list">
+              @for (item of currentDialItems(); track item.key; let idx = $index) {
+                <li
+                  class="dial-card"
+                  [class.is-active]="idx === currentActiveIndex()"
+                  [class.is-fallback]="item.isFallback"
+                  [style.--index]="idx"
+                  [attr.aria-hidden]="idx !== currentActiveIndex()"
+                  (click)="onCardClick(idx)"
+                >
+                  <!-- ----------------------------------------------- -->
+                  <!-- ESTADO 1: COMERCIOS / BODEGAS                    -->
+                  <!-- ----------------------------------------------- -->
+                  @if (viewMode() === 'stores') {
+                    @if (item.isFallback) {
+                      <!-- TARJETA POR DEFECTO PASIVA (SIN STOCK / NO HAY MAS) -->
+                      <article class="card-inner fallback-card-inner">
+                        <img
+                          [src]="item.fallbackImage || FALLBACK_STORE_IMG"
+                          alt="No hay más comercios disponibles"
+                          class="fallback-img"
+                          draggable="false"
+                        />
+                      </article>
+                    } @else if (asStore(item.data); as store) {
+                      <!-- TARJETA REAL DE COMERCIO (Consumo backend) -->
+                      <article class="card-inner store-card-inner">
+                        <!-- Cover Image -->
+                        <div class="store-cover">
+                          @if (store.coverImageUrl) {
+                            <img [src]="store.coverImageUrl" [alt]="store.name" class="store-cover-img" draggable="false" />
+                          } @else {
+                            <div class="store-cover-placeholder">
+                              <span class="placeholder-icon">🏪</span>
+                            </div>
+                          }
+                          <!-- Logo badge -->
+                          <div class="store-logo-badge">
+                            @if (store.logoUrl) {
+                              <img [src]="store.logoUrl" [alt]="store.name" class="logo-img" />
+                            } @else {
+                              <span class="logo-text">{{ store.name.substring(0, 2).toUpperCase() }}</span>
+                            }
+                          </div>
+                        </div>
 
-          </div>
-        }
-      </section>
+                        <!-- Store Details Body -->
+                        <div class="store-body">
+                          <h3 class="store-name">{{ store.name }}</h3>
 
-      <!-- ========================================================= -->
-      <!-- COLUMNA DERECHA: SECCIONES DISPONIBLES (20-25%)           -->
-      <!-- ========================================================= -->
-      <aside class="col-span-4 sm:col-span-4 flex justify-end">
-        <div class="bg-white/90 backdrop-blur-md rounded-3xl p-2.5 sm:p-3 shadow-[0_10px_30px_rgba(26,10,46,0.06)] border border-gray-100 flex flex-col items-center w-full max-w-[120px] sm:max-w-[130px]">
+                          <!-- Rating & Reviews -->
+                          <div class="store-meta-line rating-line">
+                            <span class="star-icon">⭐</span>
+                            <span class="rating-val">{{ store.rating || 4.8 }} stars</span>
+                            <span class="reviews-count">({{ store.reviewsCount || 120 }} reviews)</span>
+                          </div>
 
-          <!-- Header -->
-          <h4 class="text-xs sm:text-sm font-bold text-[#1A0A2E] mb-2 sm:mb-3 text-center">
-            Secciones
-          </h4>
+                          <!-- Location -->
+                          <div class="store-meta-line location-line">
+                            <span class="meta-icon">📍</span>
+                            <span class="location-text">
+                              Ubicación: {{ store.district || store.address || 'Jirón Junín 450' }}
+                            </span>
+                          </div>
 
-          <!-- Section Items Stack -->
-          <div class="flex flex-col gap-2 w-full">
+                          <!-- Status & Hours -->
+                          <div class="store-meta-line status-line">
+                            @if (store.isOpen !== false) {
+                              <span class="status-badge open">Abierto 🏪</span>
+                              <span class="hours-text">- {{ store.openingTime || '7:00 AM' }} - {{ store.closingTime || '10:00 PM' }}</span>
+                            } @else {
+                              <span class="status-badge closed">Cerrado 🔒</span>
+                            }
+                          </div>
+
+                          <!-- CTA Button (Active card only has interactive action) -->
+                          <button
+                            type="button"
+                            (click)="enterStore(store); $event.stopPropagation()"
+                            class="store-cta-btn"
+                            [disabled]="idx !== currentActiveIndex()"
+                          >
+                            <svg class="cta-cart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                            <span>Ver Tienda</span>
+                          </button>
+                        </div>
+                      </article>
+                    }
+                  }
+
+                  <!-- ----------------------------------------------- -->
+                  <!-- ESTADO 2: PRODUCTOS                             -->
+                  <!-- ----------------------------------------------- -->
+                  @else {
+                    @if (item.isFallback) {
+                      <!-- TARJETA POR DEFECTO PASIVA (SIN STOCK / NO HAY MAS) -->
+                      <article class="card-inner fallback-card-inner">
+                        <img
+                          [src]="item.fallbackImage || FALLBACK_PRODUCT_IMG"
+                          alt="No hay más productos disponibles"
+                          class="fallback-img"
+                          draggable="false"
+                        />
+                      </article>
+                    } @else if (asProduct(item.data); as product) {
+                      <!-- TARJETA REAL DE PRODUCTO (Consumo backend) -->
+                      <article class="card-inner product-card-inner">
+                        <!-- Top Bar: Favorite Button -->
+                        <div class="product-top-bar">
+                          <button
+                            type="button"
+                            class="fav-btn"
+                            [class.is-fav]="isFavorite(product.productId)"
+                            (click)="toggleFavorite(product.productId); $event.stopPropagation()"
+                            [disabled]="idx !== currentActiveIndex()"
+                            aria-label="Agregar a favoritos"
+                          >
+                            <svg class="w-5 h-5" [attr.fill]="isFavorite(product.productId) ? '#C30364' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                            </svg>
+                          </button>
+                        </div>
+
+                        <!-- Product Image Area -->
+                        <div class="product-img-box">
+                          @if (product.primaryImageUrl) {
+                            <img [src]="product.primaryImageUrl" [alt]="product.productName" class="product-img" draggable="false" />
+                          } @else {
+                            <div class="product-placeholder">
+                              <span class="placeholder-icon">📦</span>
+                            </div>
+                          }
+                        </div>
+
+                        <!-- Product Body -->
+                        <div class="product-body">
+                          <h3 class="product-name">{{ product.productName }}</h3>
+
+                          <!-- Variant Selector / Measurement Pill -->
+                          @if (product.variants && product.variants.length > 0) {
+                            <div class="variant-selector-wrapper">
+                              <select
+                                [ngModel]="selectedVariantId()"
+                                (ngModelChange)="selectedVariantId.set($event)"
+                                class="variant-select"
+                                [disabled]="idx !== currentActiveIndex()"
+                                (click)="$event.stopPropagation()"
+                              >
+                                @for (v of product.variants; track v.id) {
+                                  <option [value]="v.id">
+                                    {{ v.name }} - S/ {{ (v.price || product.price || 0) | number:'1.2-2' }}
+                                  </option>
+                                }
+                              </select>
+                            </div>
+                          }
+
+                          <!-- Price & Stock Availability -->
+                          <div class="price-stock-row">
+                            <span class="product-price">
+                              {{ formatPrice(product.primaryPrice || product.price) }}
+                            </span>
+                            <span class="product-stock-tag">
+                              <span class="stock-dot"></span> Disponible
+                            </span>
+                          </div>
+
+                          <!-- Interactive Controls for Center Active Card -->
+                          @if (idx === currentActiveIndex()) {
+                            <div class="product-controls-row">
+                              <!-- Stepper (Direct Quick Add Mode) -->
+                              @if (product.allowsDirectQuickAdd) {
+                                <div class="stepper" (click)="$event.stopPropagation()">
+                                  <button type="button" class="stepper-btn minus" (click)="decrementQuantity()">−</button>
+                                  <span class="stepper-val">{{ quickQuantity() }}</span>
+                                  <button type="button" class="stepper-btn plus" (click)="incrementQuantity()">+</button>
+                                </div>
+                              }
+
+                              <!-- Add / Configure CTA Button -->
+                              <button
+                                type="button"
+                                (click)="onAddProduct(product); $event.stopPropagation()"
+                                class="product-add-btn"
+                                [class.full-width]="!product.allowsDirectQuickAdd"
+                              >
+                                <svg class="cta-cart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span>{{ product.allowsDirectQuickAdd ? 'Agregar' : 'Personalizar' }}</span>
+                              </button>
+                            </div>
+                          }
+                        </div>
+                      </article>
+                    }
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- LATERAL COLUMNS (SECCIONES Y CATEGORÍAS REACTIVAS)       -->
+      <!-- ======================================================== -->
+      <aside class="lateral-columns">
+        <!-- Columna 1: Secciones (Siempre presente, barra vertical fija) -->
+        <nav class="lateral-panel sections-panel" aria-label="Secciones del mercado">
+          <h4 class="lateral-title">Secciones</h4>
+          <div class="lateral-list">
             @for (sec of sections(); track sec.id) {
               <button
                 type="button"
+                class="section-btn"
+                [class.is-active]="selectedSectionId() === sec.id"
                 (click)="onSelectSection(sec)"
-                [class.bg-[#C30364]]="selectedSectionId() === sec.id"
-                [class.text-white]="selectedSectionId() === sec.id"
-                [class.shadow-[0_4px_14px_rgba(195,3,100,0.35)]]="selectedSectionId() === sec.id"
-                [class.bg-gray-50]="selectedSectionId() !== sec.id"
-                [class.text-[#1A0A2E]]="selectedSectionId() !== sec.id"
-                class="p-2 rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all duration-300 hover:scale-102 active:scale-95 cursor-pointer border border-transparent"
-                [class.border-[#C30364]/30]="selectedSectionId() === sec.id"
               >
-                <!-- Thumbnail / Icon -->
-                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-xl overflow-hidden flex items-center justify-center p-0.5">
-                  <img
-                    [src]="sec.iconUrl || sec.imageUrl || 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=100&q=80'"
-                    [alt]="sec.name"
-                    class="w-full h-full object-contain filter transition-all"
-                    [class.brightness-125]="selectedSectionId() === sec.id"
-                  />
+                <div class="section-icon-box">
+                  @if (sec.iconUrl || sec.imageUrl) {
+                    <img [src]="sec.iconUrl || sec.imageUrl" [alt]="sec.name" class="section-icon-img" />
+                  } @else {
+                    <span class="section-emoji">{{ getSectionEmoji(sec.name) }}</span>
+                  }
                 </div>
-                <!-- Label -->
-                <span class="text-[10px] sm:text-xs font-bold text-center leading-tight truncate w-full">
-                  {{ sec.name }}
-                </span>
+                <span class="section-label">{{ sec.name }}</span>
               </button>
             }
           </div>
+        </nav>
 
-          <!-- Bottom scroll/expand arrow -->
-          <div class="mt-2 text-gray-400 flex items-center justify-center">
-            <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-            </svg>
+        <!-- Columna 2: Categorías (Se desliza e inserta en Estado 2) -->
+        <nav
+          class="lateral-panel categories-panel"
+          [class.is-visible]="viewMode() === 'products'"
+          aria-label="Categorías del comercio"
+        >
+          <h4 class="lateral-title">Categorías</h4>
+          <div class="lateral-list categories-list">
+            @for (cat of categories(); track cat.id) {
+              <button
+                type="button"
+                class="category-pill-btn"
+                [class.is-active]="selectedCategoryId() === cat.id"
+                (click)="onSelectCategory(cat)"
+              >
+                {{ cat.name }}
+              </button>
+            }
           </div>
-        </div>
+        </nav>
       </aside>
 
     </div>
-
   </main>
 
-  <!-- ========================================================= -->
-  <!-- INFORMATIVE BOTTOM BANNER (Just above the bottom nav bar) -->
-  <!-- ========================================================= -->
-  <footer class="fixed bottom-18 left-0 right-0 z-20 px-4 pointer-events-none">
-    <div class="max-w-md mx-auto pointer-events-auto">
-      <div class="bg-white/95 backdrop-blur-md border border-gray-100 rounded-full px-4 py-2 shadow-lg flex items-center gap-2.5 text-xs text-gray-700">
-        <span class="w-5 h-5 rounded-full bg-[#1A0A2E] text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0">
-          i
-        </span>
-        <span class="truncate font-medium">
-          {{ infoBannerText() }}
-        </span>
-      </div>
+  <!-- ======================================================== -->
+  <!-- BOTTOM INFO BANNER (Matching Reference (i))              -->
+  <!-- ======================================================== -->
+  <footer class="market-bottom-banner">
+    <div class="banner-pill">
+      <span class="banner-info-icon">ℹ️</span>
+      <span class="banner-text">{{ infoBannerText() }}</span>
     </div>
   </footer>
 
-  <!-- Proximity conflict modal (100m multitienda limit) -->
-  <app-proximity-conflict-modal></app-proximity-conflict-modal>
+  <!-- TOAST NOTIFICATION -->
+  @if (toastMessage(); as msg) {
+    <div class="market-toast">
+      <span>{{ msg }}</span>
+    </div>
+  }
+
+  <!-- PRODUCT CONFIGURATION MODAL (For complex items / weighables / cuts) -->
+  @if (showConfigModal() && productToConfigure(); as prod) {
+    <app-product-config-modal
+      [product]="prod"
+      [storeId]="activeStore()?.id || prod.storeId"
+      (confirm)="onConfigModalConfirm($event)"
+      (close)="onCloseConfigModal()"
+    />
+  }
 
 </div>
