@@ -14,7 +14,7 @@ import {
   MarketProductOptionDto,
   MarketProductVariantDto,
   MarketStoreProductCustomerDto,
-  MeasurementType
+  MarketStoreProductPriceOfferDto
 } from '../../../../core/models/market.model';
 
 export interface SaleUnitOption {
@@ -40,94 +40,108 @@ export class ProductConfigModalComponent implements OnInit {
   @Output() close = new EventEmitter<void>();
   @Output() confirm = new EventEmitter<{ request: AddMarketCartItemRequest; effectivePrice: number }>();
 
-  // State signals
+  // 1. Variantes activas únicamente (filtrando las no activas para evitar opciones como Tangelo si el puesto no las vende)
+  activeVariants = computed<MarketProductVariantDto[]>(() => {
+    const list = this.product?.variants || [];
+    return list.filter(v => v.isActive !== false && v.isAvailable !== false);
+  });
+
+  // Estado reactivo del modal
   selectedVariant = signal<MarketProductVariantDto | null>(null);
   selectedUnit = signal<'KG' | 'UNIT'>('KG');
-  selectedOptionsMap = signal<Record<string, MarketProductOptionDto>>({});
   quantity = signal<number>(1);
+  selectedOptionsMap = signal<Record<string, MarketProductOptionDto>>({});
   itemNotes = signal<string>('');
 
-  // Precios dinámicos según la variante activa
-  currentKgPrice = computed<number | null>(() => {
+  // 2. Ofertas de precio de la variante seleccionada
+  kgOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
     const v = this.selectedVariant();
-    // 1. Oferta de precio de la variante en KG
-    const vOffer = v?.prices?.find(p => p.measurementType === 'KG');
-    if (vOffer?.price) return vOffer.price;
+    if (!v?.prices) return null;
+    return v.prices.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+  });
 
-    // 2. Oferta de precio del producto en KG
-    const pOffer = this.product.prices?.find(p => p.measurementType === 'KG');
-    if (pOffer?.price) return pOffer.price;
+  unitOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
+    const v = this.selectedVariant();
+    if (!v?.prices) return null;
+    return v.prices.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
+  });
 
-    // 3. Fallback precio por kilo
+  // Precios dinámicos reactivos de la variante actual
+  kgPrice = computed<number | null>(() => {
+    const offer = this.kgOffer();
+    if (offer) {
+      return offer.zisifyPrice ?? offer.price ?? null;
+    }
+    // Si la variante tiene lista de precios pero no incluye KG, esta variante no se vende por KG
+    if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
+      return null;
+    }
+    // Fallback únicamente para productos simples sin variantes o sin lista prices
+    const pOffer = this.product.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG');
+    if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
     if (this.product.pricePerKg) return this.product.pricePerKg;
-
-    // 4. Si la unidad primaria es KG
     if (this.product.primaryPriceUnit === 'KG') {
-      return v?.price || this.product.primaryPrice || this.product.price || null;
+      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
     }
     return null;
   });
 
-  currentUnitPrice = computed<number | null>(() => {
-    const v = this.selectedVariant();
-    // 1. Oferta de precio de la variante en UNIT
-    const vOffer = v?.prices?.find(p => p.measurementType === 'UNIT');
-    if (vOffer?.price) return vOffer.price;
-
-    // 2. Oferta de precio del producto en UNIT
-    const pOffer = this.product.prices?.find(p => p.measurementType === 'UNIT');
-    if (pOffer?.price) return pOffer.price;
-
-    // 3. Fallback precio por unidad
+  unitPrice = computed<number | null>(() => {
+    const offer = this.unitOffer();
+    if (offer) {
+      return offer.zisifyPrice ?? offer.price ?? null;
+    }
+    // Si la variante tiene lista de precios pero no incluye UNIT, esta variante no se vende por UNIT
+    if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
+      return null;
+    }
+    // Fallback únicamente para productos simples sin variantes o sin lista prices
+    const pOffer = this.product.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT');
+    if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
     if (this.product.unitPrice) return this.product.unitPrice;
-
-    // 4. Si la unidad primaria es UNIT
     if (this.product.primaryPriceUnit === 'UNIT') {
-      return v?.price || this.product.primaryPrice || this.product.price || null;
+      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
     }
-
-    // 5. Fallback si no tiene precio KG
-    if (!this.currentKgPrice()) {
-      return v?.price || this.product.primaryPrice || this.product.price || null;
+    if (!this.kgPrice()) {
+      return this.selectedVariant()?.price ?? this.product.primaryPrice ?? this.product.price ?? null;
     }
     return null;
   });
 
-  // Lista de modalidades de venta disponibles para la variante actual
+  // 3. Opciones de Modalidad de Venta para la variante actual
   availableSaleUnits = computed<SaleUnitOption[]>(() => {
     const options: SaleUnitOption[] = [];
-    const kgPrice = this.currentKgPrice();
-    const unitPrice = this.currentUnitPrice();
+    const kg = this.kgPrice();
+    const unit = this.unitPrice();
 
-    if (kgPrice !== null && kgPrice !== undefined) {
+    if (kg !== null && kg !== undefined) {
       options.push({
         unit: 'KG',
         title: 'Por Kilo (KG)',
         unitLabel: '/ kg',
         icon: '⚖️',
-        price: kgPrice
+        price: kg
       });
     }
 
-    if (unitPrice !== null && unitPrice !== undefined) {
+    if (unit !== null && unit !== undefined) {
       options.push({
         unit: 'UNIT',
         title: 'Por Unidad (UNID)',
         unitLabel: '/ unid',
-        icon: '📦',
-        price: unitPrice
+        icon: '🍊',
+        price: unit
       });
     }
 
-    // Si por alguna razón ninguna coincide, crear una opción por defecto
     if (options.length === 0) {
       const fallbackUnit = this.product.primaryPriceUnit === 'KG' ? 'KG' : 'UNIT';
       options.push({
         unit: fallbackUnit,
         title: fallbackUnit === 'KG' ? 'Por Kilo (KG)' : 'Por Unidad (UNID)',
         unitLabel: fallbackUnit === 'KG' ? '/ kg' : '/ unid',
-        icon: fallbackUnit === 'KG' ? '⚖️' : '📦',
-        price: this.product.primaryPrice || this.product.price || 5.0
+        icon: fallbackUnit === 'KG' ? '⚖️' : '🍊',
+        price: this.product.primaryPrice ?? this.product.price ?? 5.0
       });
     }
 
@@ -138,12 +152,12 @@ export class ProductConfigModalComponent implements OnInit {
   basePrice = computed<number>(() => {
     const unit = this.selectedUnit();
     if (unit === 'KG') {
-      return this.currentKgPrice() ?? this.product.primaryPrice ?? this.product.price ?? 5.0;
+      return this.kgPrice() ?? this.product.primaryPrice ?? this.product.price ?? 5.0;
     }
-    return this.currentUnitPrice() ?? this.product.primaryPrice ?? this.product.price ?? 5.0;
+    return this.unitPrice() ?? this.product.primaryPrice ?? this.product.price ?? 5.0;
   });
 
-  // Total de opciones adicionales
+  // Opciones adicionales seleccionadas
   optionsTotal = computed<number>(() => {
     const opts = Object.values(this.selectedOptionsMap());
     return opts.reduce((acc, curr) => acc + (curr.additionalPrice || 0), 0);
@@ -154,26 +168,22 @@ export class ProductConfigModalComponent implements OnInit {
     return this.basePrice() + this.optionsTotal();
   });
 
-  // Total a pagar = (Precio Variante y Unidad + Opciones) * Cantidad
+  // Total a pagar reactivo: (unitPrice + totalOpcionesAdicionales) * quantity
   totalPrice = computed<number>(() => {
     return +(this.effectiveUnitPrice() * this.quantity()).toFixed(2);
   });
 
-  // Determinar si aplica aviso de balanza (cuando la unidad es KG)
+  // Aviso de balanza si está en KG
   isWeightActive = computed<boolean>(() => {
-    return (
-      this.selectedUnit() === 'KG' ||
-      this.product.pricingMode === 'WEIGHT_BASED'
-    );
+    return this.selectedUnit() === 'KG' || this.product.pricingMode === 'WEIGHT_BASED';
   });
 
-  // Validación para habilitar el botón de compra
+  // Validación
   isValid = computed<boolean>(() => {
-    // 1. Si el producto tiene variantes, debe tener una seleccionada
-    if (this.product.variants && this.product.variants.length > 0 && !this.selectedVariant()) {
+    const variants = this.activeVariants();
+    if (variants.length > 0 && !this.selectedVariant()) {
       return false;
     }
-    // 2. Grupos de opciones obligatorios
     if (this.product.optionGroups && this.product.optionGroups.length > 0) {
       for (const group of this.product.optionGroups) {
         if (group.isRequired && !this.selectedOptionsMap()[group.id]) {
@@ -181,21 +191,21 @@ export class ProductConfigModalComponent implements OnInit {
         }
       }
     }
-    // 3. Cantidad mayor a 0
     return this.quantity() > 0;
   });
 
   ngOnInit() {
-    // 1. Preseleccionar variante (si se pasó initialVariantId o la 1ra)
-    if (this.product.variants && this.product.variants.length > 0) {
+    // 1. Preseleccionar variante activa
+    const variants = this.activeVariants();
+    if (variants.length > 0) {
       let variantToSelect: MarketProductVariantDto | null = null;
       if (this.initialVariantId) {
-        variantToSelect = this.product.variants.find(v => v.id === this.initialVariantId) || null;
+        variantToSelect = variants.find(v => v.id === this.initialVariantId) || null;
       }
-      this.selectedVariant.set(variantToSelect || this.product.variants[0]);
+      this.selectedVariant.set(variantToSelect || variants[0]);
     }
 
-    // 2. Establecer modalidad de venta inicial (KG si está disponible, sino UNIT)
+    // 2. Establecer modalidad de venta inicial
     const units = this.availableSaleUnits();
     if (units.some(u => u.unit === 'KG')) {
       this.selectedUnit.set('KG');
@@ -223,7 +233,7 @@ export class ProductConfigModalComponent implements OnInit {
   selectVariant(variant: MarketProductVariantDto) {
     this.selectedVariant.set(variant);
 
-    // Si la unidad actualmente seleccionada no existe en la nueva variante, ajustar
+    // Si la unidad seleccionada no está disponible en la nueva variante, cambiar a la 1ra disponible
     const available = this.availableSaleUnits();
     if (!available.some(u => u.unit === this.selectedUnit())) {
       this.selectSaleUnit(available[0].unit);

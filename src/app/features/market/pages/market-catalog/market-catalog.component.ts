@@ -799,6 +799,10 @@ export class MarketCatalogComponent implements OnInit {
     this.showConfigModal.set(true);
   }
 
+  getActiveVariants(product: MarketStoreProductCustomerDto): MarketProductVariantDto[] {
+    return (product.variants || []).filter(v => v.isActive !== false && v.isAvailable !== false);
+  }
+
   getVariantDisplay(variant: MarketProductVariantDto, product: MarketStoreProductCustomerDto): string {
     if (variant.priceDisplaySummary) {
       return `${variant.name} — ${variant.priceDisplaySummary}`;
@@ -806,8 +810,9 @@ export class MarketCatalogComponent implements OnInit {
 
     if (variant.prices && variant.prices.length > 0) {
       const parts = variant.prices.map((p: MarketStoreProductPriceOfferDto) => {
-        const u = p.measurementType === 'KG' ? '/ kg' : '/ unid';
-        return `S/ ${p.price.toFixed(2)} ${u}`;
+        const u = (p.saleUnit || p.measurementType) === 'KG' ? '/ kg' : '/ unid';
+        const priceVal = p.zisifyPrice ?? p.price ?? 0;
+        return `S/ ${priceVal.toFixed(2)} ${u}`;
       });
       return `${variant.name} — ${parts.join(' · ')}`;
     }

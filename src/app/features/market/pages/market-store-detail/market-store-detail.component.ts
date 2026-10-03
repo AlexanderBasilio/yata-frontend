@@ -8,8 +8,10 @@ import { CustomerService } from '../../../../core/services/customer/customer.ser
 import {
   AddMarketCartItemRequest,
   MarketCategoryCustomerDto,
+  MarketProductVariantDto,
   MarketSectionCustomerDto,
   MarketStoreProductCustomerDto,
+  MarketStoreProductPriceOfferDto,
   MarketStoreSummaryDto
 } from '../../../../core/models/market.model';
 import { ProductConfigModalComponent } from '../../components/product-config-modal/product-config-modal.component';
@@ -277,8 +279,41 @@ export class MarketStoreDetailComponent implements OnInit {
   }
 
   openProductConfig(product: MarketStoreProductCustomerDto) {
+    const active = this.getActiveVariants(product);
+    if (active.length > 0 && (!this.selectedVariantId() || !active.some(v => v.id === this.selectedVariantId()))) {
+      this.selectedVariantId.set(active[0].id);
+    }
     this.productToConfigure.set(product);
     this.showConfigModal.set(true);
+  }
+
+  onVariantDropdownChange(variantId: string, product: MarketStoreProductCustomerDto) {
+    this.selectedVariantId.set(variantId);
+    this.productToConfigure.set(product);
+    this.showConfigModal.set(true);
+  }
+
+  getActiveVariants(product: MarketStoreProductCustomerDto): MarketProductVariantDto[] {
+    return (product.variants || []).filter(v => v.isActive !== false && v.isAvailable !== false);
+  }
+
+  getVariantDisplay(variant: MarketProductVariantDto, product: MarketStoreProductCustomerDto): string {
+    if (variant.priceDisplaySummary) {
+      return `${variant.name} — ${variant.priceDisplaySummary}`;
+    }
+
+    if (variant.prices && variant.prices.length > 0) {
+      const parts = variant.prices.map((p: MarketStoreProductPriceOfferDto) => {
+        const u = (p.saleUnit || p.measurementType) === 'KG' ? '/ kg' : '/ unid';
+        const priceVal = p.zisifyPrice ?? p.price ?? 0;
+        return `S/ ${priceVal.toFixed(2)} ${u}`;
+      });
+      return `${variant.name} — ${parts.join(' · ')}`;
+    }
+
+    const price = variant.price || product.primaryPrice || product.price || 0;
+    const unit = product.primaryPriceUnit === 'KG' ? '/ kg' : '/ unid';
+    return `${variant.name} — S/ ${price.toFixed(2)} ${unit}`;
   }
 
   onConfigModalConfirm(data: { request: AddMarketCartItemRequest; effectivePrice: number }) {

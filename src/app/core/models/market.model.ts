@@ -70,13 +70,22 @@ export interface MarketProductVariantDto {
   id: string;
   name: string;
   sku?: string;
-  price?: number;
+  saleUnit?: MeasurementType;
+  priceUnit?: MeasurementType;
+  pricingMode?: PricingMode;
+  weightMinGrams?: number;
+  weightMaxGrams?: number;
+  weightAverageGrams?: number;
   weightGrams?: number;
-  imageUrl?: string;
+  isDefault?: boolean;
+  displayOrder?: number;
+  isActive?: boolean;
   isAvailable?: boolean;
+  imageUrl?: string;
   prices?: MarketStoreProductPriceOfferDto[];
   priceDisplaySummary?: string;
   allowedSaleUnits?: MeasurementType[];
+  price?: number;
 }
 
 export interface MarketProductOptionDto {
@@ -96,8 +105,10 @@ export interface MarketProductOptionGroupDto {
 }
 
 export interface MarketStoreProductPriceOfferDto {
-  measurementType: MeasurementType;
-  price: number;
+  saleUnit?: MeasurementType;
+  measurementType?: MeasurementType;
+  zisifyPrice?: number;
+  price?: number;
   isDefault?: boolean;
 }
 

@@ -59,7 +59,7 @@
       }
 
       <!-- 1. VARIEDAD / TIPO * (Obligatorio) -->
-      @if (product.variants && product.variants.length > 0) {
+      @if (activeVariants().length > 0) {
         <div class="config-section">
           <div class="section-title-row">
             <label class="section-title">
@@ -69,7 +69,7 @@
           </div>
 
           <div class="variants-row">
-            @for (variant of product.variants; track variant.id) {
+            @for (variant of activeVariants(); track variant.id) {
               <button
                 type="button"
                 (click)="selectVariant(variant)"

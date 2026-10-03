@@ -274,7 +274,7 @@
                                 [disabled]="idx !== currentActiveIndex()"
                                 (click)="$event.stopPropagation()"
                               >
-                                @for (v of product.variants; track v.id) {
+                                @for (v of getActiveVariants(product); track v.id) {
                                   <option [value]="v.id">
                                     {{ getVariantDisplay(v, product) }}
                                   </option>
