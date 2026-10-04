@@ -113,6 +113,11 @@
                 <span class="unit-card-price">
                   S/ {{ opt.price | number: '1.2-2' }} {{ opt.unitLabel }}
                 </span>
+                @if (opt.referenceLabel) {
+                  <span class="unit-card-reference">
+                    {{ opt.referenceLabel }}
+                  </span>
+                }
               </div>
             </button>
           }

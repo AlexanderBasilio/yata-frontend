@@ -1,0 +1,187 @@
+<div class="min-h-screen bg-[#FAF8FB] text-[#1A0A2E] font-sans pb-32">
+
+  <!-- Header -->
+  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 px-4 py-3.5 shadow-xs">
+    <div class="max-w-xl mx-auto flex items-center justify-between">
+      <button
+        type="button"
+        (click)="goToMarket()"
+        class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-95 flex items-center justify-center text-gray-700 transition-all cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <span class="text-xs font-bold uppercase tracking-wider text-gray-500">
+        Confirmación de Pedido
+      </span>
+
+      <div class="w-9"></div>
+    </div>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 py-6 space-y-5">
+
+    <!-- Card Principal de Éxito -->
+    <div class="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm text-center space-y-4">
+      <!-- Icono de Check / Éxito -->
+      <div class="w-18 h-18 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-3xl shadow-inner animate-bounce">
+        ✓
+      </div>
+
+      <div>
+        <h1 class="text-xl sm:text-2xl font-black font-['Inknut_Antiqua'] text-[#1A0A2E] leading-tight">
+          ¡Pedido Recibido!
+        </h1>
+        <p class="text-xs text-gray-500 mt-1 max-w-sm mx-auto">
+          Tu orden ha sido registrada exitosamente en Zisify y está en cola para validación.
+        </p>
+      </div>
+
+      <!-- Código de Pedido con Copiado Rápido -->
+      <div class="bg-gradient-to-r from-pink-50/80 via-purple-50/60 to-pink-50/80 border border-pink-100 rounded-2xl p-4 max-w-xs mx-auto">
+        <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#C30364] block mb-1">
+          Código de Pedido
+        </span>
+        <div class="flex items-center justify-center gap-2">
+          <span class="text-lg font-black font-mono tracking-wider text-[#1A0A2E]">
+            {{ orderCode() }}
+          </span>
+          <button
+            type="button"
+            (click)="copyOrderCode()"
+            class="text-[10px] font-bold bg-white text-[#C30364] border border-pink-200 hover:bg-pink-50 px-2.5 py-1 rounded-full transition-all cursor-pointer shadow-2xs"
+          >
+            {{ isCopied() ? '¡Copiado!' : 'Copiar' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Estado actual -->
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-xs font-bold">
+        <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+        <span>Validación en curso por Administración</span>
+      </div>
+    </div>
+
+    <!-- INSTRUCCIONES DE PAGO SEGÚN MÉTODO -->
+    @if (order()?.paymentMethod === 'MANUAL_TRANSFER' || (!order() && true)) {
+      <!-- Caso Pago Anticipado -->
+      <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+        <div class="flex items-center gap-2.5 border-b border-gray-100 pb-3">
+          <span class="text-xl">📲</span>
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+              Instrucciones de Pago Anticipado
+            </h2>
+            <p class="text-[11px] text-gray-400">
+              Yape, Plin o Transferencia bancaria
+            </p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs text-gray-600">
+          <p>
+            Para que los puestos de mercado comiencen a alistar tu pedido, por favor realiza el pago por el monto total:
+          </p>
+
+          <div class="bg-gray-50 rounded-2xl p-4 border border-gray-100 space-y-2">
+            <div class="flex justify-between items-baseline">
+              <span class="font-medium text-gray-500">Monto a Transferir:</span>
+              <span class="text-base font-extrabold text-[#C30364]">
+                S/ {{ (order()?.totalAmount || 0) | number: '1.2-2' }}
+              </span>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-gray-200/70">
+              <span class="font-medium text-gray-500">Yape / Plin oficial:</span>
+              <span class="font-mono font-bold text-[#1A0A2E] text-xs">987 654 321 (Zisify)</span>
+            </div>
+          </div>
+
+          <!-- Botón Enviar Comprobante por WhatsApp -->
+          <a
+            [href]="getWhatsAppUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full py-3.5 px-6 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>💬</span>
+            <span>Enviar Comprobante por WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    } @else {
+      <!-- Caso Pago Contra-entrega -->
+      <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-3">
+        <div class="flex items-center gap-2.5 border-b border-gray-100 pb-3">
+          <span class="text-xl">💵</span>
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+              Pago Contra-entrega
+            </h2>
+            <p class="text-[11px] text-gray-400">
+              Pagarás al repartidor en tu puerta
+            </p>
+          </div>
+        </div>
+
+        <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-3.5 text-xs text-emerald-800 space-y-1">
+          <p class="font-bold">✓ Tu pedido ha sido recibido.</p>
+          <p class="text-[11px] text-emerald-700">
+            El equipo de Zisify validará la orden antes del despacho. Por favor ten listo el importe exacto o tu aplicación de Yape al momento de la entrega.
+          </p>
+        </div>
+
+        <div class="flex justify-between items-baseline pt-2">
+          <span class="text-xs font-bold text-gray-600">Total a pagar al repartidor:</span>
+          <span class="text-base font-extrabold text-[#C30364]">
+            S/ {{ (order()?.totalAmount || 0) | number: '1.2-2' }}
+          </span>
+        </div>
+      </div>
+    }
+
+    <!-- Subórdenes por puesto de mercado -->
+    @if (order()?.suborders && order()!.suborders!.length > 0) {
+      <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-2.5">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+          Subórdenes Generadas ({{ order()!.suborders!.length }} puestos)
+        </h3>
+        <div class="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden bg-gray-50/40">
+          @for (sub of order()!.suborders; track sub.suborderNumber) {
+            <div class="px-3.5 py-2.5 flex items-center justify-between text-xs">
+              <span class="font-semibold text-gray-700">
+                🏪 {{ sub.storeName }}
+              </span>
+              <span class="font-mono text-[11px] text-gray-500 font-bold">
+                {{ sub.suborderNumber }}
+              </span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Botones de Navegación Final -->
+    <div class="space-y-2.5 pt-2">
+      <button
+        type="button"
+        (click)="goToMarket()"
+        class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white font-extrabold text-xs shadow-md hover:brightness-105 active:scale-98 transition-all cursor-pointer"
+      >
+        Explorar Más en Mercado
+      </button>
+
+      <button
+        type="button"
+        (click)="goToProfile()"
+        class="w-full py-3 px-6 rounded-full bg-white hover:bg-gray-50 text-gray-700 font-bold text-xs border border-gray-200 active:scale-98 transition-all cursor-pointer"
+      >
+        Ver Mis Pedidos
+      </button>
+    </div>
+
+  </main>
+</div>

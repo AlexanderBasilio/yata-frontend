@@ -1,0 +1,419 @@
+<div class="min-h-screen bg-[#FAF8FB] text-[#1A0A2E] font-sans pb-32">
+
+  <!-- Header -->
+  <header class="bg-white/90 backdrop-blur-md sticky top-0 z-30 border-b border-gray-100 px-4 py-3.5 shadow-xs">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button
+          type="button"
+          (click)="goBack()"
+          class="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 active:scale-95 flex items-center justify-center text-gray-700 transition-all cursor-pointer"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 class="text-base font-bold font-['Inknut_Antiqua'] text-[#1A0A2E] leading-tight">
+            Checkout de Mercado
+          </h1>
+          <p class="text-[11px] text-gray-500 font-medium">
+            Confirma tu dirección, método de pago y desglose logístico
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 bg-pink-50 border border-pink-100 text-[#C30364] px-3 py-1 rounded-full text-xs font-bold">
+        <span>🛒</span>
+        <span>{{ cart()?.totalItemsCount || 0 }} productos</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Error banner if any -->
+  @if (errorMessage()) {
+    <div class="max-w-4xl mx-auto px-4 mt-4">
+      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl text-xs flex items-center gap-2">
+        <span class="text-base">⚠️</span>
+        <span class="font-medium">{{ errorMessage() }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Main Content Grid -->
+  <main class="max-w-4xl mx-auto px-4 py-6">
+    <form [formGroup]="checkoutForm" (ngSubmit)="onSubmitOrder()" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- ============================================ -->
+      <!-- LADO IZQUIERDO: DATOS Y PAGO (7 COLS)        -->
+      <!-- ============================================ -->
+      <div class="lg:col-span-7 space-y-5">
+
+        <!-- 1. UBICACIÓN DE ENTREGA -->
+        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-gray-50 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-pink-50 text-[#C30364] flex items-center justify-center text-sm font-bold">
+                📍
+              </span>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+                1. Ubicación de Entrega
+              </h2>
+            </div>
+            <span class="text-[11px] font-semibold text-gray-400">Paso 1 de 2</span>
+          </div>
+
+          <!-- Selector de direcciones guardadas -->
+          @if (savedAddresses().length > 0) {
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+                Direcciones Guardadas
+              </label>
+              <select
+                (change)="onAddressSelectChange($event)"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all cursor-pointer"
+              >
+                @for (addr of savedAddresses(); track addr.id) {
+                  <option [value]="addr.id" [selected]="addr.id === selectedAddressId()">
+                    {{ addr.label ? addr.label + ' — ' : '' }}{{ addr.streetAddress }}
+                  </option>
+                }
+              </select>
+            </div>
+          }
+
+          <!-- Dirección detallada -->
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+              Dirección de Entrega <span class="text-[#C30364]">*</span>
+            </label>
+            <input
+              type="text"
+              formControlName="address"
+              (blur)="requestSummaryCalculation()"
+              placeholder="Ej: Av. Petit Thouars 1234, Dpto 402"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all"
+            />
+          </div>
+
+          <!-- Referencia -->
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+              Referencia / Indicaciones de llegada
+            </label>
+            <input
+              type="text"
+              formControlName="reference"
+              placeholder="Ej: Frente al parque, portón de rejas negras"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all"
+            />
+          </div>
+
+          <!-- Instrucciones de entrega -->
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+              Instrucciones para el repartidor (Opcional)
+            </label>
+            <textarea
+              formControlName="deliveryInstructions"
+              rows="2"
+              placeholder="Ej: Dejar en recepción por favor o tocar timbre 402"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- 2. DATOS DEL CLIENTE -->
+        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-4">
+          <div class="flex items-center gap-2 border-b border-gray-50 pb-3">
+            <span class="w-7 h-7 rounded-lg bg-pink-50 text-[#C30364] flex items-center justify-center text-sm font-bold">
+              👤
+            </span>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+              2. Datos del Cliente
+            </h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+                Nombre Completo <span class="text-[#C30364]">*</span>
+              </label>
+              <input
+                type="text"
+                formControlName="clientName"
+                placeholder="Ej: Emilio Vargas"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all"
+              />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+                Teléfono / WhatsApp <span class="text-[#C30364]">*</span>
+              </label>
+              <input
+                type="tel"
+                formControlName="clientPhoneNumber"
+                placeholder="Ej: +51981236544"
+                class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold text-gray-500 mb-1.5 uppercase tracking-wide">
+              Correo Electrónico (Para envío de comprobante)
+            </label>
+            <input
+              type="email"
+              formControlName="customerEmail"
+              placeholder="cliente@ejemplo.com"
+              class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-[#1A0A2E] font-medium focus:outline-none focus:border-[#C30364] transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- 3. MÉTODO DE PAGO -->
+        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-4">
+          <div class="flex items-center justify-between border-b border-gray-50 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-pink-50 text-[#C30364] flex items-center justify-center text-sm font-bold">
+                💳
+              </span>
+              <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+                3. Método de Pago
+              </h2>
+            </div>
+            <span class="text-[11px] font-semibold text-gray-400">Paso 2 de 2</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+            <!-- Opción 1: Pago Anticipado (MANUAL_TRANSFER) -->
+            <button
+              type="button"
+              (click)="selectPaymentMethod('MANUAL_TRANSFER')"
+              [disabled]="orderSummary()?.bankTransferEnabled === false"
+              [class.border-[#C30364]]="selectedPaymentMethod() === 'MANUAL_TRANSFER'"
+              [class.bg-pink-50/40]="selectedPaymentMethod() === 'MANUAL_TRANSFER'"
+              [class.opacity-50]="orderSummary()?.bankTransferEnabled === false"
+              [class.cursor-not-allowed]="orderSummary()?.bankTransferEnabled === false"
+              class="p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-[#C30364]/70 relative flex flex-col justify-between cursor-pointer"
+            >
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xl">📲</span>
+                  @if (selectedPaymentMethod() === 'MANUAL_TRANSFER') {
+                    <span class="w-5 h-5 rounded-full bg-[#C30364] text-white flex items-center justify-center text-[10px] font-bold">
+                      ✓
+                    </span>
+                  }
+                </div>
+                <h3 class="text-xs font-extrabold text-[#1A0A2E]">Pago Anticipado</h3>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">
+                  Yape, Plin o Transferencia bancaria directa antes del despacho.
+                </p>
+              </div>
+              <span class="inline-block mt-3 text-[9px] font-bold text-[#C30364] bg-pink-100/60 px-2 py-0.5 rounded-full w-fit">
+                Más rápido
+              </span>
+            </button>
+
+            <!-- Opción 2: Pago Contra-entrega (CASH_ON_DELIVERY) -->
+            <button
+              type="button"
+              (click)="selectPaymentMethod('CASH_ON_DELIVERY')"
+              [disabled]="orderSummary()?.cashOnDeliveryEnabled === false"
+              [class.border-[#C30364]]="selectedPaymentMethod() === 'CASH_ON_DELIVERY'"
+              [class.bg-pink-50/40]="selectedPaymentMethod() === 'CASH_ON_DELIVERY'"
+              [class.opacity-50]="orderSummary()?.cashOnDeliveryEnabled === false"
+              [class.cursor-not-allowed]="orderSummary()?.cashOnDeliveryEnabled === false"
+              class="p-4 rounded-2xl border-2 border-gray-200 text-left transition-all hover:border-[#C30364]/70 relative flex flex-col justify-between cursor-pointer"
+            >
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xl">💵</span>
+                  @if (selectedPaymentMethod() === 'CASH_ON_DELIVERY') {
+                    <span class="w-5 h-5 rounded-full bg-[#C30364] text-white flex items-center justify-center text-[10px] font-bold">
+                      ✓
+                    </span>
+                  }
+                </div>
+                <h3 class="text-xs font-extrabold text-[#1A0A2E]">Pago Contra-entrega</h3>
+                <p class="text-[10px] text-gray-500 mt-0.5 leading-snug">
+                  Paga en efectivo o con Yape al recibir tu pedido en tu puerta.
+                </p>
+              </div>
+              @if (orderSummary()?.cashOnDeliveryEnabled === false) {
+                <span class="inline-block mt-3 text-[9px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
+                  No disponible en tu zona
+                </span>
+              } @else {
+                <span class="inline-block mt-3 text-[9px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full w-fit">
+                  Al recibir
+                </span>
+              }
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ============================================ -->
+      <!-- LADO DERECHO: DESGLOSE DE COSTOS (5 COLS)    -->
+      <!-- ============================================ -->
+      <div class="lg:col-span-5 space-y-4">
+
+        <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm sticky top-20 space-y-4">
+          <div class="border-b border-gray-50 pb-3 flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+              Resumen de la Orden
+            </h2>
+            @if (isLoadingSummary()) {
+              <span class="text-[10px] text-[#C30364] font-semibold animate-pulse">
+                Calculando costos...
+              </span>
+            }
+          </div>
+
+          <!-- Badge de Vehículo Asignado y Peso -->
+          @if (orderSummary(); as s) {
+            <div class="bg-gray-50/80 rounded-2xl p-3 border border-gray-100 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-[#1A0A2E] flex items-center gap-1.5">
+                  @if (s.assignedVehicleType === 'BICYCLE') {
+                    <span class="text-base">🚲</span>
+                    <span class="text-green-700 font-extrabold">Envío ecológico en bicicleta</span>
+                  } @else if (s.assignedVehicleType === 'MOTOTAXI') {
+                    <span class="text-base">🛺</span>
+                    <span class="text-amber-700 font-extrabold">Envío de carga en mototaxi</span>
+                  } @else {
+                    <span class="text-base">🛵</span>
+                    <span class="text-gray-700 font-extrabold">Envío estándar en moto</span>
+                  }
+                </span>
+
+                <span class="text-[10px] font-bold bg-white px-2 py-0.5 rounded-full border border-gray-200 text-gray-600">
+                  {{ ((s.totalWeightGrams || 0) / 1000) | number: '1.2-2' }} kg
+                </span>
+              </div>
+
+              @if (s.assignedVehicleType === 'BICYCLE') {
+                <p class="text-[10px] text-green-600 font-medium">
+                  🌱 Pedido liviano (≤ 3 kg). ¡Tarifa ecológica preferencial aplicada!
+                </p>
+              } @else if (s.assignedVehicleType === 'MOTOTAXI') {
+                <p class="text-[10px] text-amber-600 font-medium">
+                  📦 Pedido con peso mayor a 8 kg. Se asigna vehículo de carga para mayor seguridad.
+                </p>
+              }
+            </div>
+
+            <!-- Desglose por Puestos -->
+            @if (s.storeBreakdowns && s.storeBreakdowns.length > 0) {
+              <div class="space-y-1.5 pt-1">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">
+                  Puestos de Mercado ({{ s.distinctStoresCount }})
+                </span>
+                <div class="divide-y divide-gray-50 border border-gray-100 rounded-xl overflow-hidden bg-gray-50/40">
+                  @for (st of s.storeBreakdowns; track st.storeId) {
+                    <div class="px-3 py-2 flex items-center justify-between text-xs">
+                      <span class="font-semibold text-gray-700 truncate pr-2">
+                        🏪 {{ st.storeName }} <span class="text-[10px] text-gray-400">({{ st.itemsCount }} prod.)</span>
+                      </span>
+                      <span class="font-bold text-[#1A0A2E] whitespace-nowrap">
+                        S/ {{ st.storeSubtotal | number: '1.2-2' }}
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Desglose Financiero -->
+            <div class="space-y-2 pt-2 text-xs border-t border-gray-100">
+              <div class="flex justify-between text-gray-600">
+                <span>Subtotal de Productos</span>
+                <span class="font-bold text-[#1A0A2E]">S/ {{ s.productsSubtotal | number: '1.2-2' }}</span>
+              </div>
+
+              <div class="flex justify-between text-gray-600">
+                <span>Costo de Envío Logístico</span>
+                <span class="font-bold text-[#1A0A2E]">S/ {{ s.deliveryFee | number: '1.2-2' }}</span>
+              </div>
+
+              @if (s.consolidationFee > 0) {
+                <div class="flex justify-between text-gray-600">
+                  <span class="flex items-center gap-1">
+                    <span>Recolección Multitienda</span>
+                    <span class="text-[10px] text-gray-400" title="Consolidación de varios puestos">(+)</span>
+                  </span>
+                  <span class="font-bold text-[#1A0A2E]">S/ {{ s.consolidationFee | number: '1.2-2' }}</span>
+                </div>
+              }
+
+              <div class="flex justify-between text-gray-600">
+                <span>Costo de Servicio Zisify</span>
+                <span class="font-bold text-[#1A0A2E]">S/ {{ s.serviceFee | number: '1.2-2' }}</span>
+              </div>
+
+              <!-- Descuentos aplicados -->
+              @if (s.discountAmount > 0) {
+                <div class="flex justify-between text-green-600 font-bold bg-green-50/70 p-2 rounded-xl">
+                  <span>
+                    @if (s.appliedDiscounts && s.appliedDiscounts.length > 0) {
+                      {{ s.appliedDiscounts[0].displayName }}
+                    } @else {
+                      Descuento Aplicado
+                    }
+                  </span>
+                  <span>- S/ {{ s.discountAmount | number: '1.2-2' }}</span>
+                </div>
+              }
+
+              <div class="border-t border-gray-100 pt-3 flex justify-between items-baseline">
+                <span class="text-sm font-bold text-[#1A0A2E]">Total a Pagar</span>
+                <span class="text-xl font-black text-[#C30364]">
+                  S/ {{ s.totalAmount | number: '1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+          } @else {
+            <!-- Fallback mientras carga el resumen inicial -->
+            <div class="py-8 text-center text-xs text-gray-400">
+              <span class="animate-spin inline-block text-base mb-1">⏳</span>
+              <p>Calculando desglose logístico con el servidor...</p>
+            </div>
+          }
+
+          <!-- Botón CTA Realizar Pedido -->
+          <button
+            type="submit"
+            [disabled]="checkoutForm.invalid || isSubmitting()"
+            [class.opacity-50]="checkoutForm.invalid || isSubmitting()"
+            class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#D81B75] to-[#C30364] text-white font-extrabold text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            @if (isSubmitting()) {
+              <span class="animate-spin">🔄</span>
+              <span>Procesando tu pedido...</span>
+            } @else {
+              <span>Confirmar y Realizar Pedido</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            }
+          </button>
+
+          <p class="text-[10px] text-center text-gray-400 font-medium">
+            🔒 Tu pedido será revisado por el equipo de Zisify antes de enviarlo a los puestos de mercado.
+          </p>
+        </div>
+
+      </div>
+
+    </form>
+  </main>
+
+</div>

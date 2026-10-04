@@ -1,0 +1,14 @@
+// ============================================
+// MARKET CHECKOUT SCSS (ZISIFY DESIGN SYSTEM)
+// ============================================
+
+:host {
+  display: block;
+}
+
+input, textarea, select {
+  transition: all 0.2s ease;
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(195, 3, 100, 0.1);
+  }
+}

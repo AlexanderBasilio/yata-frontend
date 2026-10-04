@@ -54,7 +54,6 @@ export class MarketCartComponent implements OnInit {
   }
 
   proceedToCheckout() {
-    // Navigate to food checkout or order confirmation
-    this.router.navigate(['/food/checkout']);
+    this.router.navigate(['/market/checkout']);
   }
 }

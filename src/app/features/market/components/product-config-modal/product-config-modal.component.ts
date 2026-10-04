@@ -25,6 +25,7 @@ export interface SaleUnitOption {
   unitLabel: string;
   icon: string;
   price: number;
+  referenceLabel?: string;
 }
 
 @Component({
@@ -148,12 +149,40 @@ export class ProductConfigModalComponent implements OnInit {
     }
 
     if (unit !== null && unit !== undefined) {
+      let refText: string | undefined = undefined;
+      const offer = this.unitOffer();
+      const prod = this.currentProduct() || this.product;
+      const pricePerKg =
+        offer?.zisifyPricePerKg ??
+        this.kgPrice() ??
+        (prod.primaryPriceUnit === 'KG' || prod.priceUnit === 'KG'
+          ? (prod.pricePerKg ?? prod.primaryPrice)
+          : undefined);
+      const avgGrams =
+        offer?.estimatedAverageWeightGrams ??
+        this.selectedVariant()?.weightAverageGrams ??
+        this.selectedVariant()?.weightGrams ??
+        prod.weightGrams;
+
+      if (pricePerKg && avgGrams) {
+        const weightKg = avgGrams / 1000;
+        const weightText = weightKg >= 1 ? `~${weightKg.toFixed(1)} kg` : `~${avgGrams}g`;
+        if (weightKg >= 1) {
+          refText = `Tarifa: S/ ${pricePerKg.toFixed(2)} / kg (${weightText} aprox.)`;
+        } else {
+          refText = `Ref: ${weightText} (S/ ${pricePerKg.toFixed(2)} / kg)`;
+        }
+      } else if (pricePerKg) {
+        refText = `Tarifa: S/ ${pricePerKg.toFixed(2)} / kg`;
+      }
+
       options.push({
         unit: 'UNIT',
         title: 'Por Unidad (UNID)',
         unitLabel: '/ unid',
         icon: '🍊',
-        price: unit
+        price: unit,
+        referenceLabel: refText
       });
     }
 

@@ -107,9 +107,12 @@ export interface MarketProductOptionGroupDto {
 export interface MarketStoreProductPriceOfferDto {
   saleUnit?: MeasurementType;
   measurementType?: MeasurementType;
+  priceUnit?: MeasurementType;
   zisifyPrice?: number;
   price?: number;
+  zisifyPricePerKg?: number;
   estimatedPiecePrice?: number;
+  estimatedAverageWeightGrams?: number;
   isDefault?: boolean;
 }
 
@@ -249,4 +252,87 @@ export interface MarketProximityConflictError {
   status: number;
   errorCode: 'STORE_OUT_OF_PROXIMITY_RANGE' | string;
   message: string;
+}
+
+// ============================================
+// CHECKOUT & ORDER MODELS
+// ============================================
+
+export interface MarketDeliveryLocationDto {
+  address: string;
+  reference?: string;
+  latitude: number;
+  longitude: number;
+  city?: string;
+  district?: string;
+}
+
+export interface MarketAppliedDiscountDto {
+  code: string;
+  displayName: string;
+  amount: number;
+}
+
+export interface MarketStoreOrderBreakdownDto {
+  storeId: string;
+  storeName: string;
+  storeSubtotal: number;
+  itemsCount: number;
+}
+
+export interface MarketOrderSummaryRequest {
+  deliveryLocation?: MarketDeliveryLocationDto;
+  location?: MarketDeliveryLocationDto;
+}
+
+export interface MarketOrderSummaryResponse {
+  totalItemsCount: number;
+  distinctStoresCount: number;
+  totalWeightGrams: number;
+  totalVolumeCm3?: number;
+  productsSubtotal: number;
+  deliveryFee: number;
+  consolidationFee: number;
+  serviceFee: number;
+  discountAmount: number;
+  totalAmount: number;
+  assignedVehicleType?: 'BICYCLE' | 'MOTO' | 'MOTOTAXI' | string;
+  cashOnDeliveryEnabled?: boolean;
+  bankTransferEnabled?: boolean;
+  appliedDiscounts?: MarketAppliedDiscountDto[];
+  storeBreakdowns?: MarketStoreOrderBreakdownDto[];
+}
+
+export type MarketPaymentMethod = 'MANUAL_TRANSFER' | 'CASH_ON_DELIVERY';
+export type MarketCheckoutPaymentMethod = MarketPaymentMethod;
+
+export interface MarketCheckoutRequest {
+  clientName: string;
+  clientPhoneNumber: string;
+  customerEmail?: string;
+  deliveryInstructions?: string;
+  paymentMethod: MarketPaymentMethod;
+  deliveryLocation?: MarketDeliveryLocationDto;
+  location?: MarketDeliveryLocationDto;
+}
+
+export interface MarketSuborderSummaryDto {
+  suborderNumber: string;
+  storeName: string;
+  status: string;
+  subtotal?: number;
+  itemsCount?: number;
+}
+
+export interface MarketOrderResponse {
+  orderCode: string;
+  status: string;
+  paymentMethod: MarketPaymentMethod;
+  totalAmount: number;
+  clientName?: string;
+  clientPhoneNumber?: string;
+  deliveryInstructions?: string;
+  deliveryLocation?: MarketDeliveryLocationDto;
+  suborders?: MarketSuborderSummaryDto[];
+  createdAt?: string;
 }

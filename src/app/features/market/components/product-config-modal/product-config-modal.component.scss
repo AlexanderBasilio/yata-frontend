@@ -311,6 +311,14 @@
       color: #C30364;
       margin-top: 0.125rem;
     }
+
+    .unit-card-reference {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      color: #6B7280;
+      margin-top: 0.25rem;
+      line-height: 1.25;
+    }
   }
 
   &:hover {
@@ -322,6 +330,10 @@
     border-color: #C30364;
     background: #FFF0F7;
     box-shadow: 0 4px 14px rgba(195, 3, 100, 0.18);
+
+    .unit-card-reference {
+      color: #9D174D;
+    }
 
     .unit-icon-wrapper {
       background: rgba(195, 3, 100, 0.12);
