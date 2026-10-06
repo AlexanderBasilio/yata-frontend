@@ -89,24 +89,20 @@ h6 {
     font-family: 'Syne', var(--font-syne), sans-serif !important;
 }
 
-/* Badge Más vendido: borde blanco, fondo transparente */
+/* Badge Más vendido: borde blanco fino, fondo transparente */
 .badge-outlined-white {
     background-color: transparent !important;
-    border: 1.5px solid #ffffff !important;
+    border: 1px solid #ffffff !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
 }
 
-/* Texto blanco con borde/contorno negro */
-.badge-text-stroked {
+/* Texto blanco puro (sin borde negro ni sombras) */
+.badge-text-stroked,
+.badge-text-white {
     color: #ffffff !important;
-    -webkit-text-stroke: 0.6px #000000;
-    text-shadow:
-        -1px -1px 0 #000000,
-         1px -1px 0 #000000,
-        -1px  1px 0 #000000,
-         1px  1px 0 #000000,
-         0px  1px 2px rgba(0, 0, 0, 0.9);
+    -webkit-text-stroke: 0 !important;
+    text-shadow: none !important;
 }
 
 /* Zisify Gradients & Patterns */

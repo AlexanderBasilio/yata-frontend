@@ -256,8 +256,8 @@
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
                 @if (isRestaurantOpen(rest)) {
-                  <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2.5 py-0.5 select-none z-10">
-                    <span class="badge-text-stroked text-[9px] font-bold font-['Inter'] tracking-wide">
+                  <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2 py-0.5 select-none z-10 flex items-center justify-center">
+                    <span class="badge-text-white text-[8.5px] font-semibold font-['Inter'] tracking-normal leading-none">
                       {{ getRestaurantBadge(rest, 'nearby') }}
                     </span>
                   </span>
@@ -342,8 +342,8 @@
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
                 @if (isRestaurantOpen(rest)) {
-                  <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2.5 py-0.5 select-none z-10">
-                    <span class="badge-text-stroked text-[9px] font-bold font-['Inter'] tracking-wide">
+                  <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2 py-0.5 select-none z-10 flex items-center justify-center">
+                    <span class="badge-text-white text-[8.5px] font-semibold font-['Inter'] tracking-normal leading-none">
                       {{ getRestaurantBadge(rest, 'newOptions') }}
                     </span>
                   </span>
@@ -419,8 +419,8 @@
                   [alt]="dish.name" 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
-                <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2.5 py-0.5 select-none z-10">
-                  <span class="badge-text-stroked text-[9px] font-bold font-['Inter'] tracking-wide">
+                <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2 py-0.5 select-none z-10 flex items-center justify-center">
+                  <span class="badge-text-white text-[8.5px] font-semibold font-['Inter'] tracking-normal leading-none">
                     {{ getDishBadge(dish, 'trending') }}
                   </span>
                 </span>
@@ -506,8 +506,8 @@
                   [alt]="dish.name" 
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
                 
-                <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2.5 py-0.5 select-none z-10">
-                  <span class="badge-text-stroked text-[9px] font-bold font-['Inter'] tracking-wide">
+                <span class="absolute top-2 left-2 badge-outlined-white rounded-full px-2 py-0.5 select-none z-10 flex items-center justify-center">
+                  <span class="badge-text-white text-[8.5px] font-semibold font-['Inter'] tracking-normal leading-none">
                     {{ getDishBadge(dish, 'reorder') }}
                   </span>
                 </span>
