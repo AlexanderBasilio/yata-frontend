@@ -72,14 +72,41 @@ h6 {
     font-weight: 800 !important;
 }
 
-/* Redirigir clases heredadas a Inter Extra Bold y Syne */
-[class*="Inknut_Antiqua"] {
+/* Preservar Inknut Antiqua para el logo oficial de ZISIFY */
+.font-zisify-brand,
+[class*="font-zisify-brand"],
+.zisify-brand-logo {
+    font-family: 'Inknut Antiqua', serif !important;
+}
+
+/* Redirigir clases heredadas a Inter Extra Bold y Syne, excepto logo ZISIFY */
+[class*="Inknut_Antiqua"]:not(.font-zisify-brand) {
     font-family: 'Inter', var(--font-inter), sans-serif !important;
     font-weight: 800 !important;
 }
 
 [class*="Epilogue"] {
     font-family: 'Syne', var(--font-syne), sans-serif !important;
+}
+
+/* Badge Más vendido: borde blanco, fondo transparente */
+.badge-outlined-white {
+    background-color: transparent !important;
+    border: 1.5px solid #ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Texto blanco con borde/contorno negro */
+.badge-text-stroked {
+    color: #ffffff !important;
+    -webkit-text-stroke: 0.6px #000000;
+    text-shadow:
+        -1px -1px 0 #000000,
+         1px -1px 0 #000000,
+        -1px  1px 0 #000000,
+         1px  1px 0 #000000,
+         0px  1px 2px rgba(0, 0, 0, 0.9);
 }
 
 /* Zisify Gradients & Patterns */

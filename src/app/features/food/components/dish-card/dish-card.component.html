@@ -15,9 +15,11 @@
       </div>
     }
 
-    <!-- Pill Más vendido en esquina superior izquierda -->
-    <span class="absolute top-2.5 left-2.5 bg-white/45 backdrop-blur-md border border-white/60 text-white text-[10px] sm:text-[11px] font-bold px-2.5 py-0.5 rounded-full shadow-sm drop-shadow-sm font-['Syne'] select-none">
-      Más vendido
+    <!-- Pill Más vendido: fondo transparente, borde blanco, texto blanco con borde negro -->
+    <span class="absolute top-2.5 left-2.5 badge-outlined-white rounded-full px-2.5 py-0.5 select-none z-10">
+      <span class="badge-text-stroked text-[10px] sm:text-[11px] font-bold font-['Inter'] tracking-wide">
+        Más vendido
+      </span>
     </span>
 
     <!-- Overlay No disponible -->
@@ -46,26 +48,20 @@
 
     <!-- Fila Inferior: Precio a la izquierda y Botón Agregar a la derecha -->
     <div class="flex items-center justify-between gap-1.5 mt-auto pt-1">
-      <!-- Precios -->
+      <!-- Precios en Inter -->
       <div class="flex flex-col min-w-0">
-        <div class="flex items-center gap-1.5">
-          <span class="text-sm sm:text-base font-extrabold text-black font-['Inter'] tracking-tight whitespace-nowrap">
+        <div>
+          <span class="text-sm sm:text-base font-bold text-black font-['Inter'] tracking-tight whitespace-nowrap">
             S/ {{ dish().price.toFixed(2) }}
           </span>
-
-          @if (dish().listPrice && dish().listPrice! > dish().price) {
-            <span class="text-[10px] sm:text-[11px] font-extrabold text-black font-['Inter'] tracking-tight whitespace-nowrap">
-              {{ (((dish().listPrice! - dish().price) / dish().listPrice!) * 100) | number:'1.0-0' }}% OFF
-            </span>
-          }
         </div>
 
         @if (dish().listPrice && dish().listPrice! > dish().price) {
-          <span class="text-[11px] text-gray-400 line-through font-medium font-['Syne'] leading-tight">
+          <span class="text-[11px] sm:text-xs text-gray-400 line-through font-normal font-['Inter'] leading-tight">
             S/ {{ dish().listPrice! | number:'1.2-2' }}
           </span>
         } @else {
-          <span class="text-[11px] opacity-0 select-none leading-tight font-['Syne']">
+          <span class="text-[11px] sm:text-xs opacity-0 select-none leading-tight font-['Inter']">
             S/ 0.00
           </span>
         }
