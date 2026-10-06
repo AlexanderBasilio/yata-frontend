@@ -38,11 +38,11 @@
 
   <!-- Info del restaurante -->
   <div class="restaurant-info bg-white px-4 py-4 border-b border-gray-200">
-    <h1 class="text-2xl font-bold text-gray-800 mb-1">
+    <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-1 font-['Inter'] tracking-tight">
       {{ restaurant()!.name }}
     </h1>
-    <p class="text-sm text-gray-500 flex items-center gap-1 mb-3">
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+    <p class="text-sm text-gray-500 flex items-center gap-1 mb-3 font-['Syne']">
+      <svg class="w-4 h-4 text-[#C30364] shrink-0" fill="currentColor" viewBox="0 0 20 20">
         <path fill-rule="evenodd"
           d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
           clip-rule="evenodd" />
@@ -52,13 +52,13 @@
 
     <!-- Rating e info adicional + Botón Carta Rápida -->
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <div class="flex items-center gap-4 text-sm text-gray-600">
+      <div class="flex items-center gap-4 text-sm text-gray-600 font-['Syne']">
         <div class="flex items-center gap-1">
           <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 20 20">
             <path
               d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
           </svg>
-          <span class="font-semibold">{{ (restaurant()?.rating || 0).toFixed(1) }}</span>
+          <span class="font-bold text-gray-900">{{ (restaurant()?.rating || 0).toFixed(1) }}</span>
           <span class="text-gray-500">({{ restaurant()?.reviewCount || 0 }})</span>
         </div>
         <span>•</span>
@@ -69,10 +69,10 @@
 
       <!-- Botón Resumen del Catálogo / Carta Rápida -->
       <button data-analytics="restaurant_quick_menu_header" (click)="openQuickMenu()"
-              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] border border-[#C30364]/40 shadow-sm transition-all cursor-pointer active:scale-95 group">
+              class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] border border-[#C30364]/40 shadow-sm transition-all cursor-pointer active:scale-95 group font-['Inter']">
         <span class="text-sm">📄</span>
         <span>Ver Carta Rápida</span>
-        <span class="px-1.5 py-0.5 rounded-full bg-[#C30364] text-[10px] text-white font-semibold">Resumen</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-[#C30364] text-[10px] text-white font-semibold font-['Syne']">Resumen</span>
       </button>
     </div>
   </div>
@@ -83,7 +83,7 @@
     <div class="relative shrink-0">
       <!-- Botón Desplegar Categorías -->
       <button data-analytics="restaurant_categories" (click)="openCategoriesModal()"
-              class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] shadow-sm transition-all cursor-pointer active:scale-95">
+              class="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#1A0A2E] text-white text-xs font-bold hover:bg-[#2A1642] shadow-sm transition-all cursor-pointer active:scale-95 font-['Inter']">
         <svg class="w-3.5 h-3.5 text-[#E8368A]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 6h16M4 12h16M4 18h7"/>
         </svg>
@@ -99,10 +99,10 @@
 
           <span class="text-base shrink-0 mt-0.5">📋</span>
           <div class="flex-1 min-w-0 pr-1">
-            <p class="text-[11px] font-bold font-['Epilogue'] text-white leading-tight">
+            <p class="text-[11px] font-bold font-['Inter'] text-white leading-tight">
               ¡Pulsa aquí para ver todas las categorías!
             </p>
-            <p class="text-[10px] text-[#FF6DB5] mt-0.5 font-epilogue leading-snug">
+            <p class="text-[10px] text-[#FF6DB5] mt-0.5 font-['Syne'] leading-snug">
               Navega rápidamente como en una carta presencial.
             </p>
           </div>
@@ -119,20 +119,11 @@
 
     <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
 
-    <!-- Botón Carta Rápida en barra sticky -->
-    <button data-analytics="restaurant_quick_menu_bar" (click)="openQuickMenu()"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white hover:bg-pink-50 border border-[#C30364]/40 text-[#C30364] text-xs font-bold shadow-sm transition-all cursor-pointer active:scale-95 shrink-0">
-      <span>📄</span>
-      <span class="whitespace-nowrap">Carta Rápida</span>
-    </button>
-
-    <div class="h-5 w-[1px] bg-gray-200 shrink-0"></div>
-
     <!-- Chips de categorías con scroll horizontal -->
     <div class="flex gap-2 overflow-x-auto scrollbar-hide py-0.5 flex-1">
       @for (category of categories(); track category) {
       <button data-analytics="restaurant_category_select" (click)="filterByCategory(category)"
-        class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer"
+        class="category-chip whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-all cursor-pointer font-['Syne']"
         [class.active]="selectedCategory() === category">
         {{ category }}
       </button>
@@ -149,19 +140,22 @@
     </div>
     } @else if (filteredDishes().length > 0) {
 
-    <!-- Agrupar por categoría -->
+    <!-- Agrupar por categoría: 1 sola fila con scroll horizontal -->
     @for (category of categories(); track category) {
     @if (!selectedCategory() || selectedCategory() === category) {
-    <div [id]="'category-' + category" class="category-section mb-6">
+    <div [id]="'category-' + category" class="category-section mb-8">
 
-      <h2 class="text-lg font-bold text-gray-800 mb-3">
+      <h2 class="text-lg sm:text-xl font-extrabold text-gray-900 mb-3 font-['Inter'] tracking-tight">
         {{ category }}
       </h2>
 
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+      <!-- Fila horizontal única deslizable a la derecha -->
+      <div class="flex gap-3.5 sm:gap-4 overflow-x-auto scrollbar-hide pb-3 pt-1 -mx-4 px-4 scroll-smooth snap-x snap-mandatory">
         @for (dish of filteredDishes(); track dish.id) {
         @if (dish.category === category) {
-        <app-dish-card [dish]="dish" (click)="onDishClick(dish)" />
+        <div class="w-[210px] sm:w-[240px] md:w-[250px] shrink-0 snap-start">
+          <app-dish-card [dish]="dish" (click)="onDishClick(dish)" />
+        </div>
         }
         }
       </div>
@@ -171,12 +165,11 @@
 
     } @else {
     <div class="text-center py-20">
-      <p class="text-gray-500">No hay platillos disponibles</p>
+      <p class="text-gray-500 font-['Syne']">No hay platillos disponibles</p>
     </div>
     }
 
   </div>
-
   }
 
   <!-- Modal de Despliegue de Categorías (2 Columnas) -->

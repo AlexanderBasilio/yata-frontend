@@ -29,28 +29,57 @@
     --color-zisify-error: #DC2626;
     --color-zisify-info: #2563EB;
 
-    --font-inknut: 'Inknut Antiqua', serif;
-    --font-epilogue: 'Epilogue', sans-serif;
+    --font-inter: 'Inter', sans-serif;
+    --font-syne: 'Syne', sans-serif;
+    --font-inknut: 'Inter', sans-serif;
+    --font-epilogue: 'Syne', sans-serif;
 }
 
 body {
-    font-family: var(--font-epilogue);
+    font-family: 'Syne', var(--font-syne), sans-serif;
     color: var(--color-zisify-text-light-primary);
     background-color: var(--color-zisify-white);
 }
 
-.font-epilogue {
-    font-family: 'Epilogue', var(--font-epilogue), system-ui, -apple-system, sans-serif !important;
-}
-
-.font-inknut {
-    font-family: 'Inknut Antiqua', var(--font-inknut), serif !important;
+p {
+    font-family: 'Syne', var(--font-syne), sans-serif;
 }
 
 h1,
 h2,
-h3 {
-    font-family: var(--font-inknut);
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Inter', var(--font-inter), sans-serif !important;
+    font-weight: 800 !important;
+}
+
+.font-inter {
+    font-family: 'Inter', var(--font-inter), sans-serif !important;
+}
+
+.font-syne {
+    font-family: 'Syne', var(--font-syne), sans-serif !important;
+}
+
+.font-epilogue {
+    font-family: 'Syne', var(--font-syne), sans-serif !important;
+}
+
+.font-inknut {
+    font-family: 'Inter', var(--font-inter), sans-serif !important;
+    font-weight: 800 !important;
+}
+
+/* Redirigir clases heredadas a Inter Extra Bold y Syne */
+[class*="Inknut_Antiqua"] {
+    font-family: 'Inter', var(--font-inter), sans-serif !important;
+    font-weight: 800 !important;
+}
+
+[class*="Epilogue"] {
+    font-family: 'Syne', var(--font-syne), sans-serif !important;
 }
 
 /* Zisify Gradients & Patterns */

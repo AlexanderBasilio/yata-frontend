@@ -1,8 +1,9 @@
 .dish-card {
-  min-height: 100px;
+  min-height: 270px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.985);
   }
 
   // Si el platillo no está disponible

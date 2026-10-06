@@ -28,19 +28,19 @@
   <!-- Información del restaurante -->
   <div class="card-info p-4 pt-8">
 
-    <!-- Nombre -->
-    <h3 class="text-lg font-bold text-gray-800 mb-1">
+    <!-- Nombre (Inter Extra Bold) -->
+    <h3 class="text-lg font-extrabold text-gray-900 mb-1 font-['Inter'] tracking-tight">
       {{ restaurant().name }}
     </h3>
 
-    <!-- Slogan -->
-    <p class="text-sm text-gray-600 mb-2">
+    <!-- Slogan (Syne) -->
+    <p class="text-sm text-gray-600 mb-2 font-['Syne']">
       {{ restaurant().slogan }}
     </p>
 
     <!-- Rating y reviews - ✅ SAFE CHECK -->
     @if (restaurant().rating !== undefined && restaurant().reviewCount !== undefined) {
-      <div class="flex items-center gap-2 mb-3">
+      <div class="flex items-center gap-2 mb-3 font-['Syne']">
         <div class="flex items-center gap-1">
           <svg class="w-4 h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
             <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
@@ -56,7 +56,7 @@
     }
 
     <!-- Info adicional: Tiempo y pedido mínimo - ✅ SAFE CHECK -->
-    <div class="flex items-center gap-4 text-xs text-gray-600">
+    <div class="flex items-center gap-4 text-xs text-gray-600 font-['Syne']">
       <!-- Tiempo de preparación -->
       @if (restaurant().preparationTime !== undefined) {
         <div class="flex items-center gap-1">

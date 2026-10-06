@@ -19,4 +19,11 @@ export class DishCardComponent {
     const d = this.dish();
     return d.ingredients || d.description || '';
   });
+
+  handleImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img) {
+      img.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80';
+    }
+  }
 }
