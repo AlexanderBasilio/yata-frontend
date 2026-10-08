@@ -30,6 +30,7 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
   @ViewChild('googleBtn', { static: false }) googleBtnRef!: ElementRef<HTMLDivElement>;
 
   activeTab = signal<'login' | 'register'>('login');
+  showEmailForm = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   errorMessage = signal<string>('');
   showPassword = signal<boolean>(false);
@@ -65,7 +66,12 @@ export class AuthModalComponent implements OnInit, AfterViewInit {
   setTab(tab: 'login' | 'register'): void {
     this.activeTab.set(tab);
     this.errorMessage.set('');
+    this.showEmailForm.set(false);
     setTimeout(() => this.initGoogleAuth(), 100);
+  }
+
+  toggleEmailForm(): void {
+    this.showEmailForm.update(prev => !prev);
   }
 
   private initGoogleAuth(): void {

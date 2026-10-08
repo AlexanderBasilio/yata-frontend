@@ -79,18 +79,33 @@
       </button>
     </div>
 
-    <!-- Divisor "o continúa con tu correo" -->
+    <!-- Botón Desplegable: "o continúa con correo" con flecha indicadora -->
     <div class="relative flex items-center justify-center mb-5 z-10">
-      <div class="border-t border-[#31204F] w-full"></div>
-      <span class="bg-[#1A0A2E] px-3 text-[10px] text-[#9D96A8] font-bold uppercase tracking-wider font-['Epilogue'] whitespace-nowrap">
-        o continúa con correo
-      </span>
-      <div class="border-t border-[#31204F] w-full"></div>
+      <button 
+        type="button" 
+        (click)="toggleEmailForm()"
+        class="w-full flex items-center justify-center group cursor-pointer focus:outline-none select-none py-1"
+        [attr.aria-expanded]="showEmailForm()"
+        aria-label="Continuar con correo electrónico">
+        <div class="border-t border-[#31204F] flex-1 group-hover:border-[#C30364]/40 transition-colors"></div>
+        <span class="bg-[#1A0A2E] px-3.5 py-1.5 rounded-full border border-[#31204F]/80 group-hover:border-[#C30364] group-hover:bg-[#221638] text-[10px] text-[#9D96A8] group-hover:text-[#FAF8FB] font-bold uppercase tracking-wider font-['Epilogue'] whitespace-nowrap flex items-center gap-2 shadow-sm transition-all">
+          <span>o continúa con correo</span>
+          <svg 
+            class="w-3.5 h-3.5 text-[#9D96A8] group-hover:text-[#E8368A] transition-transform duration-300 ease-out"
+            [class.rotate-180]="showEmailForm()"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+        <div class="border-t border-[#31204F] flex-1 group-hover:border-[#C30364]/40 transition-colors"></div>
+      </button>
     </div>
 
     <!-- FORMULARIO: INGRESAR -->
-    @if (activeTab() === 'login') {
-      <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-4 relative z-10">
+    @if (activeTab() === 'login' && showEmailForm()) {
+      <form [formGroup]="loginForm" (ngSubmit)="onLoginSubmit()" class="space-y-4 relative z-10 animate-slide-down">
         <div>
           <label class="block text-[11px] font-bold text-[#9D96A8] uppercase tracking-wider mb-1 font-['Epilogue']">
             Correo Electrónico
@@ -135,8 +150,8 @@
     }
 
     <!-- FORMULARIO: REGISTRARSE -->
-    @if (activeTab() === 'register') {
-      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="space-y-3.5 relative z-10 max-h-[360px] overflow-y-auto pr-1 scrollbar-hide">
+    @if (activeTab() === 'register' && showEmailForm()) {
+      <form [formGroup]="registerForm" (ngSubmit)="onRegisterSubmit()" class="space-y-3.5 relative z-10 max-h-[360px] overflow-y-auto pr-1 scrollbar-hide animate-slide-down">
         <div class="grid grid-cols-2 gap-2.5">
           <div>
             <label class="block text-[10px] font-bold text-[#9D96A8] uppercase tracking-wider mb-1 font-['Epilogue']">
