@@ -225,8 +225,8 @@
                       <span class="absolute right-2 top-1.5 pointer-events-none text-gray-400 text-[10px]">▼</span>
                     </div>
                   } @else {
-                    <span class="inline-block text-[11px] font-semibold text-gray-400 bg-gray-50 px-2.5 py-0.5 rounded-full border border-gray-100">
-                      {{ cProd.primaryPriceUnit === 'KG' ? 'Por Kilo' : '1 unidad' }}
+                    <span class="inline-block text-[11px] font-semibold text-gray-500 bg-gray-50 px-2.5 py-0.5 rounded-full border border-gray-100">
+                      {{ cProd.primaryPriceUnit === 'KG' ? ('Por Kilo (Paso de ' + (cProd.weightStep || 0.5) + ' kg)') : ('1 unidad (Paso de ' + (cProd.unitStep || 1) + ' unidad)') }}
                     </span>
                   }
 
@@ -256,7 +256,7 @@
                         -
                       </button>
                       <span class="text-xs sm:text-sm font-extrabold text-[#1A0A2E] px-2.5 min-w-7 text-center">
-                        {{ quickQuantity() }}
+                        {{ quickQuantity() }} {{ cProd.primaryPriceUnit === 'KG' ? 'kg' : '' }}
                       </span>
                       <button
                         type="button"

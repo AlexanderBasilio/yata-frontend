@@ -656,19 +656,32 @@ export class MarketCatalogComponent implements OnInit {
     } else {
       const nextIdx = Math.max(0, Math.min(items.length - 1, this.activeProductIndex() + direction));
       this.activeProductIndex.set(nextIdx);
-      this.quickQuantity.set(1);
+      const prod = this.currentActiveProduct();
+      const step = prod?.primaryPriceUnit === 'KG' ? (prod.weightStep || 0.5) : (prod?.unitStep || 1);
+      this.quickQuantity.set(step);
     }
   }
+
+  currentProductStep = computed<number>(() => {
+    const prod = this.currentActiveProduct();
+    if (!prod) return 1;
+    return prod.primaryPriceUnit === 'KG' ? (prod.weightStep || 0.5) : (prod.unitStep || 1);
+  });
 
   // ========================================================
   // PRODUCT PURCHASE ACTIONS
   // ========================================================
   incrementQuantity() {
-    this.quickQuantity.update(q => q + 1);
+    const step = this.currentProductStep();
+    this.quickQuantity.update(q => parseFloat((q + step).toFixed(2)));
   }
 
   decrementQuantity() {
-    this.quickQuantity.update(q => (q > 1 ? q - 1 : 1));
+    const step = this.currentProductStep();
+    this.quickQuantity.update(q => {
+      const next = parseFloat((q - step).toFixed(2));
+      return next >= step ? next : step;
+    });
   }
 
   toggleFavorite(productId: string) {
@@ -704,7 +717,9 @@ export class MarketCatalogComponent implements OnInit {
       productId: product.productId,
       variantId: this.selectedVariantId() || undefined,
       selectedMeasurement: product.primaryPriceUnit || 'UNIT',
-      quantity: this.quickQuantity()
+      quantity: this.quickQuantity(),
+      weightStep: product.weightStep || 0.5,
+      unitStep: product.unitStep || 1
     };
 
     this.cartService
@@ -718,7 +733,7 @@ export class MarketCatalogComponent implements OnInit {
       .subscribe({
         next: () => {
           this.showToast(`¡${product.productName} agregado al carrito!`);
-          this.quickQuantity.set(1);
+          this.quickQuantity.set(this.currentProductStep());
         },
         error: err => console.warn('Error en quick add:', err)
       });

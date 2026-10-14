@@ -300,7 +300,7 @@
                               @if (product.allowsDirectQuickAdd) {
                                 <div class="stepper" (click)="$event.stopPropagation()">
                                   <button type="button" class="stepper-btn minus" (click)="decrementQuantity()">−</button>
-                                  <span class="stepper-val">{{ quickQuantity() }}</span>
+                                  <span class="stepper-val">{{ quickQuantity() }} {{ product.primaryPriceUnit === 'KG' ? 'kg' : '' }}</span>
                                   <button type="button" class="stepper-btn plus" (click)="incrementQuantity()">+</button>
                                 </div>
                               }

@@ -77,6 +77,8 @@ export interface MarketProductVariantDto {
   weightMaxGrams?: number;
   weightAverageGrams?: number;
   weightGrams?: number;
+  weightStep?: number;
+  unitStep?: number;
   isDefault?: boolean;
   displayOrder?: number;
   isActive?: boolean;
@@ -92,7 +94,11 @@ export interface MarketProductOptionDto {
   id: string;
   name: string;
   additionalPrice?: number;
+  zisifyPrice?: number;
+  price?: number;
   isDefault?: boolean;
+  isEnabled?: boolean;
+  isAvailable?: boolean;
 }
 
 export interface MarketProductOptionGroupDto {
@@ -101,6 +107,8 @@ export interface MarketProductOptionGroupDto {
   minSelection?: number;
   maxSelection?: number;
   isRequired?: boolean;
+  isEnabled?: boolean;
+  isAvailable?: boolean;
   options: MarketProductOptionDto[];
 }
 
@@ -140,6 +148,10 @@ export interface MarketStoreProductCustomerDto {
   categoryId?: string;
   categoryName?: string;
 
+  // Incrementos dinámicos de selección (por defecto: weightStep=0.5, unitStep=1.0):
+  weightStep?: number;
+  unitStep?: number;
+
   // Render fields:
   // true -> Counter [- 1 +] and "Agregar" direct button
   // false -> "Agregar" opens configuration modal (variants, cuts, weight)
@@ -171,6 +183,8 @@ export interface AddMarketCartItemRequest {
   variantId?: string;
   selectedMeasurement?: MeasurementType;
   quantity: number;
+  weightStep?: number;
+  unitStep?: number;
   selectedOptionsJson?: string;
   optionsAdditionalPrice?: number;
   itemNotes?: string;
@@ -198,6 +212,8 @@ export interface MarketCartItemDto {
   selectedMeasurement?: MeasurementType;
   priceUnit?: MeasurementType;
   weightGrams?: number;
+  weightStep?: number;
+  unitStep?: number;
   volumeCm3?: number;
   quantity: number;
   unitPrice: number;

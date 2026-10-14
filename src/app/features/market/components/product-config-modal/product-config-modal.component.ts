@@ -13,6 +13,7 @@ import { FormsModule } from '@angular/forms';
 import {
   AddMarketCartItemRequest,
   MarketProductOptionDto,
+  MarketProductOptionGroupDto,
   MarketProductVariantDto,
   MarketStoreProductCustomerDto,
   MarketStoreProductPriceOfferDto
@@ -132,7 +133,46 @@ export class ProductConfigModalComponent implements OnInit {
     return null;
   });
 
-  // 3. Opciones de Modalidad de Venta para la variante actual
+  // 3. Incrementos dinámicos (weightStep y unitStep)
+  weightStep = computed<number>(() => {
+    const prod = this.currentProduct() || this.product;
+    return prod?.weightStep || 0.5;
+  });
+
+  unitStep = computed<number>(() => {
+    const prod = this.currentProduct() || this.product;
+    return prod?.unitStep || 1;
+  });
+
+  currentStep = computed<number>(() => {
+    return this.selectedUnit() === 'KG' ? this.weightStep() : this.unitStep();
+  });
+
+  stepSubtitle = computed<string>(() => {
+    if (this.selectedUnit() === 'KG') {
+      return `(Paso de ${this.weightStep()} kg)`;
+    }
+    return `(Paso de ${this.unitStep()} unidad)`;
+  });
+
+  // 4. Grupos y opciones habilitadas y disponibles para esta tienda específica
+  availableOptionGroups = computed<MarketProductOptionGroupDto[]>(() => {
+    const prod = this.currentProduct() || this.product;
+    const list = prod?.optionGroups || [];
+    return list
+      .filter(g => g.isEnabled !== false && g.isAvailable !== false)
+      .map(g => ({
+        ...g,
+        options: (g.options || []).filter(o => o.isEnabled !== false && o.isAvailable !== false)
+      }))
+      .filter(g => g.options.length > 0);
+  });
+
+  getOptionPrice(option: MarketProductOptionDto): number {
+    return option.zisifyPrice ?? option.additionalPrice ?? 0;
+  }
+
+  // 5. Opciones de Modalidad de Venta para la variante actual
   availableSaleUnits = computed<SaleUnitOption[]>(() => {
     const options: SaleUnitOption[] = [];
     const kg = this.kgPrice();
@@ -209,10 +249,10 @@ export class ProductConfigModalComponent implements OnInit {
     return this.unitPrice() ?? this.product.primaryPrice ?? this.product.price ?? 5.0;
   });
 
-  // Opciones adicionales seleccionadas
+  // Opciones adicionales seleccionadas (usando zisifyPrice o additionalPrice de la tienda)
   optionsTotal = computed<number>(() => {
     const opts = Object.values(this.selectedOptionsMap());
-    return opts.reduce((acc, curr) => acc + (curr.additionalPrice || 0), 0);
+    return opts.reduce((acc, curr) => acc + this.getOptionPrice(curr), 0);
   });
 
   // Precio unitario efectivo
@@ -236,8 +276,9 @@ export class ProductConfigModalComponent implements OnInit {
     if (variants.length > 0 && !this.selectedVariant()) {
       return false;
     }
-    if (this.product.optionGroups && this.product.optionGroups.length > 0) {
-      for (const group of this.product.optionGroups) {
+    const groups = this.availableOptionGroups();
+    if (groups.length > 0) {
+      for (const group of groups) {
         if (group.isRequired && !this.selectedOptionsMap()[group.id]) {
           return false;
         }
@@ -257,22 +298,23 @@ export class ProductConfigModalComponent implements OnInit {
       this.selectedVariant.set(variantToSelect || variants[0]);
     }
 
-    // 2. Establecer modalidad de venta inicial
+    // 2. Establecer modalidad de venta inicial con incrementos dinámicos
     const units = this.availableSaleUnits();
     if (units.some(u => u.unit === 'KG')) {
       this.selectedUnit.set('KG');
-      this.quantity.set(1.0);
+      this.quantity.set(this.weightStep());
     } else {
       this.selectedUnit.set('UNIT');
-      this.quantity.set(1);
+      this.quantity.set(this.unitStep());
     }
 
-    // 3. Preseleccionar opciones por defecto
-    if (this.product.optionGroups) {
+    // 3. Preseleccionar opciones por defecto de los grupos habilitados
+    const groups = this.availableOptionGroups();
+    if (groups.length > 0) {
       const initialMap: Record<string, MarketProductOptionDto> = {};
-      this.product.optionGroups.forEach(grp => {
+      groups.forEach(grp => {
         const defaultOpt =
-          grp.options.find(o => o.isDefault) ||
+          grp.options.find((o: MarketProductOptionDto) => o.isDefault) ||
           (grp.isRequired ? grp.options[0] : null);
         if (defaultOpt) {
           initialMap[grp.id] = defaultOpt;
@@ -293,6 +335,9 @@ export class ProductConfigModalComponent implements OnInit {
               this.selectedVariant.set(updatedVar);
             }
           }
+          if (this.quantity() < this.currentStep()) {
+            this.quantity.set(this.currentStep());
+          }
         }
       });
     }
@@ -311,26 +356,23 @@ export class ProductConfigModalComponent implements OnInit {
   selectSaleUnit(unit: 'KG' | 'UNIT') {
     this.selectedUnit.set(unit);
     if (unit === 'KG') {
-      this.quantity.set(1.0);
+      this.quantity.set(this.weightStep());
     } else {
-      this.quantity.set(1);
+      this.quantity.set(this.unitStep());
     }
   }
 
   increment() {
-    if (this.selectedUnit() === 'KG') {
-      this.quantity.update(q => +(q + 0.5).toFixed(1));
-    } else {
-      this.quantity.update(q => q + 1);
-    }
+    const step = this.currentStep();
+    this.quantity.update(q => parseFloat((q + step).toFixed(2)));
   }
 
   decrement() {
-    if (this.selectedUnit() === 'KG') {
-      this.quantity.update(q => (q > 0.5 ? +(q - 0.5).toFixed(1) : 0.5));
-    } else {
-      this.quantity.update(q => (q > 1 ? q - 1 : 1));
-    }
+    const step = this.currentStep();
+    this.quantity.update(q => {
+      const next = parseFloat((q - step).toFixed(2));
+      return next >= step ? next : step;
+    });
   }
 
   selectOption(groupId: string, option: MarketProductOptionDto) {
@@ -351,13 +393,15 @@ export class ProductConfigModalComponent implements OnInit {
 
     const selectedOptionsList = Object.entries(this.selectedOptionsMap()).map(
       ([groupId, opt]) => {
-        const groupObj = this.product.optionGroups?.find(g => g.id === groupId);
+        const groupObj = this.availableOptionGroups().find(g => g.id === groupId);
+        const price = this.getOptionPrice(opt);
         return {
           groupId,
           groupName: groupObj?.name || 'Opciones',
           optionId: opt.id,
           name: opt.name,
-          additionalPrice: opt.additionalPrice || 0
+          additionalPrice: price,
+          zisifyPrice: opt.zisifyPrice ?? price
         };
       }
     );
@@ -368,6 +412,8 @@ export class ProductConfigModalComponent implements OnInit {
       variantId: this.selectedVariant()?.id,
       selectedMeasurement: this.selectedUnit(),
       quantity: this.quantity(),
+      weightStep: this.weightStep(),
+      unitStep: this.unitStep(),
       selectedOptionsJson:
         selectedOptionsList.length > 0
           ? JSON.stringify(selectedOptionsList)

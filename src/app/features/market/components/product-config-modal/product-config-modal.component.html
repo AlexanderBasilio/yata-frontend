@@ -143,7 +143,7 @@
               {{ quantity() }} {{ selectedUnit() === 'KG' ? 'kg' : 'unid' }}
             </span>
             <span class="stepper-subtext">
-              ({{ selectedUnit() === 'KG' ? 'Paso de 0.5 kg' : 'Paso de 1 unidad' }})
+              {{ stepSubtitle() }}
             </span>
           </div>
 
@@ -158,13 +158,13 @@
         </div>
       </div>
 
-      <!-- 4. PREPARACIÓN / CORTE (Si tiene grupos de opciones) -->
-      @if (product.optionGroups && product.optionGroups.length > 0) {
-        @for (group of product.optionGroups; track group.id; let gIdx = $index) {
+      <!-- 4. PREPARACIÓN / CORTE (Grupos de opciones habilitados por esta tienda) -->
+      @if (availableOptionGroups().length > 0) {
+        @for (group of availableOptionGroups(); track group.id; let gIdx = $index) {
           <div class="config-section">
             <div class="section-title-row">
               <label class="section-title">
-                4. {{ group.name | uppercase }}
+                {{ activeVariants().length > 0 ? (gIdx + 4) : (gIdx + 3) }}. {{ group.name | uppercase }}
                 @if (group.isRequired) {
                   <span class="required-star">*</span>
                 }
@@ -192,7 +192,7 @@
                   </div>
 
                   <span class="option-price-tag">
-                    (+ S/ {{ (option.additionalPrice || 0) | number: '1.2-2' }})
+                    (+ S/ {{ getOptionPrice(option) | number: '1.2-2' }})
                   </span>
                 </button>
               }

@@ -297,6 +297,8 @@ export class MarketCartService {
       measurementType: req.selectedMeasurement || 'UNIT',
       selectedMeasurement: req.selectedMeasurement || 'UNIT',
       quantity: req.quantity,
+      weightStep: req.weightStep,
+      unitStep: req.unitStep,
       unitPrice: unitPrice ?? 5.0,
       optionsAdditionalPrice: req.optionsAdditionalPrice ?? 0,
       effectiveUnitPrice: effectivePrice,

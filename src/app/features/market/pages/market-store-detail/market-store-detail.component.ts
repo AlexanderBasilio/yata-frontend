@@ -198,28 +198,43 @@ export class MarketStoreDetailComponent implements OnInit {
     this.loadProducts();
   }
 
+  currentProductStep = computed<number>(() => {
+    const prod = this.currentProduct();
+    if (!prod) return 1;
+    return prod.primaryPriceUnit === 'KG' ? (prod.weightStep || 0.5) : (prod.unitStep || 1);
+  });
+
   // Product carousel navigation
   nextProductSlide() {
     const list = this.products();
     if (list.length <= 1) return;
     this.selectedProductIndex.update(idx => (idx + 1) % list.length);
-    this.quickQuantity.set(1);
+    const nextProd = this.currentProduct();
+    const step = nextProd?.primaryPriceUnit === 'KG' ? (nextProd.weightStep || 0.5) : (nextProd?.unitStep || 1);
+    this.quickQuantity.set(step);
   }
 
   prevProductSlide() {
     const list = this.products();
     if (list.length <= 1) return;
     this.selectedProductIndex.update(idx => (idx - 1 + list.length) % list.length);
-    this.quickQuantity.set(1);
+    const prevProd = this.currentProduct();
+    const step = prevProd?.primaryPriceUnit === 'KG' ? (prevProd.weightStep || 0.5) : (prevProd?.unitStep || 1);
+    this.quickQuantity.set(step);
   }
 
-  // Stepper on active card
+  // Stepper on active card (dynamic weightStep / unitStep)
   incrementQuantity() {
-    this.quickQuantity.update(q => q + 1);
+    const step = this.currentProductStep();
+    this.quickQuantity.update(q => parseFloat((q + step).toFixed(2)));
   }
 
   decrementQuantity() {
-    this.quickQuantity.update(q => (q > 1 ? q - 1 : 1));
+    const step = this.currentProductStep();
+    this.quickQuantity.update(q => {
+      const next = parseFloat((q - step).toFixed(2));
+      return next >= step ? next : step;
+    });
   }
 
   // Toggle favorite
@@ -258,7 +273,9 @@ export class MarketStoreDetailComponent implements OnInit {
       productId: product.productId,
       variantId: this.selectedVariantId() || undefined,
       selectedMeasurement: product.primaryPriceUnit || 'UNIT',
-      quantity: this.quickQuantity()
+      quantity: this.quickQuantity(),
+      weightStep: product.weightStep || 0.5,
+      unitStep: product.unitStep || 1
     };
 
     this.cartService
@@ -272,7 +289,7 @@ export class MarketStoreDetailComponent implements OnInit {
       .subscribe({
         next: () => {
           this.showToast(`¡${product.productName} agregado al carrito!`);
-          this.quickQuantity.set(1);
+          this.quickQuantity.set(this.currentProductStep());
         },
         error: (err) => console.warn('Error en quick add:', err)
       });
