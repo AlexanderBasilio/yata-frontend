@@ -93,9 +93,9 @@ export class QuickMenuModalComponent implements OnInit, OnDestroy {
     return total;
   });
 
-  // Número de WhatsApp oficial para pedidos
-  readonly whatsappTargetPhone = '51993861207';
-  readonly whatsappFormattedPhone = '+51 993 861 207';
+  // Usuario oficial de WhatsApp para pedidos (Medida de seguridad: no exponer número telefónico)
+  readonly whatsappUsername = '@ZISIFY_PERU';
+  readonly whatsappTargetUser = 'ZISIFY_PERU';
 
   // Cargo adicional por atención WhatsApp
   readonly whatsappServiceFee = 0.60;
@@ -225,14 +225,14 @@ export class QuickMenuModalComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Confirmación final y redirección a WhatsApp con mensaje prellenado al número +51 993 861 207
+   * Confirmación final y redirección a WhatsApp con mensaje prellenado al usuario @ZISIFY_PERU
    */
   proceedToWhatsapp() {
     this.showWhatsappConfirm.set(false);
 
     const message = this.prefilledWhatsappMessage();
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://api.whatsapp.com/send?phone=${this.whatsappTargetPhone}&text=${encodedMessage}`;
+    const whatsappUrl = `https://wa.me/${this.whatsappTargetUser}?text=${encodedMessage}`;
 
     // Intentar abrir en nueva pestaña/app de WhatsApp con fallback a location.href
     const newWindow = window.open(whatsappUrl, '_blank');

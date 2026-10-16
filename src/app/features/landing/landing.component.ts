@@ -18,6 +18,14 @@ export class LandingComponent implements OnInit {
     readonly logoUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1781978350/zisify-logo-red.png';
     readonly astronautaUrl = 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1786339691/astronauta-zisify-noBackground_aplw2o.png';
 
+    // WhatsApp Asesor Zisify (Medida de seguridad: vía usuario oficial @ZISIFY_PERU)
+    readonly whatsappAdvisorUser = 'ZISIFY_PERU';
+    readonly whatsappAdvisorPreFilled = '¡Hola Zisify! 👋 Quisiera información y resolver unas dudas sobre el servicio. ¿Me podrían comunicar con un asesor? ¡Muchas gracias!';
+
+    get advisorWhatsAppUrl(): string {
+        return `https://wa.me/${this.whatsappAdvisorUser}?text=${encodeURIComponent(this.whatsappAdvisorPreFilled)}`;
+    }
+
     showAuthModal = signal<boolean>(false);
     authModalTab = signal<'login' | 'register'>('login');
 
