@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { OrderResponse, PaymentReportRequest } from '../../models/order.model';
+import { CustomerUnifiedOrdersResponse } from '../../models/unified-orders.model';
 
 export interface CreateOrderRequest {
   items: { productId: string, name: string, price: number, quantity: number, unit?: string }[];
@@ -23,6 +24,16 @@ export class OrderService {
 
   getMyOrders(): Observable<OrderResponse[]> {
     return this.http.get<OrderResponse[]>(`${this.apiUrl}/my-orders`);
+  }
+
+  getUnifiedOrders(vertical: string = 'ALL', status: string = 'ALL'): Observable<CustomerUnifiedOrdersResponse> {
+    let params = new HttpParams().set('vertical', vertical || 'ALL');
+    if (status && status !== 'ALL') {
+      params = params.set('status', status);
+    } else {
+      params = params.set('status', 'ALL');
+    }
+    return this.http.get<CustomerUnifiedOrdersResponse>(`${environment.apiUrl}/api/customer/orders`, { params });
   }
 
   reportPayment(orderCode: string, request: PaymentReportRequest): Observable<OrderResponse> {
