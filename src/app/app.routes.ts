@@ -159,6 +159,14 @@ const applicationRoutes: Routes = [
     canActivate: [authGuard],
     loadChildren: () => import('./features/market/market.routes').then(m => m.MARKET_ROUTES)
   },
+  {
+    path: 'checkout/market/orders/:orderCode/payment',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/market/pages/market-payment/market-payment.component').then(
+        m => m.MarketPaymentComponent
+      )
+  },
 
   // ============================================
   // 5. RUTAS LEGACY (compatibilidad)

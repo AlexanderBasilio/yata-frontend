@@ -2,7 +2,7 @@ import { Component, OnInit, AfterViewInit, OnDestroy, inject, signal, computed }
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, forkJoin } from 'rxjs';
 import mapboxgl from 'mapbox-gl';
 import { environment } from '../../../../../environments/environment';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -13,8 +13,9 @@ import { MarketOrderService } from '../../../../core/services/market/market-orde
 import {
   MarketCheckoutRequest,
   MarketDeliveryLocationDto,
+  MarketDeliveryOptionDto,
   MarketOrderSummaryResponse,
-  MarketPaymentMethod
+  ZoneResolutionResponse
 } from '../../../../core/models/market.model';
 
 @Component({
@@ -33,7 +34,7 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   public cartService = inject(MarketCartService);
   public orderService = inject(MarketOrderService);
 
-  // Flujo en dos tiempos: 1 = Mapa y Dirección, 2 = Resumen y Pago
+  // Stepper: 1 = Mapa y Ubicación, 2 = Resumen y Modalidad de Envío
   currentStep = signal<1 | 2>(1);
 
   // Cart computed
@@ -46,8 +47,33 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   private map?: mapboxgl.Map;
   private marker?: mapboxgl.Marker;
 
-  // Live order summary from backend
+  // Live order summary & zone from backend
   orderSummary = signal<MarketOrderSummaryResponse | null>(null);
+  zoneInfo = signal<ZoneResolutionResponse | null>(null);
+
+  // Delivery options (Modalidades de envío)
+  deliveryOptions = signal<MarketDeliveryOptionDto[]>([]);
+  selectedDeliveryOption = signal<MarketDeliveryOptionDto | null>(null);
+
+  // Computed fees based on selected delivery option
+  selectedDeliveryFee = computed(() => {
+    const opt = this.selectedDeliveryOption();
+    if (opt) return opt.fee;
+    return this.orderSummary()?.deliveryFee || 0;
+  });
+
+  displayedTotalAmount = computed(() => {
+    const s = this.orderSummary();
+    if (!s) return 0;
+    const subtotal = s.productsSubtotal || 0;
+    const consolidation = s.consolidationFee || 0;
+    const service = s.serviceFee || 0;
+    const delivery = this.selectedDeliveryFee();
+    const discount = s.discountAmount || 0;
+    const total = subtotal + consolidation + service + delivery - discount;
+    return Math.max(0, Number(total.toFixed(2)));
+  });
+
   isLoadingSummary = signal<boolean>(false);
   isSubmitting = signal<boolean>(false);
   isLocatingGps = signal<boolean>(false);
@@ -56,9 +82,6 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   // Selected address state
   savedAddresses = signal<Address[]>([]);
   selectedAddressId = signal<number | null>(null);
-
-  // Payment method options
-  selectedPaymentMethod = signal<MarketPaymentMethod>('MANUAL_TRANSFER');
 
   ngOnInit(): void {
     // 1. Validar que exista carrito con productos
@@ -159,7 +182,7 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ============================================
-  // PASO 1: MAPBOX & UBICACIÓN (TIEMPO 1)
+  // PASO 1: MAPBOX & UBICACIÓN
   // ============================================
 
   private async initMap(): Promise<void> {
@@ -320,7 +343,7 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ============================================
-  // PASO 2: TRANSICIÓN A RESUMEN Y PAGO (TIEMPO 2)
+  // PASO 2: RESUMEN DEL PEDIDO Y MODALIDAD DE ENVÍO
   // ============================================
 
   goToStep2(): void {
@@ -342,44 +365,94 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
     this.isLoadingSummary.set(true);
     this.errorMessage.set(null);
 
-    // Llamar al resumen con la ubicación exacta
-    this.orderService.calculateSummary({ deliveryLocation: location, location }).subscribe({
-      next: (summary) => {
+    // Resolver zona de entrega en Platform y calcular resumen financiero en paralelo
+    forkJoin({
+      zone: this.orderService.resolveZoneLocation(location.latitude, location.longitude),
+      summary: this.orderService.calculateSummary({ deliveryLocation: location, location })
+    }).subscribe({
+      next: ({ zone, summary }) => {
+        this.zoneInfo.set(zone);
         this.orderSummary.set(summary);
+        this.setupDeliveryOptions(summary);
         this.isLoadingSummary.set(false);
-
-        // Deshabilitar método de pago no permitido por la zona del cliente
-        if (this.selectedPaymentMethod() === 'CASH_ON_DELIVERY' && summary.cashOnDeliveryEnabled === false) {
-          this.selectedPaymentMethod.set('MANUAL_TRANSFER');
-        } else if (this.selectedPaymentMethod() === 'MANUAL_TRANSFER' && summary.bankTransferEnabled === false) {
-          this.selectedPaymentMethod.set('CASH_ON_DELIVERY');
-        }
-
         this.currentStep.set(2);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       },
       error: (err) => {
         this.isLoadingSummary.set(false);
-        const errMsg = err?.error?.message || 'Error al calcular costos de envío con el servidor.';
+        const errMsg = err?.error?.message || 'Error al calcular costos y modalidades de envío.';
         this.errorMessage.set(errMsg);
       }
     });
   }
 
+  private setupDeliveryOptions(summary: MarketOrderSummaryResponse): void {
+    let options: MarketDeliveryOptionDto[] = [];
+
+    if (summary.deliveryOptions && summary.deliveryOptions.length > 0) {
+      options = summary.deliveryOptions;
+    } else {
+      // Opciones de entrega estructuradas con reglas de elegibilidad por peso
+      const totalWeightKg = (summary.totalWeightGrams || 0) / 1000;
+      const baseFee = summary.deliveryFee || 1.90;
+
+      options = [
+        {
+          serviceType: 'ECOLOGICAL',
+          name: 'Envío Ecológico',
+          vehicleIcon: 'BICYCLE',
+          vehicleType: 'BICYCLE',
+          fee: 1.30,
+          estimatedTime: '25 - 35 min',
+          description: 'Ideal para pedidos ligeros hasta 3 kg',
+          isAvailable: totalWeightKg <= 3.0,
+          ineligibilityReason: totalWeightKg > 3.0 ? `Supera el peso máximo de 3.0 kg (${totalWeightKg.toFixed(1)} kg)` : undefined,
+          isSelected: totalWeightKg <= 3.0
+        },
+        {
+          serviceType: 'STANDARD',
+          name: 'Envío Estándar',
+          vehicleIcon: 'MOTO',
+          vehicleType: 'MOTO',
+          fee: baseFee,
+          estimatedTime: '15 - 25 min',
+          description: 'Entrega rápida en motocicleta',
+          isAvailable: true,
+          isSelected: totalWeightKg > 3.0 && totalWeightKg <= 8.0
+        },
+        {
+          serviceType: 'HEAVY_LOAD',
+          name: 'Envío Carga Pesada',
+          vehicleIcon: 'MOTOTAXI',
+          vehicleType: 'MOTOTAXI',
+          fee: Number((baseFee + 1.60).toFixed(2)),
+          estimatedTime: '30 - 45 min',
+          description: 'Para compras voluminosas o más de 8 kg',
+          isAvailable: true,
+          isSelected: totalWeightKg > 8.0
+        }
+      ];
+    }
+
+    this.deliveryOptions.set(options);
+
+    // Seleccionar opción por defecto
+    const defaultOption =
+      options.find(o => o.isSelected && o.isAvailable !== false) ||
+      options.find(o => o.isAvailable !== false) ||
+      options[0];
+
+    this.selectedDeliveryOption.set(defaultOption || null);
+  }
+
+  selectDeliveryOption(option: MarketDeliveryOptionDto): void {
+    if (option.isAvailable === false) return;
+    this.selectedDeliveryOption.set(option);
+  }
+
   goToStep1(): void {
     this.currentStep.set(1);
     setTimeout(() => this.initMap(), 150);
-  }
-
-  selectPaymentMethod(method: MarketPaymentMethod): void {
-    const summary = this.orderSummary();
-    if (method === 'CASH_ON_DELIVERY' && summary?.cashOnDeliveryEnabled === false) {
-      return;
-    }
-    if (method === 'MANUAL_TRANSFER' && summary?.bankTransferEnabled === false) {
-      return;
-    }
-    this.selectedPaymentMethod.set(method);
   }
 
   goBack(): void {
@@ -391,10 +464,10 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   // ============================================
-  // CONFIRMACIÓN FINAL: REALIZAR PEDIDO
+  // PASO 2 -> PASO 3: CONFIRMAR RESUMEN Y CREAR ORDEN
   // ============================================
 
-  onSubmitOrder(): void {
+  proceedToPayment(): void {
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       return;
@@ -410,14 +483,16 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
       district: fv.district?.trim() || undefined
     };
 
+    const selectedOpt = this.selectedDeliveryOption();
+
     const request: MarketCheckoutRequest = {
       clientName: fv.clientName.trim(),
       clientPhoneNumber: fv.clientPhoneNumber.trim(),
       customerEmail: fv.customerEmail?.trim() || undefined,
       deliveryInstructions: fv.deliveryInstructions?.trim() || undefined,
-      paymentMethod: this.selectedPaymentMethod(),
       deliveryLocation: location,
-      location: location
+      location: location,
+      deliveryServiceType: selectedOpt?.serviceType || 'STANDARD'
     };
 
     this.isSubmitting.set(true);
@@ -426,11 +501,12 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
     this.orderService.checkout(request).subscribe({
       next: (order) => {
         this.isSubmitting.set(false);
-        this.router.navigate(['/market/order', order.orderCode]);
+        // Redirigir al Paso 3: Selección de método de pago con el orderCode creado
+        this.router.navigate(['/checkout/market/orders', order.orderCode, 'payment']);
       },
       error: (err) => {
         this.isSubmitting.set(false);
-        const msg = err?.error?.message || 'No fue posible procesar tu orden. Por favor verifica los datos.';
+        const msg = err?.error?.message || 'No fue posible crear la orden. Por favor verifica tus datos.';
         this.errorMessage.set(msg);
       }
     });

@@ -296,9 +296,35 @@ export interface MarketStoreOrderBreakdownDto {
   itemsCount: number;
 }
 
+export interface ZoneResolutionResponse {
+  available: boolean;
+  zoneId?: string;
+  city?: string;
+  district?: string;
+  zoneLabel?: string;
+  cashOnDeliveryEnabled?: boolean;
+  prepaidEnabled?: boolean;
+  bankTransferEnabled?: boolean;
+  availablePaymentMethods?: ('PREPAID' | 'CASH_ON_DELIVERY' | string)[];
+}
+
+export interface MarketDeliveryOptionDto {
+  serviceType: 'ECOLOGICAL' | 'STANDARD' | 'HEAVY_LOAD' | string;
+  name: string;
+  vehicleType?: 'BICYCLE' | 'MOTO' | 'MOTOTAXI' | string;
+  vehicleIcon?: 'BICYCLE' | 'MOTO' | 'MOTOTAXI' | string;
+  fee: number;
+  estimatedTime?: string;
+  description?: string;
+  isAvailable?: boolean;
+  ineligibilityReason?: string;
+  isSelected?: boolean;
+}
+
 export interface MarketOrderSummaryRequest {
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
+  deliveryServiceType?: string;
 }
 
 export interface MarketOrderSummaryResponse {
@@ -315,11 +341,14 @@ export interface MarketOrderSummaryResponse {
   assignedVehicleType?: 'BICYCLE' | 'MOTO' | 'MOTOTAXI' | string;
   cashOnDeliveryEnabled?: boolean;
   bankTransferEnabled?: boolean;
+  prepaidEnabled?: boolean;
+  availablePaymentMethods?: ('PREPAID' | 'CASH_ON_DELIVERY' | string)[];
   appliedDiscounts?: MarketAppliedDiscountDto[];
   storeBreakdowns?: MarketStoreOrderBreakdownDto[];
+  deliveryOptions?: MarketDeliveryOptionDto[];
 }
 
-export type MarketPaymentMethod = 'MANUAL_TRANSFER' | 'CASH_ON_DELIVERY';
+export type MarketPaymentMethod = 'PREPAID' | 'CASH_ON_DELIVERY' | 'MANUAL_TRANSFER';
 export type MarketCheckoutPaymentMethod = MarketPaymentMethod;
 
 export interface MarketCheckoutRequest {
@@ -327,7 +356,8 @@ export interface MarketCheckoutRequest {
   clientPhoneNumber: string;
   customerEmail?: string;
   deliveryInstructions?: string;
-  paymentMethod: MarketPaymentMethod;
+  deliveryServiceType?: string;
+  paymentMethod?: MarketPaymentMethod;
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
 }
@@ -343,12 +373,16 @@ export interface MarketSuborderSummaryDto {
 export interface MarketOrderResponse {
   orderCode: string;
   status: string;
-  paymentMethod: MarketPaymentMethod;
+  paymentStatus?: string;
+  paymentMethod?: MarketPaymentMethod | string;
+  deliveryServiceType?: string;
   totalAmount: number;
   clientName?: string;
   clientPhoneNumber?: string;
+  customerEmail?: string;
   deliveryInstructions?: string;
   deliveryLocation?: MarketDeliveryLocationDto;
+  location?: MarketDeliveryLocationDto;
   suborders?: MarketSuborderSummaryDto[];
   createdAt?: string;
 }

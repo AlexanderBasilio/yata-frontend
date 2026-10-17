@@ -36,6 +36,11 @@ export const MARKET_ROUTES: Routes = [
       import('./pages/market-checkout/market-checkout.component').then(m => m.MarketCheckoutComponent)
   },
   {
+    path: 'orders/:orderCode/payment',
+    loadComponent: () =>
+      import('./pages/market-payment/market-payment.component').then(m => m.MarketPaymentComponent)
+  },
+  {
     path: 'order/:orderCode',
     loadComponent: () =>
       import('./pages/market-order-confirmation/market-order-confirmation.component').then(
