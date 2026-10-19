@@ -219,14 +219,26 @@
                         <span class="text-[#FAF8FB]">S/ {{ orderSummary.serviceFee | number:'1.2-2' }}</span>
                     </div>
 
-                    <div *ngIf="orderSummary.discountAmount && orderSummary.discountAmount > 0" class="flex flex-col gap-1.5 mb-4 bg-[#C30364]/10 p-3 rounded-lg border border-[#C30364]/20">
+                    <div *ngIf="orderSummary.discountAmount && orderSummary.discountAmount > 0 && orderSummary.appliedDiscounts && orderSummary.appliedDiscounts.length > 0" class="flex flex-col gap-1.5 mb-4 bg-[#C30364]/10 p-3 rounded-lg border border-[#C30364]/20">
                         <div class="flex justify-between text-sm font-semibold text-[#E8368A]">
                             <span>Descuento</span>
                             <span>-S/ {{ orderSummary.discountAmount | number:'1.2-2' }}</span>
                         </div>
-                        <div *ngFor="let discount of orderSummary.appliedDiscounts" class="text-xs text-[#FAF8FB] flex items-center gap-1.5 opacity-90 pl-1">
-                            <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#E8368A]"></span>
-                            <span>{{ discount.displayName }}</span>
+                        <!-- Primer envío gratis: Solo si type === 'FIRST_DELIVERY' -->
+                        <div *ngIf="firstDeliveryDiscount" class="flex justify-between text-xs text-[#FAF8FB] items-center pl-1">
+                            <span class="flex items-center gap-1.5 opacity-90">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#E8368A]"></span>
+                                <span>{{ firstDeliveryDiscount.displayName || 'Primer envío gratis' }}</span>
+                            </span>
+                            <span class="text-[#E8368A] font-semibold">-S/ {{ firstDeliveryDiscount.amount | number:'1.2-2' }}</span>
+                        </div>
+                        <!-- Otros descuentos (ej: cupón de fidelidad / recompensas) -->
+                        <div *ngFor="let discount of otherDiscounts" class="flex justify-between text-xs text-[#FAF8FB] items-center pl-1">
+                            <span class="flex items-center gap-1.5 opacity-90">
+                                <span class="inline-block w-1.5 h-1.5 rounded-full bg-[#E8368A]"></span>
+                                <span>{{ discount.displayName }}</span>
+                            </span>
+                            <span class="text-[#E8368A] font-semibold">-S/ {{ discount.amount | number:'1.2-2' }}</span>
                         </div>
                     </div>
 
@@ -237,7 +249,7 @@
                         <span class="text-[#C30364]">S/ {{ orderSummary.totalAmount | number:'1.2-2' }}</span>
                     </div>
 
-                    <p *ngIf="orderSummary.discountNote" role="status" class="text-sm text-[#FAF8FB] mb-4">{{ orderSummary.discountNote }}</p>
+                    <p *ngIf="displayDiscountNote" role="status" class="text-sm text-[#FAF8FB] mb-4">{{ displayDiscountNote }}</p>
 
                     <!-- Propina Note -->
                     <p class="text-[11px] text-[#9D96A8] leading-relaxed mb-6 italic">

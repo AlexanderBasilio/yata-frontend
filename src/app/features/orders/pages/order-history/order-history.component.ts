@@ -135,8 +135,13 @@ export class OrderHistoryComponent implements OnInit {
 
   handlePayNow(order: CustomerUnifiedOrderDto): void {
     if (order.vertical === 'MARKET') {
-      const url = order.paymentActionUrl || `/checkout/market/orders/${order.orderCode}/payment`;
-      this.router.navigateByUrl(url);
+      if (order.status === 'PAYMENT_VERIFICATION') {
+        const url = order.paymentActionUrl || `/market/order/${order.orderCode}`;
+        this.router.navigateByUrl(url);
+      } else {
+        const url = order.paymentActionUrl || `/checkout/market/orders/${order.orderCode}/payment`;
+        this.router.navigateByUrl(url);
+      }
     } else {
       // Para restaurantes abrimos el Stepper Modal de pago probado y funcionando
       this.stepperOrder.set(order);
@@ -244,16 +249,28 @@ export class OrderHistoryComponent implements OnInit {
   // --- HELPERS VISUALES ---
 
   isPendingPaymentTab(tab: CustomerUnifiedOrderTabDto): boolean {
-    return (tab.key === 'PENDING_PAYMENT' || tab.key === 'CREATED') && tab.count > 0;
+    const k = tab.key?.toUpperCase();
+    return (
+      k === 'PENDING_PAYMENT' ||
+      k === 'CREATED' ||
+      k === 'POR_PAGAR' ||
+      k === 'PAYMENT_VERIFICATION'
+    ) && tab.count > 0;
   }
 
   getTabIcon(key: string): string {
-    switch (key) {
+    const k = key?.toUpperCase();
+    switch (k) {
       case 'ALL':
         return '📋';
+      case 'POR_PAGAR':
       case 'PENDING_PAYMENT':
       case 'CREATED':
+      case 'PAYMENT_VERIFICATION':
         return '⚡';
+      case 'ACTIVOS':
+      case 'ACTIVE':
+        return '⏱️';
       case 'PREPARING':
         return '🍳';
       case 'COLLECTING':
@@ -265,8 +282,7 @@ export class OrderHistoryComponent implements OnInit {
       case 'ON_THE_WAY':
       case 'IN_DELIVERY':
         return '🛵';
-      case 'ACTIVE':
-        return '⏱️';
+      case 'HISTORIAL':
       case 'COMPLETED':
         return '✅';
       case 'CANCELLED':

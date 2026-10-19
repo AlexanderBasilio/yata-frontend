@@ -15,7 +15,8 @@ import {
     PaymentMethod,
     OrderSummaryResponse,
     SummaryRequest,
-    OrderResponse
+    OrderResponse,
+    AppliedDiscount
 } from '../../../../core/models/food-order.model';
 
 import { PaymentStepperModalComponent } from '../../../../shared/components/payment-stepper-modal/payment-stepper-modal.component';
@@ -564,6 +565,23 @@ export class CheckoutComponent implements OnInit, OnDestroy {
         }
         localStorage.removeItem('yata_confirmed_order');
         localStorage.removeItem('yata_cart_id');
+    }
+
+    get firstDeliveryDiscount(): AppliedDiscount | null {
+        return this.orderSummary?.appliedDiscounts?.find(d => d.type === 'FIRST_DELIVERY') || null;
+    }
+
+    get otherDiscounts(): AppliedDiscount[] {
+        return this.orderSummary?.appliedDiscounts?.filter(d => d.type !== 'FIRST_DELIVERY') || [];
+    }
+
+    get displayDiscountNote(): string | null {
+        const note = this.orderSummary?.discountNote;
+        if (!note) return null;
+        if (note.toLowerCase().includes('primer envío') && !this.firstDeliveryDiscount) {
+            return null;
+        }
+        return note;
     }
 
     goHome() {

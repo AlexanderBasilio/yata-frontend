@@ -417,6 +417,70 @@
                     </div>
                   }
 
+                  <!-- Selector de Cupones / Recompensas de Fidelidad -->
+                  <div class="pt-2 border-t border-gray-100 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-[#1A0A2E] flex items-center gap-1.5">
+                        <span>🎁</span>
+                        <span>Cupones y Recompensas</span>
+                      </span>
+                      @if (selectedRewardId()) {
+                        <button
+                          type="button"
+                          (click)="selectReward(null)"
+                          class="text-[11px] font-bold text-[#C30364] hover:underline cursor-pointer"
+                        >
+                          Quitar cupón
+                        </button>
+                      } @else if (!showBenefits()) {
+                        <button
+                          type="button"
+                          (click)="loadBenefits()"
+                          class="text-[11px] font-bold text-[#C30364] hover:underline cursor-pointer"
+                        >
+                          Ver disponibles
+                        </button>
+                      }
+                    </div>
+
+                    @if (showBenefits()) {
+                      @if (isLoadingBenefits()) {
+                        <p class="text-[11px] text-gray-400 animate-pulse">Consultando cupones disponibles...</p>
+                      } @else if (availableBenefits().length === 0) {
+                        <p class="text-[11px] text-gray-400 italic">No tienes cupones de fidelidad disponibles para este pedido.</p>
+                      } @else {
+                        <div class="space-y-1.5 pt-1">
+                          @for (benefit of availableBenefits(); track benefitId(benefit)) {
+                            <button
+                              type="button"
+                              (click)="selectReward(benefitId(benefit))"
+                              [disabled]="isLoadingSummary() || isSubmitting()"
+                              class="w-full text-left p-2.5 rounded-xl border text-xs transition-all flex items-center justify-between cursor-pointer"
+                              [class.border-[#C30364]]="selectedRewardId() === benefitId(benefit)"
+                              [class.bg-pink-50/60]="selectedRewardId() === benefitId(benefit)"
+                              [class.border-gray-200]="selectedRewardId() !== benefitId(benefit)"
+                              [class.bg-white]="selectedRewardId() !== benefitId(benefit)"
+                            >
+                              <div>
+                                <span class="font-bold text-[#1A0A2E] block">{{ benefit.definition?.name || 'Envío Gratis' }}</span>
+                                <span class="text-[10px] text-gray-500">Cupón de fidelidad</span>
+                              </div>
+                              @if (selectedRewardId() === benefitId(benefit)) {
+                                <span class="text-[10px] font-extrabold text-[#C30364] bg-pink-100 px-2 py-0.5 rounded-full">
+                                  Aplicado ✓
+                                </span>
+                              } @else {
+                                <span class="text-[10px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                                  Aplicar
+                                </span>
+                              }
+                            </button>
+                          }
+                        </div>
+                      }
+                    }
+                  </div>
+
                   <!-- Desglose Financiero Explícito -->
                   <div class="space-y-2 pt-2 text-xs border-t border-gray-100">
                     <div class="flex justify-between text-gray-600">
@@ -449,17 +513,25 @@
                       <span class="font-bold text-[#1A0A2E]">S/ {{ selectedDeliveryFee() | number: '1.2-2' }}</span>
                     </div>
 
-                    <!-- Descuentos aplicados o primer envío gratis -->
-                    @if (s.discountAmount > 0) {
-                      <div class="flex justify-between text-green-600 font-bold bg-green-50/70 p-2 rounded-xl">
-                        <span>
-                          @if (s.appliedDiscounts && s.appliedDiscounts.length > 0) {
-                            {{ s.appliedDiscounts[0].displayName }}
-                          } @else {
-                            Primer envío gratis en Market
-                          }
+                    <!-- Primer envío gratis: Solo si type === 'FIRST_DELIVERY' en appliedDiscounts -->
+                    @if (firstDeliveryDiscount(); as firstDiscount) {
+                      <div class="flex justify-between text-emerald-700 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-xs font-bold">
+                        <span class="flex items-center gap-1.5">
+                          <span>🎉</span>
+                          <span>{{ firstDiscount.displayName || 'Primer envío gratis' }}</span>
                         </span>
-                        <span>- S/ {{ s.discountAmount | number: '1.2-2' }}</span>
+                        <span>- S/ {{ firstDiscount.amount | number: '1.2-2' }}</span>
+                      </div>
+                    }
+
+                    <!-- Otros descuentos aplicados (ej: cupón de recompensa / fidelidad via rewardId) -->
+                    @for (discount of otherDiscounts(); track discount.code || discount.displayName) {
+                      <div class="flex justify-between text-emerald-700 bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200 text-xs font-bold">
+                        <span class="flex items-center gap-1.5">
+                          <span>🎁</span>
+                          <span>{{ discount.displayName }}</span>
+                        </span>
+                        <span>- S/ {{ discount.amount | number: '1.2-2' }}</span>
                       </div>
                     }
 

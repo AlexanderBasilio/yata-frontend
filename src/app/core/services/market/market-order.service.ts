@@ -8,6 +8,8 @@ import {
   MarketOrderResponse,
   MarketOrderSummaryRequest,
   MarketOrderSummaryResponse,
+  MarketPaymentAccountDto,
+  MarketPaymentOperationRequest,
   ZoneResolutionResponse
 } from '../../models/market.model';
 import { MarketCartService } from './market-cart.service';
@@ -120,5 +122,38 @@ export class MarketOrderService {
         return of(null);
       })
     );
+  }
+
+  /**
+   * 5. Obtener cuentas bancarias y billeteras activas para pago de mercado
+   * GET /api/market/customer/payment-accounts
+   */
+  getPaymentAccounts(): Observable<MarketPaymentAccountDto[]> {
+    return this.http
+      .get<MarketPaymentAccountDto[]>(`${environment.apiUrl}/api/market/customer/payment-accounts`)
+      .pipe(
+        catchError(err => {
+          console.warn('⚠️ Error al consultar cuentas de transferencia de mercado:', err);
+          return of([]);
+        })
+      );
+  }
+
+  /**
+   * 6. Registrar número de operación del pago anticipado
+   * POST /api/market/customer/orders/{orderCode}/payment-operation
+   */
+  registerPaymentOperation(
+    orderCode: string,
+    request: MarketPaymentOperationRequest
+  ): Observable<MarketOrderResponse> {
+    return this.http
+      .post<MarketOrderResponse>(`${this.baseUrl}/${orderCode}/payment-operation`, request)
+      .pipe(
+        catchError(err => {
+          console.error(`❌ Error al registrar operación de pago para orden ${orderCode}:`, err);
+          return throwError(() => err);
+        })
+      );
   }
 }

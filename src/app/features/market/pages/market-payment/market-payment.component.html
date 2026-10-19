@@ -18,13 +18,13 @@
             Checkout de Mercado
           </h1>
           <p class="text-[11px] text-gray-500 font-medium">
-            Paso 3: Elegir método de pago
+            Paso 3: Método y confirmación de pago
           </p>
         </div>
       </div>
 
-      <!-- Stepper Pill Indicators (3 Pasos) -->
-      <div class="flex items-center gap-1.5 bg-gray-50 p-1 rounded-full border border-gray-200 text-xs">
+      <!-- Stepper Pill Indicators (3 Pasos Globales) -->
+      <div class="hidden sm:flex items-center gap-1.5 bg-gray-50 p-1 rounded-full border border-gray-200 text-xs">
         <span class="px-2.5 py-1 rounded-full font-bold text-gray-400">
           1. Mapa
         </span>
@@ -38,6 +38,16 @@
     </div>
   </header>
 
+  <!-- Toast flotante de copiado -->
+  @if (copyToast()) {
+    <div class="fixed top-18 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+      <div class="bg-[#1A0A2E] text-white px-4 py-2.5 rounded-full shadow-xl flex items-center gap-2 border border-[#C30364] text-xs font-bold">
+        <span class="text-emerald-400 text-sm">✓</span>
+        <span>{{ copyToast() }}</span>
+      </div>
+    </div>
+  }
+
   <!-- Error banner if any -->
   @if (errorMessage()) {
     <div class="max-w-2xl mx-auto px-4 mt-4">
@@ -48,29 +58,29 @@
     </div>
   }
 
-  <main class="max-w-2xl mx-auto px-4 py-6 space-y-5">
+  <main class="max-w-2xl mx-auto px-4 py-5 space-y-4">
 
     <!-- Loading skeleton -->
     @if (isLoading()) {
       <div class="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm text-center py-12 space-y-3">
         <div class="w-8 h-8 border-3 border-[#C30364] border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <p class="text-xs text-gray-500 font-medium">Consultando métodos de pago disponibles para tu zona...</p>
+        <p class="text-xs text-gray-500 font-medium">Cargando detalles de tu orden de mercado...</p>
       </div>
     } @else {
 
-      <!-- Card de Orden Creada -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-3">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
+      <!-- Card de Orden Creada (Resumen superior) -->
+      <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-xs space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
           <div>
             <span class="text-[10px] font-extrabold uppercase tracking-widest text-gray-400 block mb-0.5">
-              Orden Creada
+              Orden en Proceso
             </span>
             <div class="flex items-center gap-2">
               <span class="text-base sm:text-lg font-black font-mono text-[#1A0A2E]">
                 {{ orderCode() }}
               </span>
               <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-pink-50 text-[#C30364] border border-pink-100">
-                PENDIENTE DE PAGO
+                {{ order()?.status === 'PENDING_PAYMENT' ? 'PENDIENTE DE PAGO' : 'ORDEN CREADA' }}
               </span>
             </div>
           </div>
@@ -84,7 +94,7 @@
         </div>
 
         @if (order()?.deliveryLocation?.address || order()?.location?.address) {
-          <div class="flex items-center gap-2.5 text-xs text-gray-600 pt-1">
+          <div class="flex items-center gap-2 text-xs text-gray-600">
             <span class="text-base">📍</span>
             <span class="truncate font-medium">
               Entrega en: {{ order()?.deliveryLocation?.address || order()?.location?.address }}
@@ -93,165 +103,388 @@
         }
       </div>
 
-      <!-- SECCIÓN: Métodos de Pago Habilitados para la Zona -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4">
-        <div>
-          <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
-            Elige tu Método de Pago
-          </h2>
-          <p class="text-[11px] text-gray-500 mt-0.5">
-            Las opciones mostradas corresponden a los métodos habilitados para tu zona de entrega.
-          </p>
-        </div>
+      <!-- ============================================================ -->
+      <!-- SUB-PASO 1: SELECCIÓN DE MÉTODO DE PAGO                     -->
+      <!-- ============================================================ -->
+      @if (subStep() === 'SELECT_METHOD') {
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4 animate-fade-in">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[#1A0A2E]">
+              1. Selecciona tu Método de Pago
+            </h2>
+            <p class="text-[11px] text-gray-500 mt-0.5">
+              Elige cómo deseas abonar tu compra según la cobertura de tu zona.
+            </p>
+          </div>
 
-        <div class="space-y-3">
+          <div class="space-y-3">
 
-          <!-- OPCIÓN A: Pago Anticipado (Yape / Plin / Transferencia) -->
-          <div
-            (click)="selectMethod('PREPAID')"
-            [class.border-[#C30364]]="selectedMethod() === 'PREPAID'"
-            [class.bg-pink-50/30]="selectedMethod() === 'PREPAID'"
-            [class.ring-2]="selectedMethod() === 'PREPAID'"
-            [class.ring-[#C30364]/20]="selectedMethod() === 'PREPAID'"
-            class="p-4 sm:p-5 rounded-2xl border-2 border-gray-200 transition-all hover:border-[#C30364]/60 cursor-pointer relative"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl bg-pink-100/60 text-[#C30364] flex items-center justify-center text-xl flex-shrink-0">
-                  📲
+            <!-- OPCIÓN A: Pago Anticipado (Yape / Plin / Transferencia) -->
+            <div
+              (click)="selectMethod('PREPAID')"
+              [class.border-[#C30364]]="selectedMethod() === 'PREPAID'"
+              [class.bg-pink-50/30]="selectedMethod() === 'PREPAID'"
+              [class.ring-2]="selectedMethod() === 'PREPAID'"
+              [class.ring-[#C30364]/20]="selectedMethod() === 'PREPAID'"
+              class="p-4 sm:p-5 rounded-2xl border-2 border-gray-200 transition-all hover:border-[#C30364]/60 cursor-pointer relative"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-pink-100/60 text-[#C30364] flex items-center justify-center text-xl flex-shrink-0">
+                    📲
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-xs sm:text-sm font-extrabold text-[#1A0A2E]">
+                        Pago Anticipado (Yape / Plin / Transferencia)
+                      </h3>
+                      <span class="text-[9px] font-bold text-[#C30364] bg-pink-100/70 px-2 py-0.5 rounded-full">
+                        Recomendado
+                      </span>
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-1 leading-snug">
+                      Transfiere el monto antes del alistamiento para un despacho sin contacto y más veloz.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="text-xs sm:text-sm font-extrabold text-[#1A0A2E]">
-                      Pago Anticipado (Yape / Plin / Transferencia)
-                    </h3>
-                    <span class="text-[9px] font-bold text-[#C30364] bg-pink-100/70 px-2 py-0.5 rounded-full">
-                      Recomendado
+
+                <!-- Radio Indicator -->
+                <div
+                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5"
+                  [class.border-[#C30364]]="selectedMethod() === 'PREPAID'"
+                  [class.bg-[#C30364]]="selectedMethod() === 'PREPAID'"
+                  [class.border-gray-300]="selectedMethod() !== 'PREPAID'"
+                >
+                  @if (selectedMethod() === 'PREPAID') {
+                    <span class="w-2 h-2 rounded-full bg-white"></span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- OPCIÓN B: Pago Contra-entrega -->
+            <div
+              (click)="selectMethod('CASH_ON_DELIVERY')"
+              [class.border-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
+              [class.bg-pink-50/30]="selectedMethod() === 'CASH_ON_DELIVERY'"
+              [class.ring-2]="selectedMethod() === 'CASH_ON_DELIVERY'"
+              [class.ring-[#C30364]/20]="selectedMethod() === 'CASH_ON_DELIVERY'"
+              [class.opacity-60]="!isCashOnDeliveryEnabled()"
+              [class.cursor-not-allowed]="!isCashOnDeliveryEnabled()"
+              [class.cursor-pointer]="isCashOnDeliveryEnabled()"
+              class="p-4 sm:p-5 rounded-2xl border-2 border-gray-200 transition-all hover:border-[#C30364]/60 relative"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center text-xl flex-shrink-0">
+                    💵
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <h3 class="text-xs sm:text-sm font-extrabold text-[#1A0A2E]">
+                        Pago Contra-entrega (Efectivo / POS)
+                      </h3>
+                      @if (isCashOnDeliveryEnabled()) {
+                        <span class="text-[9px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                          Al recibir
+                        </span>
+                      } @else {
+                        <span class="text-[9px] font-bold text-red-600 bg-red-100/70 px-2 py-0.5 rounded-full">
+                          No disponible en tu zona
+                        </span>
+                      }
+                    </div>
+                    <p class="text-[11px] text-gray-500 mt-1 leading-snug">
+                      Paga en efectivo o tarjeta directamente al repartidor al momento de recibir tus bolsas.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Radio Indicator -->
+                <div
+                  class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5"
+                  [class.border-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
+                  [class.bg-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
+                  [class.border-gray-300]="selectedMethod() !== 'CASH_ON_DELIVERY'"
+                >
+                  @if (selectedMethod() === 'CASH_ON_DELIVERY') {
+                    <span class="w-2 h-2 rounded-full bg-white"></span>
+                  }
+                </div>
+              </div>
+
+              @if (!isCashOnDeliveryEnabled()) {
+                <div class="mt-3 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 flex items-start gap-1.5">
+                  <span>⚠️</span>
+                  <span>Contra-entrega no disponible para esta ubicación. Por favor selecciona Pago Anticipado.</span>
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <!-- Botón de Confirmar Método -->
+          <button
+            type="button"
+            (click)="confirmPaymentMethod()"
+            [disabled]="isSubmitting()"
+            class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#D81B75] to-[#C30364] text-white font-extrabold text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
+          >
+            @if (isSubmitting()) {
+              <span class="animate-spin">🔄</span>
+              <span>Procesando selección...</span>
+            } @else {
+              <span>Confirmar Método de Pago</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            }
+          </button>
+        </div>
+      }
+
+      <!-- ============================================================ -->
+      <!-- SUB-PASO 2 (CAMINO A - PASO A.2): CUENTAS DE TRANSFERENCIA    -->
+      <!-- ============================================================ -->
+      @if (subStep() === 'TRANSFER_ACCOUNTS') {
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4 animate-fade-in">
+          <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#C30364]">
+                Paso A.2 de 3
+              </span>
+              <h2 class="text-sm sm:text-base font-extrabold text-[#1A0A2E]">
+                Cuentas de Transferencia
+              </h2>
+            </div>
+            <button
+              type="button"
+              (click)="setSubStep('SELECT_METHOD')"
+              class="text-xs text-gray-500 hover:text-[#C30364] font-semibold cursor-pointer underline"
+            >
+              Cambiar método
+            </button>
+          </div>
+
+          <!-- Banner Informativo del Monto Exacto -->
+          <div class="bg-gradient-to-r from-pink-50/90 to-purple-50/70 border border-pink-100 rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
+                Monto Exacto a Transferir
+              </span>
+              <span class="text-xl sm:text-2xl font-black text-[#C30364]">
+                S/ {{ (order()?.totalAmount || 0) | number: '1.2-2' }}
+              </span>
+            </div>
+            <div class="text-right text-[11px] text-gray-500 max-w-[150px]">
+              Transfiere este valor exacto para validar tu pedido al instante.
+            </div>
+          </div>
+
+          <!-- LISTA DE CUENTAS ACTIVAS DESDE BACKEND -->
+          <div class="space-y-3 pt-1">
+            <p class="text-xs text-gray-600 font-semibold">
+              Copia el número de la cuenta o billetera digital que prefieras:
+            </p>
+
+            @for (acc of paymentAccounts(); track acc.id) {
+              <div
+                (click)="selectAccount(acc)"
+                [class.border-[#C30364]]="selectedAccount()?.id === acc.id"
+                [class.ring-2]="selectedAccount()?.id === acc.id"
+                [class.ring-[#C30364]/20]="selectedAccount()?.id === acc.id"
+                class="p-4 rounded-2xl border-2 border-gray-200 hover:border-gray-300 transition-all bg-white shadow-xs space-y-3 cursor-pointer"
+              >
+                <!-- Header de Cuenta -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-2.5">
+                    <!-- Icono o Logo representativo -->
+                    @if (acc.type === 'YAPE') {
+                      <div class="w-9 h-9 rounded-xl bg-purple-700 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                        YAPE
+                      </div>
+                    } @else if (acc.type === 'PLIN') {
+                      <div class="w-9 h-9 rounded-xl bg-cyan-500 text-white flex items-center justify-center font-black text-xs shadow-xs">
+                        PLIN
+                      </div>
+                    } @else {
+                      <div class="w-9 h-9 rounded-xl bg-indigo-700 text-white flex items-center justify-center text-sm shadow-xs">
+                        🏦
+                      </div>
+                    }
+
+                    <div>
+                      <h4 class="text-xs sm:text-sm font-extrabold text-[#1A0A2E]">
+                        {{ acc.accountName }}
+                      </h4>
+                      @if (acc.accountHolder) {
+                        <p class="text-[11px] text-gray-500 font-medium">
+                          Titular: {{ acc.accountHolder }}
+                        </p>
+                      }
+                    </div>
+                  </div>
+
+                  <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100">
+                    Activa
+                  </span>
+                </div>
+
+                <!-- Tarjeta con Número Protegido (No texto editable ni seleccionable) y Botón Copiar -->
+                <div class="flex items-center justify-between bg-gray-50 p-2.5 rounded-xl border border-gray-100">
+                  <div class="flex items-center gap-2 select-none user-select-none">
+                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Número:</span>
+                    <!-- Texto oculto/protegido sin selección manual directa -->
+                    <span class="font-mono text-xs sm:text-sm font-bold text-gray-800 tracking-wider">
+                      •••• •••• {{ acc.accountNumber.slice(-3) }}
                     </span>
                   </div>
-                  <p class="text-[11px] text-gray-500 mt-1 leading-snug">
-                    Paga mediante Yape o transferencia bancaria antes del despacho de los puestos de mercado.
-                  </p>
-                </div>
-              </div>
 
-              <!-- Radio Indicator -->
-              <div
-                class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5"
-                [class.border-[#C30364]]="selectedMethod() === 'PREPAID'"
-                [class.bg-[#C30364]]="selectedMethod() === 'PREPAID'"
-                [class.border-gray-300]="selectedMethod() !== 'PREPAID'"
-              >
-                @if (selectedMethod() === 'PREPAID') {
-                  <span class="w-2 h-2 rounded-full bg-white"></span>
-                }
-              </div>
-            </div>
-
-            <!-- Detalles adicionales al estar seleccionado -->
-            @if (selectedMethod() === 'PREPAID') {
-              <div class="mt-4 pt-3 border-t border-pink-100/80 bg-white/70 p-3 rounded-xl space-y-2 text-xs">
-                <div class="flex items-center justify-between text-gray-700">
-                  <span class="font-medium text-[11px]">Número oficial Zisify (Yape/Plin):</span>
-                  <span class="font-mono font-black text-[#1A0A2E]">987 654 321</span>
-                </div>
-                <div class="flex items-center justify-between text-gray-700">
-                  <span class="font-medium text-[11px]">Titular:</span>
-                  <span class="font-bold text-[#1A0A2E]">ZISIFY S.A.C.</span>
-                </div>
-                <p class="text-[10px] text-gray-500 pt-1">
-                  💡 Al confirmar, podrás adjuntar tu constancia o comprobante de pago por WhatsApp para agilizar el alistamiento en el mercado.
-                </p>
-              </div>
-            }
-          </div>
-
-          <!-- OPCIÓN B: Pago Contra-entrega -->
-          <div
-            (click)="selectMethod('CASH_ON_DELIVERY')"
-            [class.border-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
-            [class.bg-pink-50/30]="selectedMethod() === 'CASH_ON_DELIVERY'"
-            [class.ring-2]="selectedMethod() === 'CASH_ON_DELIVERY'"
-            [class.ring-[#C30364]/20]="selectedMethod() === 'CASH_ON_DELIVERY'"
-            [class.opacity-60]="!isCashOnDeliveryEnabled()"
-            [class.cursor-not-allowed]="!isCashOnDeliveryEnabled()"
-            [class.cursor-pointer]="isCashOnDeliveryEnabled()"
-            class="p-4 sm:p-5 rounded-2xl border-2 border-gray-200 transition-all hover:border-[#C30364]/60 relative"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gray-100 text-gray-700 flex items-center justify-center text-xl flex-shrink-0">
-                  💵
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h3 class="text-xs sm:text-sm font-extrabold text-[#1A0A2E]">
-                      Pago Contra-entrega (Efectivo / POS)
-                    </h3>
-                    @if (isCashOnDeliveryEnabled()) {
-                      <span class="text-[9px] font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
-                        Al recibir
-                      </span>
+                  <!-- Botón / Ícono Copiar -->
+                  <button
+                    type="button"
+                    (click)="copyAccountNumber(acc); $event.stopPropagation()"
+                    class="py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                    [class.bg-emerald-600]="copiedAccountId() === acc.id"
+                    [class.text-white]="copiedAccountId() === acc.id"
+                    [class.bg-[#C30364]]="copiedAccountId() !== acc.id"
+                    [class.text-white]="copiedAccountId() !== acc.id"
+                    [class.hover:brightness-110]="copiedAccountId() !== acc.id"
+                  >
+                    @if (copiedAccountId() === acc.id) {
+                      <span>✓ ¡Copiado!</span>
                     } @else {
-                      <span class="text-[9px] font-bold text-red-600 bg-red-100/70 px-2 py-0.5 rounded-full">
-                        No disponible
-                      </span>
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      <span>Copiar Número</span>
                     }
-                  </div>
-                  <p class="text-[11px] text-gray-500 mt-1 leading-snug">
-                    Paga en efectivo o con tarjeta/Yape al momento de recibir el pedido en tu puerta.
-                  </p>
+                  </button>
                 </div>
-              </div>
 
-              <!-- Radio Indicator -->
-              <div
-                class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5"
-                [class.border-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
-                [class.bg-[#C30364]]="selectedMethod() === 'CASH_ON_DELIVERY'"
-                [class.border-gray-300]="selectedMethod() !== 'CASH_ON_DELIVERY'"
-              >
-                @if (selectedMethod() === 'CASH_ON_DELIVERY') {
-                  <span class="w-2 h-2 rounded-full bg-white"></span>
+                @if (acc.instructions) {
+                  <p class="text-[10px] text-gray-400 italic">
+                    💡 {{ acc.instructions }}
+                  </p>
                 }
-              </div>
-            </div>
-
-            <!-- Advertencia si NO está habilitado para la zona -->
-            @if (!isCashOnDeliveryEnabled()) {
-              <div class="mt-3 p-3 bg-amber-50/80 border border-amber-200 rounded-xl text-[11px] text-amber-800 flex items-start gap-2">
-                <span class="text-sm">⚠️</span>
-                <span>
-                  Pago Contra-entrega no disponible para tu zona de entrega por políticas de seguridad. Por favor, selecciona Pago Anticipado (Yape/Plin).
-                </span>
               </div>
             }
           </div>
 
-        </div>
+          <!-- Pasos de ayuda -->
+          <div class="bg-gray-50 rounded-2xl p-3.5 border border-gray-100 text-xs text-gray-600 space-y-1.5">
+            <p class="font-bold text-[#1A0A2E]">¿Cómo proceder?</p>
+            <ol class="list-decimal list-inside space-y-1 text-[11px] text-gray-500">
+              <li>Haz clic en <strong>Copiar Número</strong> en tu cuenta preferida.</li>
+              <li>Abre tu aplicación bancaria (Yape o Plin) y transfiere el monto exacto de <strong>S/ {{ (order()?.totalAmount || 0) | number: '1.2-2' }}</strong>.</li>
+              <li>Al finalizar tu transferencia, presiona <strong>Continuar</strong> para registrar tu número de operación.</li>
+            </ol>
+          </div>
 
-        <!-- Botón de Confirmación del Método de Pago -->
-        <button
-          type="button"
-          (click)="confirmPaymentMethod()"
-          [disabled]="isUpdating()"
-          class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#D81B75] to-[#C30364] text-white font-extrabold text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
-        >
-          @if (isUpdating()) {
-            <span class="animate-spin">🔄</span>
-            <span>Confirmando método de pago...</span>
-          } @else {
-            <span>Confirmar Método de Pago</span>
+          <!-- Botón Continuar al Paso A.3 -->
+          <button
+            type="button"
+            (click)="proceedToEnterOperation()"
+            class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] to-[#E8368A] text-white font-extrabold text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+          >
+            <span>Ya transferí, continuar con comprobante</span>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
-          }
-        </button>
+          </button>
+        </div>
+      }
 
-        <p class="text-[10px] text-center text-gray-400 font-medium">
-          🔒 Tu pago y pedido están asegurados y protegidos por Zisify.
-        </p>
-      </div>
+      <!-- ============================================================ -->
+      <!-- SUB-PASO 3 (CAMINO A - PASO A.3): INGRESO DE NÚMERO OPERACIÓN -->
+      <!-- ============================================================ -->
+      @if (subStep() === 'ENTER_OPERATION') {
+        <div class="bg-white rounded-3xl p-5 sm:p-6 border border-gray-100 shadow-sm space-y-4 animate-fade-in">
+          <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-widest text-[#C30364]">
+                Paso A.3 de 3
+              </span>
+              <h2 class="text-sm sm:text-base font-extrabold text-[#1A0A2E]">
+                Ingresa tu Número de Operación
+              </h2>
+            </div>
+            <button
+              type="button"
+              (click)="setSubStep('TRANSFER_ACCOUNTS')"
+              class="text-xs text-gray-500 hover:text-[#C30364] font-semibold cursor-pointer underline"
+            >
+              Ver cuentas
+            </button>
+          </div>
+
+          <div class="bg-purple-50/60 border border-purple-100 rounded-2xl p-3.5 text-xs text-purple-900 space-y-1">
+            <span class="font-bold flex items-center gap-1.5">
+              <span>🧾</span>
+              <span>Validación de Pago en Curso</span>
+            </span>
+            <p class="text-[11px] text-purple-800">
+              Escribe el código de operación generado por tu app bancaria al realizar la transferencia de <strong>S/ {{ (order()?.totalAmount || 0) | number: '1.2-2' }}</strong>.
+            </p>
+          </div>
+
+          <!-- Formulario de Ingreso -->
+          <div class="space-y-3 pt-1">
+            <!-- Cuenta Utilizada -->
+            <div>
+              <label class="block text-xs font-bold text-[#1A0A2E] mb-1">
+                Cuenta o Billetera que usaste
+              </label>
+              <select
+                [ngModel]="paymentAccountUsed()"
+                (ngModelChange)="paymentAccountUsed.set($event)"
+                class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold text-[#1A0A2E] focus:outline-none focus:border-[#C30364] focus:ring-1 focus:ring-[#C30364]"
+              >
+                @for (acc of paymentAccounts(); track acc.id) {
+                  <option [value]="acc.accountName">{{ acc.accountName }} ({{ acc.type }})</option>
+                }
+              </select>
+            </div>
+
+            <!-- Número de Operación -->
+            <div>
+              <label class="block text-xs font-bold text-[#1A0A2E] mb-1">
+                Código o Número de Operación <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                [ngModel]="operationNumber()"
+                (ngModelChange)="operationNumber.set($event)"
+                placeholder="Ej: 04918231"
+                class="w-full px-3.5 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl text-sm font-mono font-bold text-[#1A0A2E] placeholder:text-gray-400 focus:outline-none focus:border-[#C30364] focus:ring-2 focus:ring-[#C30364]/20 transition-all"
+                maxlength="20"
+                autofocus
+              />
+              <p class="text-[10px] text-gray-400 mt-1">
+                💡 Lo encuentras en el detalle de la transferencia en tu app de Yape o Plin.
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón de Confirmación Final -->
+          <button
+            type="button"
+            (click)="submitOperationNumber()"
+            [disabled]="isSubmitting() || !operationNumber()"
+            class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#D81B75] to-[#C30364] text-white font-extrabold text-sm shadow-md hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            @if (isSubmitting()) {
+              <span class="animate-spin">🔄</span>
+              <span>Validando operación...</span>
+            } @else {
+              <span>Confirmar Pago y Finalizar</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            }
+          </button>
+        </div>
+      }
 
     }
 

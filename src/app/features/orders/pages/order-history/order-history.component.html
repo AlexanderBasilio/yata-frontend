@@ -231,14 +231,14 @@
               </div>
 
               <!-- Badge de Estado Dinámico -->
-              <div class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap flex items-center gap-1.5 shrink-0 border {{ getStatusBadgeClasses(order.statusColor).bg }} {{ getStatusBadgeClasses(order.statusColor).text }} {{ getStatusBadgeClasses(order.statusColor).border }}">
-                @if (order.canPayNow || order.status === 'PENDING_PAYMENT' || order.status === 'CREATED') {
+              <div class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap flex items-center gap-1.5 shrink-0 border {{ getStatusBadgeClasses(order.status === 'PAYMENT_VERIFICATION' ? 'amber' : order.statusColor).bg }} {{ getStatusBadgeClasses(order.status === 'PAYMENT_VERIFICATION' ? 'amber' : order.statusColor).text }} {{ getStatusBadgeClasses(order.status === 'PAYMENT_VERIFICATION' ? 'amber' : order.statusColor).border }}">
+                @if (order.canPayNow || order.status === 'PENDING_PAYMENT' || order.status === 'CREATED' || order.status === 'PAYMENT_VERIFICATION') {
                   <span class="relative flex h-2 w-2 shrink-0">
                     <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                     <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
                   </span>
                 }
-                <span>{{ order.statusLabel || order.status }}</span>
+                <span>{{ order.status === 'PAYMENT_VERIFICATION' ? 'Verificando Pago' : (order.statusLabel || order.status) }}</span>
               </div>
             </div>
 
@@ -302,6 +302,18 @@
                   class="w-full bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-[0_4px_20px_rgba(195,3,100,0.4)] hover:shadow-[0_4px_25px_rgba(195,3,100,0.55)] transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]">
                   <span>💳</span>
                   <span>Continuar con el Pago (Paso 3)</span>
+                  <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                  </svg>
+                </button>
+              }
+
+              <!-- A.2 Si está en PAYMENT_VERIFICATION: Botón ámbar de verificación -->
+              @else if (order.status === 'PAYMENT_VERIFICATION') {
+                <button (click)="handlePayNow(order)"
+                  class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white py-3 px-4 rounded-xl font-bold text-xs sm:text-sm shadow-[0_4px_18px_rgba(217,119,6,0.35)] transition-all cursor-pointer flex items-center justify-center gap-2 active:scale-[0.98]">
+                  <span>⏳</span>
+                  <span>Verificando Pago - Ver Estado</span>
                   <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                   </svg>

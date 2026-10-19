@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MarketOrderService } from '../../../../core/services/market/market-order.service';
@@ -21,8 +21,58 @@ export class MarketOrderConfirmationComponent implements OnInit {
   isLoading = signal<boolean>(true);
   isCopied = signal<boolean>(false);
 
-  // Número oficial para comprobantes Zisify
-  readonly zisifyPhone = '51987654321';
+  // Status and payment method computeds
+  isCashOnDelivery = computed(() => {
+    const o = this.order();
+    return o?.paymentMethod === 'CASH_ON_DELIVERY';
+  });
+
+  isPrepaid = computed(() => {
+    const o = this.order();
+    const pm = o?.paymentMethod;
+    return pm === 'PREPAID' || pm === 'MANUAL_TRANSFER' || pm === 'YAPE' || pm === 'PLIN' || pm === 'TRANSFER';
+  });
+
+  isVerifyingPayment = computed(() => {
+    const o = this.order();
+    return o?.status === 'PAYMENT_VERIFICATION' || o?.paymentStatus === 'VERIFYING';
+  });
+
+  isConfirmed = computed(() => {
+    const o = this.order();
+    const s = o?.status;
+    return s === 'CONFIRMED' || s === 'PREPARING' || s === 'COLLECTING' || s === 'READY_FOR_DELIVERY' || s === 'IN_DELIVERY';
+  });
+
+  isPendingPayment = computed(() => {
+    const o = this.order();
+    return o?.status === 'PENDING_PAYMENT' || o?.status === 'CREATED';
+  });
+
+  // Banner Informativo de Pesaje (Obligatorio si hay productos al peso)
+  // Evaluar si algún producto tiene pricingMode === "WEIGHT_BASED" o weightStatus === "ESTIMATED"
+  hasWeightBasedProducts = computed(() => {
+    const o = this.order();
+    if (!o) return false;
+    if (o.hasWeightBasedProducts) return true;
+    if (o.pricingMode === 'WEIGHT_BASED' || o.weightStatus === 'ESTIMATED') return true;
+
+    // Direct items check
+    if (o.items && o.items.some(i => i.pricingMode === 'WEIGHT_BASED' || i.weightStatus === 'ESTIMATED' || i.selectedMeasurement === 'KG')) {
+      return true;
+    }
+
+    // Suborders items check
+    if (o.suborders) {
+      for (const sub of o.suborders) {
+        if (sub.items && sub.items.some(i => i.pricingMode === 'WEIGHT_BASED' || i.weightStatus === 'ESTIMATED' || i.selectedMeasurement === 'KG')) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  });
 
   ngOnInit(): void {
     const code = this.route.snapshot.paramMap.get('orderCode') || '';
@@ -53,19 +103,18 @@ export class MarketOrderConfirmationComponent implements OnInit {
     }
   }
 
-  getWhatsAppUrl(): string {
+  resumePayment(): void {
     const code = this.orderCode();
-    const msg = encodeURIComponent(
-      `Hola Zisify, adjunto el comprobante de pago de mi pedido de Mercado con código ${code}.`
-    );
-    return `https://wa.me/${this.zisifyPhone}?text=${msg}`;
+    if (code) {
+      this.router.navigate(['/checkout/market/orders', code, 'payment']);
+    }
   }
 
   goToMarket(): void {
     this.router.navigate(['/market']);
   }
 
-  goToProfile(): void {
-    this.router.navigate(['/profile']);
+  goToMyOrders(): void {
+    this.router.navigate(['/orders']);
   }
 }

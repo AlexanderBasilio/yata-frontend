@@ -284,7 +284,8 @@ export interface MarketDeliveryLocationDto {
 }
 
 export interface MarketAppliedDiscountDto {
-  code: string;
+  type?: string;
+  code?: string;
   displayName: string;
   amount: number;
 }
@@ -325,6 +326,7 @@ export interface MarketOrderSummaryRequest {
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
   deliveryServiceType?: string;
+  rewardId?: string | null;
 }
 
 export interface MarketOrderSummaryResponse {
@@ -338,6 +340,9 @@ export interface MarketOrderSummaryResponse {
   serviceFee: number;
   discountAmount: number;
   totalAmount: number;
+  rewardId?: string | null;
+  benefitReservationId?: string | null;
+  discountNote?: string | null;
   assignedVehicleType?: 'BICYCLE' | 'MOTO' | 'MOTOTAXI' | string;
   cashOnDeliveryEnabled?: boolean;
   bankTransferEnabled?: boolean;
@@ -360,6 +365,19 @@ export interface MarketCheckoutRequest {
   paymentMethod?: MarketPaymentMethod;
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
+  rewardId?: string | null;
+}
+
+export interface MarketOrderItemDto {
+  itemId?: string;
+  productId?: string;
+  productName: string;
+  quantity: number;
+  unitPrice?: number;
+  subtotal?: number;
+  pricingMode?: PricingMode | string;
+  weightStatus?: 'ESTIMATED' | 'WEIGHED' | string;
+  selectedMeasurement?: MeasurementType;
 }
 
 export interface MarketSuborderSummaryDto {
@@ -368,6 +386,26 @@ export interface MarketSuborderSummaryDto {
   status: string;
   subtotal?: number;
   itemsCount?: number;
+  confirmedAt?: string;
+  items?: MarketOrderItemDto[];
+}
+
+export interface MarketPaymentAccountDto {
+  id: string;
+  type: 'YAPE' | 'PLIN' | 'TRANSFER' | string;
+  accountName: string;
+  accountNumber: string;
+  accountHolder?: string | null;
+  qrImageUrl?: string | null;
+  isAvailable?: boolean;
+  displayOrder?: number;
+  instructions?: string;
+}
+
+export interface MarketPaymentOperationRequest {
+  operationNumber: string;
+  paymentAccountUsed?: string;
+  voucherImageUrl?: string | null;
 }
 
 export interface MarketOrderResponse {
@@ -377,6 +415,15 @@ export interface MarketOrderResponse {
   paymentMethod?: MarketPaymentMethod | string;
   deliveryServiceType?: string;
   totalAmount: number;
+  productsSubtotal?: number;
+  deliveryFee?: number;
+  consolidationFee?: number;
+  serviceFee?: number;
+  discountAmount?: number;
+  cashOnDeliveryEnabled?: boolean;
+  bankTransferEnabled?: boolean;
+  prepaidEnabled?: boolean;
+  availablePaymentMethods?: ('PREPAID' | 'CASH_ON_DELIVERY' | string)[];
   clientName?: string;
   clientPhoneNumber?: string;
   customerEmail?: string;
@@ -384,5 +431,12 @@ export interface MarketOrderResponse {
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
   suborders?: MarketSuborderSummaryDto[];
+  items?: MarketOrderItemDto[];
+  hasWeightBasedProducts?: boolean;
+  pricingMode?: PricingMode | string;
+  weightStatus?: string;
+  operationNumber?: string;
+  paymentAccountUsed?: string;
+  confirmedAt?: string;
   createdAt?: string;
 }

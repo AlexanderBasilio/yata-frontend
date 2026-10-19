@@ -396,8 +396,8 @@ export class MarketCartService {
 
     cart.distinctStoresCount = cart.stores.length;
     cart.productsSubtotal = grandSubtotal;
-    cart.estimatedConsolidationFee = cart.distinctStoresCount > 1 ? (cart.distinctStoresCount - 1) * 0.5 : 0;
-    cart.estimatedTotal = grandSubtotal + cart.estimatedConsolidationFee;
+    cart.estimatedConsolidationFee = 0;
+    cart.estimatedTotal = grandSubtotal;
     cart.totalItemsCount = totalItems;
   }
 }

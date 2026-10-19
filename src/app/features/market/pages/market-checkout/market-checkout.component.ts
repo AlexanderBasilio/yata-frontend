@@ -15,8 +15,11 @@ import {
   MarketDeliveryLocationDto,
   MarketDeliveryOptionDto,
   MarketOrderSummaryResponse,
-  ZoneResolutionResponse
+  ZoneResolutionResponse,
+  MarketAppliedDiscountDto
 } from '../../../../core/models/market.model';
+import { PortalRewardService } from '../../../../core/services/portal/portal-reward.service';
+import { AvailableBenefitResponse } from '../../../../core/models/portal-reward.model';
 
 @Component({
   selector: 'app-market-checkout',
@@ -60,6 +63,24 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
     const opt = this.selectedDeliveryOption();
     if (opt) return opt.fee;
     return this.orderSummary()?.deliveryFee || 0;
+  });
+
+  // Rewards & loyalty state
+  public rewardService = inject(PortalRewardService);
+  selectedRewardId = signal<string | null>(null);
+  availableBenefits = signal<AvailableBenefitResponse[]>([]);
+  showBenefits = signal<boolean>(false);
+  isLoadingBenefits = signal<boolean>(false);
+
+  // Computed discounts: First delivery vs other discounts (e.g. loyalty reward coupons)
+  firstDeliveryDiscount = computed(() => {
+    const discounts = this.orderSummary()?.appliedDiscounts;
+    return discounts?.find(d => d.type === 'FIRST_DELIVERY') || null;
+  });
+
+  otherDiscounts = computed(() => {
+    const discounts = this.orderSummary()?.appliedDiscounts;
+    return discounts?.filter(d => d.type !== 'FIRST_DELIVERY') || [];
   });
 
   displayedTotalAmount = computed(() => {
@@ -368,7 +389,12 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
     // Resolver zona de entrega en Platform y calcular resumen financiero en paralelo
     forkJoin({
       zone: this.orderService.resolveZoneLocation(location.latitude, location.longitude),
-      summary: this.orderService.calculateSummary({ deliveryLocation: location, location })
+      summary: this.orderService.calculateSummary({
+        deliveryLocation: location,
+        location,
+        deliveryServiceType: this.selectedDeliveryOption()?.serviceType,
+        rewardId: this.selectedRewardId() || undefined
+      })
     }).subscribe({
       next: ({ zone, summary }) => {
         this.zoneInfo.set(zone);
@@ -382,6 +408,69 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
         this.isLoadingSummary.set(false);
         const errMsg = err?.error?.message || 'Error al calcular costos y modalidades de envío.';
         this.errorMessage.set(errMsg);
+      }
+    });
+  }
+
+  benefitId(benefit: AvailableBenefitResponse): string {
+    return benefit.rewardId ? String(benefit.rewardId) : (benefit.uuid || benefit.id || '');
+  }
+
+  loadBenefits(): void {
+    if (this.isLoadingBenefits() || this.isLoadingSummary() || this.isSubmitting()) return;
+    this.showBenefits.set(true);
+    this.isLoadingBenefits.set(true);
+    this.rewardService.getAvailableBenefits().subscribe({
+      next: (benefits) => {
+        const filtered = (benefits || []).filter(b =>
+          this.benefitId(b) && b.usageStatus === 'AVAILABLE' &&
+          b.status !== 'EXPIRED' && b.status !== 'CANCELLED' &&
+          (!b.requiresClaim || b.status === 'CLAIMED') &&
+          (!b.expiresAt || Date.parse(b.expiresAt) > Date.now()) &&
+          b.items?.some(item => item.itemType === 'FREE_DELIVERY')
+        );
+        this.availableBenefits.set(filtered);
+        this.isLoadingBenefits.set(false);
+      },
+      error: () => {
+        this.isLoadingBenefits.set(false);
+      }
+    });
+  }
+
+  selectReward(rewardId?: string | null): void {
+    if (this.isLoadingSummary() || this.isSubmitting()) return;
+    this.selectedRewardId.set(rewardId || null);
+    this.refreshSummary();
+  }
+
+  refreshSummary(): void {
+    const fv = this.checkoutForm.value;
+    const location: MarketDeliveryLocationDto = {
+      address: fv.address,
+      reference: fv.reference?.trim() || undefined,
+      latitude: fv.latitude,
+      longitude: fv.longitude,
+      city: fv.city || 'LIMA',
+      district: fv.district?.trim() || undefined
+    };
+    const selectedOpt = this.selectedDeliveryOption();
+
+    this.isLoadingSummary.set(true);
+    this.orderService.calculateSummary({
+      deliveryLocation: location,
+      location,
+      deliveryServiceType: selectedOpt?.serviceType || 'STANDARD',
+      rewardId: this.selectedRewardId() || undefined
+    }).subscribe({
+      next: (summary) => {
+        this.orderSummary.set(summary);
+        this.setupDeliveryOptions(summary);
+        this.isLoadingSummary.set(false);
+      },
+      error: (err) => {
+        this.isLoadingSummary.set(false);
+        console.warn('Error al recalcular resumen con cupón en Mercado:', err);
       }
     });
   }
@@ -436,8 +525,10 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
 
     this.deliveryOptions.set(options);
 
-    // Seleccionar opción por defecto
+    // Seleccionar opción por defecto manteniendo la actual si existe
+    const currentType = this.selectedDeliveryOption()?.serviceType;
     const defaultOption =
+      (currentType ? options.find(o => o.serviceType === currentType && o.isAvailable !== false) : null) ||
       options.find(o => o.isSelected && o.isAvailable !== false) ||
       options.find(o => o.isAvailable !== false) ||
       options[0];
@@ -492,7 +583,8 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
       deliveryInstructions: fv.deliveryInstructions?.trim() || undefined,
       deliveryLocation: location,
       location: location,
-      deliveryServiceType: selectedOpt?.serviceType || 'STANDARD'
+      deliveryServiceType: selectedOpt?.serviceType || 'STANDARD',
+      rewardId: this.selectedRewardId() || undefined
     };
 
     this.isSubmitting.set(true);

@@ -296,27 +296,19 @@
         </div>
       }
 
-      <!-- MULTI-STORE CONSOLIDATION SUMMARY CARD -->
+      <!-- PRODUCTS SUBTOTAL SUMMARY CARD -->
       <div class="bg-white rounded-2xl p-4 border border-gray-100 shadow-xs space-y-3">
         <h3 class="text-xs font-bold text-[#1A0A2E] uppercase tracking-wider">
-          Resumen del Pedido Multitienda
+          Resumen del Pedido
         </h3>
 
-        <div class="space-y-1.5 text-xs text-gray-600">
-          <div class="flex justify-between">
-            <span>Subtotal Productos</span>
-            <span class="font-bold text-[#1A0A2E]">S/ {{ cart()?.productsSubtotal | number: '1.2-2' }}</span>
+        <div class="space-y-2 text-xs text-gray-600">
+          <div class="flex justify-between items-center">
+            <span>Subtotal de Productos ({{ cart()?.totalItemsCount || 0 }} unid)</span>
+            <span class="font-extrabold text-sm text-[#1A0A2E]">
+              S/ {{ cart()?.productsSubtotal | number: '1.2-2' }}
+            </span>
           </div>
-
-          <!-- Multi-store Consolidation Fee (Regla de negocio: S/ 0.50 por puesto adicional) -->
-          @if ((cart()?.distinctStoresCount || 0) > 1) {
-            <div class="flex justify-between text-indigo-700 bg-indigo-50 p-2 rounded-xl border border-indigo-100">
-              <div class="flex items-center gap-1.5">
-                <span>🔄 Recolección Multitienda ({{ (cart()?.distinctStoresCount || 1) - 1 }} puesto(s) extra)</span>
-              </div>
-              <span class="font-bold">+S/ {{ cart()?.estimatedConsolidationFee | number: '1.2-2' }}</span>
-            </div>
-          }
 
           @if (cart()?.totalWeightGrams) {
             <div class="flex justify-between text-[11px] text-gray-400">
@@ -325,10 +317,15 @@
             </div>
           }
 
+          <div class="bg-purple-50/70 border border-purple-100 rounded-xl p-2.5 text-[11px] text-purple-900 flex items-start gap-1.5">
+            <span class="text-xs">ℹ️</span>
+            <span>Los costos adicionales (envío según tu dirección, recolección multitienda y servicio) se calculan en el siguiente paso.</span>
+          </div>
+
           <div class="border-t border-gray-100 pt-2 flex justify-between items-baseline">
-            <span class="text-sm font-bold text-[#1A0A2E]">Total Estimado</span>
-            <span class="text-lg font-extrabold text-[#C30364]">
-              S/ {{ cart()?.estimatedTotal | number: '1.2-2' }}
+            <span class="text-sm font-bold text-[#1A0A2E]">Subtotal</span>
+            <span class="text-xl font-black text-[#C30364]">
+              S/ {{ cart()?.productsSubtotal | number: '1.2-2' }}
             </span>
           </div>
         </div>
@@ -336,9 +333,9 @@
         <button
           type="button"
           (click)="proceedToCheckout()"
-          class="w-full py-3 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
+          class="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#C30364] via-[#E8368A] to-[#C30364] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg hover:brightness-105 active:scale-98 transition-all flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>Continuar con el Pago</span>
+          <span>Continuar con la Entrega</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
           </svg>
