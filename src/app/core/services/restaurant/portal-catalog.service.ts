@@ -26,12 +26,14 @@ export interface DishHomeSummaryResponse {
   id: string; // UUID
   restaurantId: string; // UUID
   restaurantName?: string;
+  restaurantLogoUrl?: string | null; // 🎯 Logo miniatura del restaurante (avatar 24x24)
   name: string;
   description?: string;
   price: number; // BigDecimal
   listPrice?: number; // 🎯 NUEVO: Precio de lista (tachado)
   imageUrl?: string;
   isAvailable?: boolean;
+  isZisifyExclusive?: boolean; // 🎯 Exclusivo de Zisify
 }
 
 export interface RestaurantSectionDto {
@@ -69,6 +71,7 @@ export interface CustomerHeaderSummaryDto {
 
 export interface HomeShortcutSectionsResponse {
   headerSummaryDto?: CustomerHeaderSummaryDto;
+  exclusiveOffersSection?: DishSectionDto;
   nearbySection: RestaurantSectionDto;
   newOptionsSection: RestaurantSectionDto;
   reorderSection: DishSectionDto;
@@ -120,6 +123,11 @@ export class PortalCatalogService {
             zisiCoins: 0,
             referrals: '0'
           },
+          exclusiveOffersSection: {
+            title: 'Ofertas Exclusivas de Zisify',
+            subtitle: 'Platillos y descuentos imperdibles',
+            items: []
+          },
           nearbySection: {
             title: 'Cerca de ti',
             subtitle: 'Restaurantes en tu zona con delivery ultra rápido',
@@ -162,6 +170,51 @@ export class PortalCatalogService {
         totalOrders: 21,
         zisiCoins: 56,
         referrals: '0'
+      },
+      exclusiveOffersSection: {
+        title: 'Ofertas Exclusivas de Zisify',
+        subtitle: 'Promociones y platillos únicos sólo en Zisify',
+        items: [
+          {
+            id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            restaurantId: 'd9b2d63d-a233-4123-8511-9a7008f1b621',
+            restaurantName: 'Polleria Lucyana',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
+            name: '1/4 Pollo a la Brasa',
+            description: 'Con papas fritas y ensalada',
+            price: 18.90,
+            listPrice: 22.00,
+            imageUrl: 'https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?w=400&q=80',
+            isAvailable: true,
+            isZisifyExclusive: true
+          },
+          {
+            id: 'ex-002',
+            restaurantId: 'rest-002',
+            restaurantName: 'Broast King & Grill',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
+            name: 'Combo Dúo Broaster Zisify',
+            description: '4 piezas crujientes con papas onduladas y salsas secretas',
+            price: 25.50,
+            listPrice: 32.00,
+            imageUrl: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&q=80',
+            isAvailable: true,
+            isZisifyExclusive: true
+          },
+          {
+            id: 'ex-003',
+            restaurantId: 'rest-005',
+            restaurantName: 'Burger Lab Artisanal',
+            restaurantLogoUrl: null,
+            name: 'Mega Smash Doble Especial',
+            description: 'Doble carne madurada, cheddar artesanal y tocino ahumado',
+            price: 28.00,
+            listPrice: 35.00,
+            imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80',
+            isAvailable: true,
+            isZisifyExclusive: true
+          }
+        ]
       },
       nearbySection: {
         title: 'Cerca de ti',
@@ -274,6 +327,7 @@ export class PortalCatalogService {
             id: 'b1a2c3d4-1111-4444-aaaa-000000000001',
             restaurantId: 'rest-002',
             restaurantName: 'Broast King & Grill',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
             name: '1/4 Pollo a la Brasa Tradicional',
             description: 'Pollo jugoso al carbón con papas onduladas y crema de ají',
             price: 19.90,
@@ -285,6 +339,7 @@ export class PortalCatalogService {
             id: 'b1a2c3d4-2222-4444-aaaa-000000000002',
             restaurantId: 'rest-001',
             restaurantName: 'El Rico Puerto 82',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
             name: 'Ceviche Mixto Clásico',
             description: 'Pesca del día con calamar, choclo desgranado y camote dulce',
             price: 35.00,
@@ -296,6 +351,7 @@ export class PortalCatalogService {
             id: 'b1a2c3d4-3333-4444-aaaa-000000000003',
             restaurantId: 'rest-003',
             restaurantName: 'Chifa Dragón Dorado',
+            restaurantLogoUrl: null,
             name: 'Arroz Chaufa Especial al Wok',
             description: 'Chaufa con trozos de pollo, lomo salteado y cebollita china',
             price: 22.50,
@@ -312,6 +368,7 @@ export class PortalCatalogService {
             id: 't1a2c3d4-1111-4444-bbbb-000000000001',
             restaurantId: 'rest-002',
             restaurantName: 'Broast King & Grill',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
             name: 'Alita King Broaster Crocante',
             description: 'Alita + Papas nativas + Arroz + Ensalada + Cremas ilimitadas',
             price: 10.20,
@@ -323,6 +380,7 @@ export class PortalCatalogService {
             id: 't1a2c3d4-2222-4444-bbbb-000000000002',
             restaurantId: 'rest-002',
             restaurantName: 'Broast King & Grill',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
             name: 'Pierna King Crujiente Especial',
             description: 'Pierna frita crocante con receta secreta de especias peruanas',
             price: 11.20,
@@ -333,6 +391,7 @@ export class PortalCatalogService {
             id: 't1a2c3d4-3333-4444-bbbb-000000000003',
             restaurantId: 'rest-005',
             restaurantName: 'Burger Lab Artisanal',
+            restaurantLogoUrl: null,
             name: 'Burger Royale Doble Smashed',
             description: 'Doble carne smashed, queso cheddar derretido y tocino ahumado',
             price: 24.90,
@@ -344,6 +403,7 @@ export class PortalCatalogService {
             id: 't1a2c3d4-4444-4444-bbbb-000000000004',
             restaurantId: 'rest-001',
             restaurantName: 'El Rico Puerto 82',
+            restaurantLogoUrl: 'https://res.cloudinary.com/dhgsvmcmc/image/upload/v1778979776/delivery-categories/food.png',
             name: 'Tacu Tacu con Lomo Saltado',
             description: 'Tacu Tacu de frijol canario con lomo fino flameado al pisco',
             price: 50.60,

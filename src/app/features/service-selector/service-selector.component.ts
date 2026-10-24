@@ -200,11 +200,12 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
   hasAnyShortcutItems = computed(() => {
     const s = this.homeShortcuts();
     if (!s) return false;
+    const exclusive = s.exclusiveOffersSection?.items?.length || 0;
     const nearby = s.nearbySection?.items?.length || 0;
     const newOptions = s.newOptionsSection?.items?.length || 0;
     const reorder = s.reorderSection?.items?.length || 0;
     const trends = s.trendingSection?.items?.length || 0;
-    return (nearby + newOptions + reorder + trends) > 0;
+    return (exclusive + nearby + newOptions + reorder + trends) > 0;
   });
 
   displayTotalOrders = computed(() => {
@@ -707,6 +708,30 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     });
   }
 
+  readonly fallbackDishImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80';
+  readonly fallbackRestaurantImage = 'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&q=80';
+
+  onLogoError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.style.display = 'none';
+    }
+  }
+
+  onDishImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = this.fallbackDishImage;
+    }
+  }
+
+  onRestaurantImageError(event: Event) {
+    const target = event.target as HTMLImageElement;
+    if (target) {
+      target.src = this.fallbackRestaurantImage;
+    }
+  }
+
   getRestaurantBadge(rest: RestaurantSummaryResponse, sectionType: 'nearby' | 'newOptions'): string {
     if (sectionType === 'nearby') {
       return `CERCA (${rest.preparationTime || 15} MIN)`;
@@ -714,7 +739,10 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
     return 'NUEVO';
   }
 
-  getDishBadge(dish: DishHomeSummaryResponse, sectionType: 'reorder' | 'trending'): string {
+  getDishBadge(dish: DishHomeSummaryResponse, sectionType: 'exclusive' | 'reorder' | 'trending'): string {
+    if (dish.isZisifyExclusive || sectionType === 'exclusive') {
+      return '⭐ EXCLUSIVO';
+    }
     if (sectionType === 'reorder') {
       return 'FAVORITO';
     }
