@@ -16,7 +16,8 @@ import {
   MarketProductOptionGroupDto,
   MarketProductVariantDto,
   MarketStoreProductCustomerDto,
-  MarketStoreProductPriceOfferDto
+  MarketStoreProductPriceOfferDto,
+  MeasurementType
 } from '../../../../core/models/market.model';
 import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
 
@@ -70,42 +71,78 @@ export class ProductConfigModalComponent implements OnInit {
   selectedOptionsMap = signal<Record<string, MarketProductOptionDto>>({});
   itemNotes = signal<string>('');
 
-  // 2. Ofertas de precio de la variante seleccionada
-  kgOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
+  // 2. Ofertas de precio y unidades de venta activas
+  activePrices = computed<MarketStoreProductPriceOfferDto[]>(() => {
     const v = this.selectedVariant();
     if (v?.prices && v.prices.length > 0) {
-      return v.prices.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+      return v.prices;
     }
     const prod = this.currentProduct() || this.product;
-    return prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+    return prod?.prices || [];
+  });
+
+  activeAllowedUnits = computed<MeasurementType[]>(() => {
+    const v = this.selectedVariant();
+    if (v?.allowedSaleUnits && v.allowedSaleUnits.length > 0) {
+      return v.allowedSaleUnits;
+    }
+    const prod = this.currentProduct() || this.product;
+    return prod?.allowedSaleUnits || [];
+  });
+
+  kgOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
+    const prices = this.activePrices();
+    if (prices.length > 0) {
+      return prices.find(p => (p.saleUnit || p.measurementType) === 'KG') || null;
+    }
+    return null;
   });
 
   unitOffer = computed<MarketStoreProductPriceOfferDto | null>(() => {
-    const v = this.selectedVariant();
-    if (v?.prices && v.prices.length > 0) {
-      return v.prices.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
+    const prices = this.activePrices();
+    if (prices.length > 0) {
+      return prices.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
     }
-    const prod = this.currentProduct() || this.product;
-    return prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT') || null;
+    return null;
   });
 
-  // Precios dinámicos reactivos de la variante actual
+  // Precios dinámicos reactivos de la variante actual o producto simple
   kgPrice = computed<number | null>(() => {
     const offer = this.kgOffer();
     if (offer) {
       return offer.zisifyPrice ?? offer.price ?? null;
     }
-    // Si la variante tiene lista de precios pero no incluye KG, esta variante no se vende por KG
-    if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
+
+    const prices = this.activePrices();
+    // Si la variante o el producto cuenta con array prices pero no incluye KG, NO se vende por KG
+    if (prices.length > 0) {
       return null;
     }
+
+    const allowed = this.activeAllowedUnits();
+    // Si tiene allowedSaleUnits explícitos pero no incluye KG, NO se vende por KG
+    if (allowed.length > 0) {
+      if (!allowed.includes('KG')) {
+        return null;
+      }
+      const v = this.selectedVariant();
+      const prod = this.currentProduct() || this.product;
+      return v?.price ?? prod?.pricePerKg ?? prod?.primaryPrice ?? prod?.price ?? null;
+    }
+
+    // Fallback únicamente para datos heredados sin array prices ni allowedSaleUnits
+    const v = this.selectedVariant();
     const prod = this.currentProduct() || this.product;
-    // Fallback únicamente para productos simples sin variantes o sin lista prices
-    const pOffer = prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'KG');
-    if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
-    if (prod?.pricePerKg) return prod.pricePerKg;
-    if (prod?.primaryPriceUnit === 'KG') {
-      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
+    if (v) {
+      if (v.saleUnit === 'KG' || v.priceUnit === 'KG') {
+        return v.price ?? prod.primaryPrice ?? prod.price ?? null;
+      }
+      return null;
+    }
+
+    // Para productos simples sin variantes ni array prices:
+    if (prod?.primaryPriceUnit === 'KG' || prod?.pricePerKg) {
+      return prod.pricePerKg ?? prod.primaryPrice ?? prod.price ?? null;
     }
     return null;
   });
@@ -115,20 +152,37 @@ export class ProductConfigModalComponent implements OnInit {
     if (offer) {
       return offer.zisifyPrice ?? offer.price ?? null;
     }
-    // Si la variante tiene lista de precios pero no incluye UNIT, esta variante no se vende por UNIT
-    if (this.selectedVariant()?.prices && this.selectedVariant()!.prices!.length > 0) {
+
+    const prices = this.activePrices();
+    // Si la variante o el producto cuenta con array prices pero no incluye UNIT, NO se vende por UNIT
+    if (prices.length > 0) {
       return null;
     }
-    const prod = this.currentProduct() || this.product;
-    // Fallback únicamente para productos simples sin variantes o sin lista prices
-    const pOffer = prod?.prices?.find(p => (p.saleUnit || p.measurementType) === 'UNIT');
-    if (pOffer) return pOffer.zisifyPrice ?? pOffer.price ?? null;
-    if (prod?.unitPrice) return prod.unitPrice;
-    if (prod?.primaryPriceUnit === 'UNIT') {
-      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
+
+    const allowed = this.activeAllowedUnits();
+    // Si tiene allowedSaleUnits explícitos pero no incluye UNIT, NO se vende por UNIT
+    if (allowed.length > 0) {
+      if (!allowed.includes('UNIT')) {
+        return null;
+      }
+      const v = this.selectedVariant();
+      const prod = this.currentProduct() || this.product;
+      return v?.price ?? prod?.unitPrice ?? prod?.primaryPrice ?? prod?.price ?? null;
     }
-    if (!this.kgPrice()) {
-      return this.selectedVariant()?.price ?? prod.primaryPrice ?? prod.price ?? null;
+
+    // Fallback únicamente para datos heredados sin array prices ni allowedSaleUnits
+    const v = this.selectedVariant();
+    const prod = this.currentProduct() || this.product;
+    if (v) {
+      if (v.saleUnit === 'UNIT' || v.priceUnit === 'UNIT' || !this.kgPrice()) {
+        return v.price ?? prod.primaryPrice ?? prod.price ?? null;
+      }
+      return null;
+    }
+
+    // Para productos simples sin variantes ni array prices:
+    if (prod?.primaryPriceUnit === 'UNIT' || prod?.unitPrice || !this.kgPrice()) {
+      return prod.unitPrice ?? prod.primaryPrice ?? prod.price ?? null;
     }
     return null;
   });
@@ -267,7 +321,7 @@ export class ProductConfigModalComponent implements OnInit {
 
   // Aviso de balanza si está en KG
   isWeightActive = computed<boolean>(() => {
-    return this.selectedUnit() === 'KG' || this.product.pricingMode === 'WEIGHT_BASED';
+    return this.selectedUnit() === 'KG';
   });
 
   // Validación
@@ -300,12 +354,16 @@ export class ProductConfigModalComponent implements OnInit {
 
     // 2. Establecer modalidad de venta inicial con incrementos dinámicos
     const units = this.availableSaleUnits();
-    if (units.some(u => u.unit === 'KG')) {
-      this.selectedUnit.set('KG');
-      this.quantity.set(this.weightStep());
-    } else {
-      this.selectedUnit.set('UNIT');
-      this.quantity.set(this.unitStep());
+    const defaultOffer = this.activePrices().find(p => p.isDefault);
+    const defaultUnit = defaultOffer ? (defaultOffer.saleUnit || defaultOffer.measurementType) : null;
+    const preferredUnit = defaultUnit || (units.some(u => u.unit === this.product.primaryPriceUnit) ? this.product.primaryPriceUnit : null);
+
+    if (preferredUnit && units.some(u => u.unit === preferredUnit)) {
+      this.selectSaleUnit(preferredUnit as 'KG' | 'UNIT');
+    } else if (units.some(u => u.unit === 'KG')) {
+      this.selectSaleUnit('KG');
+    } else if (units.length > 0) {
+      this.selectSaleUnit(units[0].unit);
     }
 
     // 3. Preseleccionar opciones por defecto de los grupos habilitados
@@ -335,7 +393,10 @@ export class ProductConfigModalComponent implements OnInit {
               this.selectedVariant.set(updatedVar);
             }
           }
-          if (this.quantity() < this.currentStep()) {
+          const available = this.availableSaleUnits();
+          if (available.length > 0 && !available.some(u => u.unit === this.selectedUnit())) {
+            this.selectSaleUnit(available[0].unit);
+          } else if (this.quantity() < this.currentStep()) {
             this.quantity.set(this.currentStep());
           }
         }
@@ -348,7 +409,7 @@ export class ProductConfigModalComponent implements OnInit {
 
     // Si la unidad seleccionada no está disponible en la nueva variante, cambiar a la 1ra disponible
     const available = this.availableSaleUnits();
-    if (!available.some(u => u.unit === this.selectedUnit())) {
+    if (available.length > 0 && !available.some(u => u.unit === this.selectedUnit())) {
       this.selectSaleUnit(available[0].unit);
     }
   }
