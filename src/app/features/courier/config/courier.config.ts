@@ -12,7 +12,7 @@ export const COURIER_CONFIG = {
    * Formato internacional E.164 sin signo '+', sin espacios ni guiones:
    * Código de país (51) + 9 dígitos de celular en Perú.
    */
-  whatsappNumber: '51987654321',
+  whatsappNumber: '51993861207',
 
   /**
    * Ventana operativa oficial de recolección programada.
