@@ -1,0 +1,115 @@
+<div class="space-y-4">
+  <!-- 1. Ventana Operativa de Recolección (Fija: 10:00 a.m. a 12:00 p.m.) -->
+  <div class="bg-gradient-to-br from-[#1A0A2E] to-[#2D124D] rounded-2xl p-4 sm:p-5 text-white shadow-md relative overflow-hidden">
+    <div class="absolute -right-4 -bottom-4 text-7xl opacity-10 pointer-events-none">
+      🚚
+    </div>
+
+    <div class="flex items-center gap-2 mb-2">
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#C30364] text-white">
+        Ruta Compartida
+      </span>
+      <span class="text-xs text-gray-300">
+        Horario matutino
+      </span>
+    </div>
+
+    <h4 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+      {{ config.collectionWindow }}
+    </h4>
+
+    <p class="text-xs text-gray-300 mt-1 max-w-md leading-relaxed">
+      Zisify recorre una ruta compartida optimizada. El orden exacto de recojo depende de las ubicaciones del día y no de una cita por hora fija.
+    </p>
+
+    <!-- Reglas operativas rápidas -->
+    <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-white/10 text-[11px] text-gray-300">
+      <div class="flex items-center gap-1.5">
+        <span class="text-amber-400">⏱️</span>
+        <span>Máx. <strong>10 min</strong> de espera</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="text-emerald-400">📦</span>
+        <span>Paquete listo al llegar</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Selector de Fecha de Recolección -->
+  <div>
+    <label class="block text-xs sm:text-sm font-bold text-[#1A0A2E] mb-2">
+      Selecciona la fecha para tu recolección <span class="text-[#C30364]">*</span>
+    </label>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      @for (d of dateOptions(); track d.value) {
+        <button
+          type="button"
+          (click)="selectDate(d.value)"
+          class="p-3 rounded-xl border-2 text-center transition-all cursor-pointer flex flex-col items-center justify-center"
+          [class.border-[#C30364]]="selectedDateValue() === d.value"
+          [class.bg-[#FFF0F7]]="selectedDateValue() === d.value"
+          [class.shadow-xs]="selectedDateValue() === d.value"
+          [class.border-gray-200]="selectedDateValue() !== d.value"
+          [class.bg-white]="selectedDateValue() !== d.value"
+          [class.hover:border-gray-300]="selectedDateValue() !== d.value"
+        >
+          <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">
+            {{ d.dayName }}
+          </span>
+          <span class="text-xs sm:text-sm font-extrabold text-gray-900 mt-0.5" [class.text-[#C30364]]="selectedDateValue() === d.value">
+            {{ d.label }}
+          </span>
+          @if (d.isToday && d.isPastCutoff) {
+            <span class="mt-1 text-[9px] font-semibold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-sm">
+              En ruta
+            </span>
+          } @else if (d.isToday) {
+            <span class="mt-1 text-[9px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded-sm">
+              Hoy
+            </span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- 3. Alertas y Explicación del Cierre Operativo (9:45 a. m.) -->
+  @if (isLateBooking()) {
+    <!-- Alerta cuando la solicitud es para hoy después del cierre de las 9:45 a.m. -->
+    <div class="bg-amber-50 border border-amber-300/80 rounded-2xl p-4 text-amber-950 space-y-2">
+      <div class="flex items-center gap-2 text-xs sm:text-sm font-bold text-amber-900">
+        <span class="text-base">⚠️</span>
+        <span>Solicitud posterior al cierre anticipado ({{ config.cutoffTimeLabel }})</span>
+      </div>
+
+      <p class="text-xs text-amber-900 leading-relaxed">
+        La ruta de hoy ya se encuentra en marcha (desplazamiento general de <strong>Este a Oeste de Lima</strong>). Tu envío será evaluado manualmente por el operador de Zisify en WhatsApp para verificar si tus puntos de recojo y entrega encajan en el trayecto en curso sin generar retrocesos considerables.
+      </p>
+
+      <div class="pt-2 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-t border-amber-200 text-xs">
+        <span class="text-amber-800 text-[11px]">
+          ¿Prefieres asegurar tu cupo planificado sin esperas de evaluación?
+        </span>
+        <button
+          type="button"
+          (click)="switchToTomorrow()"
+          class="px-3 py-1.5 bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold rounded-lg text-xs transition-colors shrink-0 cursor-pointer"
+        >
+          Programar para mañana →
+        </button>
+      </div>
+    </div>
+  } @else {
+    <!-- Información estándar de reserva anticipada -->
+    <div class="bg-gray-50 border border-gray-200 rounded-2xl p-3.5 text-gray-700 text-xs space-y-1.5">
+      <div class="flex items-center gap-2 font-bold text-gray-900">
+        <span class="text-sm">⏰</span>
+        <span>Cierre de reservas anticipadas: {{ config.cutoffTimeLabel }}</span>
+      </div>
+      <p class="text-[11px] text-gray-600 leading-relaxed">
+        Las solicitudes enviadas antes de las 9:45 a. m. del día programado entran en la planificación óptima de la ruta. El servicio se confirmará formalmente por WhatsApp con tu cotización personalizada.
+      </p>
+    </div>
+  }
+</div>

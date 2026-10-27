@@ -220,6 +220,20 @@ const applicationRoutes: Routes = [
   },
 
   // ============================================
+  // COURIER MVP (PÚBLICO - RUTA DISCRETA NO ANUNCIADA)
+  // ============================================
+  {
+    path: 'c/x8q2m9k4v7rp',
+    loadComponent: () => import('./features/courier/pages/courier-form-page/courier-form-page.component')
+      .then(m => m.CourierFormPageComponent)
+  },
+  {
+    path: 'c/7kq9m2vx8r4p',
+    redirectTo: 'c/x8q2m9k4v7rp',
+    pathMatch: 'full'
+  },
+
+  // ============================================
   // 7. CATCH ALL
   // ============================================
   {

@@ -1,0 +1,305 @@
+<div class="space-y-4">
+  <!-- 1. Tamaño del paquete -->
+  <div>
+    <label class="block text-xs sm:text-sm font-bold text-[#1A0A2E] mb-2">
+      1. Tamaño aproximado del bulto <span class="text-[#C30364]">*</span>
+    </label>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+      @for (size of sizesConfig; track size.id) {
+        <button
+          type="button"
+          (click)="selectSize(size.id)"
+          class="relative text-left p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between"
+          [class.border-[#C30364]]="specs().size === size.id"
+          [class.bg-[#FFF0F7]/40]="specs().size === size.id"
+          [class.shadow-xs]="specs().size === size.id"
+          [class.border-gray-200]="specs().size !== size.id"
+          [class.bg-white]="specs().size !== size.id"
+          [class.hover:border-gray-300]="specs().size !== size.id"
+        >
+          <div class="flex items-start justify-between gap-2 mb-1.5">
+            <span class="text-2xl">{{ size.icon }}</span>
+            <span
+              class="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all"
+              [class.border-[#C30364]]="specs().size === size.id"
+              [class.bg-[#C30364]]="specs().size === size.id"
+              [class.border-gray-300]="specs().size !== size.id"
+            >
+              @if (specs().size === size.id) {
+                <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+              }
+            </span>
+          </div>
+          <div>
+            <p class="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
+              {{ size.title }}
+            </p>
+            <p class="text-[11px] text-gray-500 mt-0.5 leading-tight">
+              {{ size.description }}
+            </p>
+            <span class="inline-block mt-2 text-[10px] font-semibold text-[#C30364] bg-[#FFF0F7] px-2 py-0.5 rounded-md">
+              {{ size.example }}
+            </span>
+          </div>
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- 2. Cantidad y Peso aproximado -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+    <!-- Cantidad de bultos -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-3.5">
+      <label class="block text-xs font-bold text-gray-800 mb-2">
+        Cantidad de paquetes
+      </label>
+      <div class="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          (click)="decrementQuantity()"
+          [disabled]="specs().quantity <= 1"
+          class="w-9 h-9 rounded-xl bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-800 font-bold text-base flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          aria-label="Disminuir cantidad"
+        >
+          −
+        </button>
+        <span class="text-base font-extrabold text-[#1A0A2E]">
+          {{ specs().quantity }} {{ specs().quantity === 1 ? 'bulto' : 'bultos' }}
+        </span>
+        <button
+          type="button"
+          (click)="incrementQuantity()"
+          class="w-9 h-9 rounded-xl bg-[#FFF0F7] hover:bg-[#FFE0F0] active:scale-95 text-[#C30364] font-bold text-base flex items-center justify-center transition-all cursor-pointer"
+          aria-label="Aumentar cantidad"
+        >
+          +
+        </button>
+      </div>
+    </div>
+
+    <!-- Peso aproximado -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-3.5">
+      <label class="block text-xs font-bold text-gray-800 mb-1">
+        Peso aproximado <span class="text-gray-400 font-normal">(Opcional)</span>
+      </label>
+      <div class="relative flex items-center mt-1">
+        <input
+          type="number"
+          step="0.5"
+          min="0"
+          max="50"
+          [value]="specs().approxWeightKg ?? ''"
+          (input)="onWeightChange($event)"
+          placeholder="Ej: 2.5"
+          class="w-full pr-12 pl-3 py-2 text-xs sm:text-sm bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden transition-all text-gray-900 font-semibold"
+        />
+        <span class="absolute right-3 text-xs font-bold text-gray-400 pointer-events-none">
+          kg
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Medidas (Condicional para Grande o expandible) -->
+  @if (specs().size === 'LARGE' || specs().hasCustomDimensions) {
+    <div class="bg-amber-50/50 rounded-2xl border border-amber-200/80 p-3.5 transition-all">
+      <div class="flex items-center justify-between mb-2">
+        <label class="text-xs font-bold text-amber-900 flex items-center gap-1.5">
+          <span>📏</span>
+          <span>Medidas aproximadas del bulto voluminoso</span>
+        </label>
+        @if (specs().size !== 'LARGE') {
+          <button
+            type="button"
+            (click)="toggleDimensions()"
+            class="text-[11px] text-gray-400 hover:text-gray-600 underline"
+          >
+            Ocultar medidas
+          </button>
+        }
+      </div>
+      <p class="text-[11px] text-amber-800 mb-2 leading-tight">
+        Indica las dimensiones en centímetros para evaluar espacio en el vehículo:
+      </p>
+      <div class="grid grid-cols-3 gap-2">
+        <div>
+          <span class="block text-[10px] text-gray-500 font-medium mb-0.5">Largo (cm)</span>
+          <input
+            type="number"
+            min="1"
+            [value]="specs().lengthCm ?? ''"
+            (input)="onDimensionChange('lengthCm', $event)"
+            placeholder="Largo"
+            class="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-900"
+          />
+        </div>
+        <div>
+          <span class="block text-[10px] text-gray-500 font-medium mb-0.5">Ancho (cm)</span>
+          <input
+            type="number"
+            min="1"
+            [value]="specs().widthCm ?? ''"
+            (input)="onDimensionChange('widthCm', $event)"
+            placeholder="Ancho"
+            class="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-900"
+          />
+        </div>
+        <div>
+          <span class="block text-[10px] text-gray-500 font-medium mb-0.5">Alto (cm)</span>
+          <input
+            type="number"
+            min="1"
+            [value]="specs().heightCm ?? ''"
+            (input)="onDimensionChange('heightCm', $event)"
+            placeholder="Alto"
+            class="w-full px-2.5 py-1.5 text-xs bg-white border border-gray-200 rounded-lg text-gray-900"
+          />
+        </div>
+      </div>
+    </div>
+  } @else {
+    <div class="text-right">
+      <button
+        type="button"
+        (click)="toggleDimensions()"
+        class="text-xs text-gray-500 hover:text-[#C30364] font-medium transition-colors"
+      >
+        + ¿Deseas especificar medidas exactas (cm)?
+      </button>
+    </div>
+  }
+
+  <!-- 4. Cuidados especiales: Fragilidad, derrames, frío -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-3.5 space-y-3.5">
+    <p class="text-xs font-bold text-[#1A0A2E]">
+      Condiciones especiales del transporte
+    </p>
+
+    <!-- Fragilidad -->
+    <div>
+      <div class="flex items-center justify-between gap-2 mb-1.5">
+        <span class="text-xs text-gray-700 font-medium flex items-center gap-1.5">
+          <span>🍷</span> ¿El paquete es frágil o delicado?
+        </span>
+        <div class="inline-flex rounded-xl bg-gray-100 p-0.5 text-xs font-semibold shrink-0">
+          <button
+            type="button"
+            (click)="setFragility(false)"
+            class="px-2.5 py-1 rounded-lg transition-all"
+            [class.bg-white]="!specs().isFragile"
+            [class.text-gray-900]="!specs().isFragile"
+            [class.shadow-xs]="!specs().isFragile"
+            [class.text-gray-500]="specs().isFragile"
+          >
+            No
+          </button>
+          <button
+            type="button"
+            (click)="setFragility(true)"
+            class="px-2.5 py-1 rounded-lg transition-all"
+            [class.bg-[#C30364]]="specs().isFragile"
+            [class.text-white]="specs().isFragile"
+            [class.shadow-xs]="specs().isFragile"
+            [class.text-gray-500]="!specs().isFragile"
+          >
+            Sí, cuidado
+          </button>
+        </div>
+      </div>
+      @if (specs().isFragile) {
+        <input
+          type="text"
+          [value]="specs().fragilityDetail"
+          (input)="onFragilityDetail($event)"
+          placeholder="¿Qué riesgo tiene? (Ej: vidrio, botellas, cerámica, laptops...)"
+          class="w-full mt-1.5 px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 focus:border-[#C30364] rounded-lg outline-hidden text-gray-900"
+        />
+      }
+    </div>
+
+    <!-- Riesgo de derrame o líquido -->
+    <div class="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+      <span class="text-xs text-gray-700 font-medium flex items-center gap-1.5">
+        <span>💧</span> ¿Contiene líquidos o puede derramarse?
+      </span>
+      <div class="inline-flex rounded-xl bg-gray-100 p-0.5 text-xs font-semibold shrink-0">
+        <button
+          type="button"
+          (click)="setLeakRisk(false)"
+          class="px-2.5 py-1 rounded-lg transition-all"
+          [class.bg-white]="!specs().canLeak"
+          [class.text-gray-900]="!specs().canLeak"
+          [class.shadow-xs]="!specs().canLeak"
+          [class.text-gray-500]="specs().canLeak"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          (click)="setLeakRisk(true)"
+          class="px-2.5 py-1 rounded-lg transition-all"
+          [class.bg-amber-600]="specs().canLeak"
+          [class.text-white]="specs().canLeak"
+          [class.shadow-xs]="specs().canLeak"
+          [class.text-gray-500]="!specs().canLeak"
+        >
+          Sí
+        </button>
+      </div>
+    </div>
+
+    <!-- Refrigeración -->
+    <div class="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+      <span class="text-xs text-gray-700 font-medium flex items-center gap-1.5">
+        <span>❄️</span> ¿Requiere refrigeración durante el viaje?
+      </span>
+      <div class="inline-flex rounded-xl bg-gray-100 p-0.5 text-xs font-semibold shrink-0">
+        <button
+          type="button"
+          (click)="setRefrigeration(false)"
+          class="px-2.5 py-1 rounded-lg transition-all"
+          [class.bg-white]="!specs().needsRefrigeration"
+          [class.text-gray-900]="!specs().needsRefrigeration"
+          [class.shadow-xs]="!specs().needsRefrigeration"
+          [class.text-gray-500]="specs().needsRefrigeration"
+        >
+          No
+        </button>
+        <button
+          type="button"
+          (click)="setRefrigeration(true)"
+          class="px-2.5 py-1 rounded-lg transition-all"
+          [class.bg-[#2563EB]]="specs().needsRefrigeration"
+          [class.text-white]="specs().needsRefrigeration"
+          [class.shadow-xs]="specs().needsRefrigeration"
+          [class.text-gray-500]="!specs().needsRefrigeration"
+        >
+          Sí
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Descripción breve del contenido -->
+  <div>
+    <label class="block text-xs font-bold text-gray-800 mb-1">
+      Descripción del contenido del paquete <span class="text-gray-400 font-normal">(Opcional)</span>
+    </label>
+    <textarea
+      rows="2"
+      [value]="specs().description"
+      (input)="onDescriptionChange($event)"
+      placeholder="Ej: Ropa empacada en bolsa hermética, documentos en sobre manila..."
+      maxlength="200"
+      class="w-full p-3 text-xs sm:text-sm bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden transition-all text-gray-900 placeholder:text-gray-400"
+    ></textarea>
+  </div>
+
+  <!-- Aviso de evaluación -->
+  <div class="p-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-600 text-[11px] flex items-center gap-2">
+    <span>ℹ️</span>
+    <span>
+      <strong>Importante:</strong> Paquetes voluminosos, perecibles o con requerimientos especiales están sujetos a validación de capacidad en el vehículo.
+    </span>
+  </div>
+</div>

@@ -24,7 +24,7 @@ const unavailable: ServiceAccess = {
 // Only these entry points remain accessible during a closure. Never use prefix matching.
 export function isAccessExempt(url: string): boolean {
   const path = url.split(/[?#]/)[0].split('/').map(segment => segment.split(';')[0]).join('/').replace(/\/$/, '');
-  return ['', '/zisify', '/closed', '/auth/login', '/auth/register', '/privacy', '/terms', '/reclamaciones'].includes(path);
+  return ['', '/zisify', '/closed', '/auth/login', '/auth/register', '/privacy', '/terms', '/reclamaciones'].includes(path) || path.startsWith('/c/');
 }
 
 @Injectable({ providedIn: 'root' })

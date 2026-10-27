@@ -1,0 +1,123 @@
+<div class="space-y-4">
+  <!-- Contacto Recojo (Quién entrega) -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-lg bg-[#FFF0F7] text-[#C30364] flex items-center justify-center text-sm font-bold shrink-0">
+        1
+      </span>
+      <div>
+        <h4 class="text-xs sm:text-sm font-bold text-gray-900 leading-none">
+          Persona en el punto de recojo
+        </h4>
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Quién entregará el bulto al conductor
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">
+          Nombre completo <span class="text-[#C30364]">*</span>
+        </label>
+        <input
+          type="text"
+          [value]="contacts().senderName"
+          (input)="onSenderNameChange($event)"
+          placeholder="Ej: Carmen Salazar"
+          class="w-full px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden text-gray-900 placeholder:text-gray-400"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">
+          Teléfono de contacto <span class="text-[#C30364]">*</span>
+        </label>
+        <input
+          type="tel"
+          inputmode="tel"
+          [value]="contacts().senderPhone"
+          (input)="onSenderPhoneChange($event)"
+          placeholder="Ej: 987 654 321"
+          class="w-full px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden text-gray-900 placeholder:text-gray-400 font-medium"
+        />
+        @if (senderPhoneError()) {
+          <p class="text-[11px] text-red-600 mt-1 font-medium">
+            {{ senderPhoneError() }}
+          </p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Contacto Entrega (Quién recibe) -->
+  <div class="bg-white rounded-2xl border border-gray-200 p-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center text-sm font-bold shrink-0">
+        2
+      </span>
+      <div>
+        <h4 class="text-xs sm:text-sm font-bold text-gray-900 leading-none">
+          Persona en el punto de entrega
+        </h4>
+        <p class="text-[11px] text-gray-500 mt-0.5">
+          Quién recibirá el paquete en destino
+        </p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">
+          Nombre completo <span class="text-[#C30364]">*</span>
+        </label>
+        <input
+          type="text"
+          [value]="contacts().recipientName"
+          (input)="onRecipientNameChange($event)"
+          placeholder="Ej: Ricardo Ramos"
+          class="w-full px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden text-gray-900 placeholder:text-gray-400"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">
+          Teléfono de contacto <span class="text-[#C30364]">*</span>
+        </label>
+        <input
+          type="tel"
+          inputmode="tel"
+          [value]="contacts().recipientPhone"
+          (input)="onRecipientPhoneChange($event)"
+          placeholder="Ej: 991 234 567"
+          class="w-full px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden text-gray-900 placeholder:text-gray-400 font-medium"
+        />
+        @if (recipientPhoneError()) {
+          <p class="text-[11px] text-red-600 mt-1 font-medium">
+            {{ recipientPhoneError() }}
+          </p>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Indicaciones adicionales -->
+  <div>
+    <label class="block text-xs font-semibold text-gray-700 mb-1">
+      Indicaciones de entrega adicionales <span class="text-gray-400 font-normal">(Opcional)</span>
+    </label>
+    <input
+      type="text"
+      [value]="contacts().notes"
+      (input)="onNotesChange($event)"
+      placeholder="Ej: Dejar en recepción con vigilancia si no contesta..."
+      maxlength="140"
+      class="w-full px-3 py-2 text-xs sm:text-sm bg-white border border-gray-200 focus:border-[#C30364] rounded-xl focus:ring-2 focus:ring-[#C30364]/15 outline-hidden text-gray-900 placeholder:text-gray-400"
+    />
+  </div>
+
+  <!-- Garantía de Privacidad -->
+  <p class="text-[11px] text-gray-400 text-center">
+    🔒 Los datos de contacto son utilizados exclusivamente para la coordinación del recojo y entrega en tiempo real por WhatsApp.
+  </p>
+</div>
