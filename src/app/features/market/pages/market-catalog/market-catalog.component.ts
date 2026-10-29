@@ -654,8 +654,8 @@ export class MarketCatalogComponent implements OnInit {
 
     const deltaY = event.clientY - this.pointerStartY;
     const isSingle = this.isSingleItemConstraint();
-    // Factor de sensibilidad: 140 para que siga el dedo con fluidez sin esfuerzo
-    const DRAG_FACTOR = 140;
+    // Factor de sensibilidad calibrado al paso del card (180px para desplazamiento natural 1:1)
+    const DRAG_FACTOR = 180;
 
     if (isSingle) {
       const dampened = deltaY * 0.15;
