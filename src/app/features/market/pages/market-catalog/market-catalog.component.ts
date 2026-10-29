@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
 import { MarketCartService } from '../../../../core/services/market/market-cart.service';
 import { CustomerService } from '../../../../core/services/customer/customer.service';
@@ -38,6 +38,7 @@ export interface DialItem<T = any> {
   imports: [
     CommonModule,
     FormsModule,
+    RouterLink,
     ProductConfigModalComponent
   ],
   templateUrl: './market-catalog.component.html',
@@ -64,6 +65,7 @@ export class MarketCatalogComponent implements OnInit {
   // Data signals
   stores = signal<MarketStoreSummaryDto[]>([]);
   activeStore = signal<MarketStoreSummaryDto | null>(null);
+  storeSections = signal<MarketSectionCustomerDto[]>([]);
   sections = signal<MarketSectionCustomerDto[]>([]);
   categories = signal<MarketCategoryCustomerDto[]>([]);
   products = signal<MarketStoreProductCustomerDto[]>([]);
@@ -103,7 +105,9 @@ export class MarketCatalogComponent implements OnInit {
     let list = this.stores();
     const secId = this.selectedSectionId();
     if (secId) {
-      list = list.filter(s => s.sections?.some(sec => sec.id === secId));
+      list = list.filter(
+        s => !s.sections || s.sections.length === 0 || s.sections.some(sec => sec.id === secId)
+      );
     }
     const q = this.searchQuery().trim().toLowerCase();
     if (q) {
@@ -353,21 +357,43 @@ export class MarketCatalogComponent implements OnInit {
 
   ngOnInit() {
     this.loadSections();
-    this.loadStores();
 
-    // Check if storeId is passed in URL query param or route
+    // Sincronizar estado con la URL (queryParam storeId) para navegación fluida y botón Atrás
     this.route.queryParamMap.subscribe(params => {
       const storeId = params.get('storeId');
       if (storeId) {
-        this.selectStoreById(storeId);
+        if (!this.activeStore() || this.activeStore()?.id !== storeId) {
+          this.selectStoreById(storeId);
+        }
+      } else {
+        if (this.viewMode() === 'products') {
+          // El usuario presionó atrás en el navegador o se deseleccionó el comercio
+          this.viewMode.set('stores');
+          this.activeStore.set(null);
+          this.storeSections.set([]);
+          this.categories.set([]);
+          this.products.set([]);
+          this.loadStores();
+        } else {
+          this.loadStores();
+        }
       }
     });
 
     this.route.paramMap.subscribe(params => {
       const storeId = params.get('storeId') || params.get('id');
-      if (storeId) {
+      if (storeId && (!this.activeStore() || this.activeStore()?.id !== storeId)) {
         this.selectStoreById(storeId);
       }
+    });
+  }
+
+  private updateUrlParams(storeId: string | null) {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { storeId: storeId || null },
+      queryParamsHandling: 'merge',
+      replaceUrl: false
     });
   }
 
@@ -482,19 +508,58 @@ export class MarketCatalogComponent implements OnInit {
     this.viewMode.set('products');
     this.searchQuery.set('');
 
-    // Si la tienda tiene secciones y ninguna está seleccionada, seleccionar la 1ra
-    if (store.sections && store.sections.length > 0 && !this.selectedSectionId()) {
-      this.selectedSectionId.set(store.sections[0].id);
+    // Actualizar URL con query param sin recargar página completa
+    this.updateUrlParams(store.id);
+
+    // Inicializar con secciones que ya vengan en el resumen
+    if (store.sections && store.sections.length > 0) {
+      this.storeSections.set(store.sections);
     }
 
-    this.loadStoreCategoriesAndProducts(store.id, this.selectedSectionId() || undefined);
+    // Consultar endpoint fidedigno de secciones de la tienda
+    this.catalogService.listStoreSections(store.id).subscribe({
+      next: storeSecs => {
+        if (storeSecs && storeSecs.length > 0) {
+          this.storeSections.set(storeSecs);
+          const currentSec = this.selectedSectionId();
+          const hasCurrent = currentSec && storeSecs.some(s => s.id === currentSec);
+          if (!hasCurrent) {
+            this.selectedSectionId.set(storeSecs[0].id);
+          }
+        } else if (store.sections && store.sections.length > 0) {
+          const currentSec = this.selectedSectionId();
+          const hasCurrent = currentSec && store.sections.some(s => s.id === currentSec);
+          if (!hasCurrent) {
+            this.selectedSectionId.set(store.sections[0].id);
+          }
+        }
+        this.loadStoreCategoriesAndProducts(store.id, this.selectedSectionId() || undefined);
+      },
+      error: () => {
+        if (store.sections && store.sections.length > 0) {
+          const currentSec = this.selectedSectionId();
+          const hasCurrent = currentSec && store.sections.some(s => s.id === currentSec);
+          if (!hasCurrent) {
+            this.selectedSectionId.set(store.sections[0].id);
+          }
+        }
+        this.loadStoreCategoriesAndProducts(store.id, this.selectedSectionId() || undefined);
+      }
+    });
   }
 
-  returnToStores() {
+  returnToStores(clearSection = false) {
     this.viewMode.set('stores');
     this.activeStore.set(null);
+    this.storeSections.set([]);
+    this.categories.set([]);
+    this.products.set([]);
     this.selectedCategoryId.set(null);
     this.searchQuery.set('');
+    if (clearSection) {
+      this.selectedSectionId.set(null);
+    }
+    this.updateUrlParams(null);
     this.loadStores();
   }
 
@@ -502,18 +567,40 @@ export class MarketCatalogComponent implements OnInit {
   // LATERAL FILTER SELECTIONS
   // ========================================================
   onSelectSection(sec: MarketSectionCustomerDto) {
+    if (this.viewMode() === 'products' && this.activeStore()) {
+      // 🔍 Validar si el comercio activo tiene asignada esta sección
+      const store = this.activeStore()!;
+      const storeHasSection =
+        this.storeSections().some(s => s.id === sec.id) ||
+        Boolean(store.sections && store.sections.some(s => s.id === sec.id));
+
+      if (!storeHasSection) {
+        // 🚨 EL COMERCIO NO TIENE ESTA SECCIÓN:
+        // Salir automáticamente del comercio, ocultar banner superior
+        // y listar todos los comercios que sí tienen dicha sección
+        this.selectedSectionId.set(sec.id);
+        this.returnToStores(false);
+        return;
+      }
+
+      // El comercio SÍ tiene esta sección
+      if (this.selectedSectionId() === sec.id) {
+        return;
+      }
+
+      this.selectedSectionId.set(sec.id);
+      this.selectedCategoryId.set(null);
+      this.loadStoreCategoriesAndProducts(store.id, sec.id);
+      return;
+    }
+
+    // Modo general de comercios (Estado 1)
     if (this.selectedSectionId() === sec.id) {
       this.selectedSectionId.set(null);
     } else {
       this.selectedSectionId.set(sec.id);
     }
-
-    if (this.viewMode() === 'stores') {
-      this.loadStores();
-    } else if (this.activeStore()) {
-      this.selectedCategoryId.set(null);
-      this.loadStoreCategoriesAndProducts(this.activeStore()!.id, this.selectedSectionId() || undefined);
-    }
+    this.loadStores();
   }
 
   onSelectCategory(cat: MarketCategoryCustomerDto) {
@@ -545,7 +632,7 @@ export class MarketCatalogComponent implements OnInit {
   }
 
   // ========================================================
-  // GESTURE & POINTER ENGINE (ZERO ARROWS AFFORDANCE)
+  // GESTURE & POINTER ENGINE (ZERO ARROWS AFFORDANCE - SILKY SMOOTH)
   // ========================================================
   onPointerDown(event: PointerEvent) {
     // Evitar iniciar arrastre en controles interactivos (botones, selectores, contadores)
@@ -557,7 +644,9 @@ export class MarketCatalogComponent implements OnInit {
     this.isDragging.set(true);
     this.pointerStartY = event.clientY;
     this.pointerStartTime = performance.now();
-    (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    try {
+      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+    } catch {}
   }
 
   onPointerMove(event: PointerEvent) {
@@ -565,21 +654,22 @@ export class MarketCatalogComponent implements OnInit {
 
     const deltaY = event.clientY - this.pointerStartY;
     const isSingle = this.isSingleItemConstraint();
+    // Factor de sensibilidad: 140 para que siga el dedo con fluidez sin esfuerzo
+    const DRAG_FACTOR = 140;
 
     if (isSingle) {
-      // Resistencia elástica fuerte (rubber-band) en caso de 1 solo item
-      const dampened = deltaY * 0.18;
-      this.dragOffsetProgress.set(-dampened / 330);
+      const dampened = deltaY * 0.15;
+      this.dragOffsetProgress.set(-dampened / DRAG_FACTOR);
     } else {
       const items = this.currentDialItems();
       const currentIdx = this.currentActiveIndex();
 
       // Resistencia elástica en los extremos del dial
       if ((currentIdx === 0 && deltaY > 0) || (currentIdx === items.length - 1 && deltaY < 0)) {
-        const dampened = deltaY * 0.25;
-        this.dragOffsetProgress.set(-dampened / 330);
+        const dampened = deltaY * 0.22;
+        this.dragOffsetProgress.set(-dampened / DRAG_FACTOR);
       } else {
-        this.dragOffsetProgress.set(-deltaY / 330);
+        this.dragOffsetProgress.set(-deltaY / DRAG_FACTOR);
       }
     }
   }
@@ -594,7 +684,6 @@ export class MarketCatalogComponent implements OnInit {
 
     const isSingle = this.isSingleItemConstraint();
     if (isSingle) {
-      // Rebotar al centro obligatorio (index 1)
       this.dragOffsetProgress.set(0);
       if (this.viewMode() === 'stores') this.activeStoreIndex.set(1);
       else this.activeProductIndex.set(1);
@@ -605,10 +694,10 @@ export class MarketCatalogComponent implements OnInit {
     const elapsed = performance.now() - this.pointerStartTime;
     const velocity = deltaY / Math.max(elapsed, 1);
 
-    // Umbral de distancia o velocidad (flick inercial)
-    if (deltaY < -40 || velocity < -0.35) {
+    // Umbral ágil y ligero (deslizar sin esfuerzo ni dureza)
+    if (deltaY < -25 || velocity < -0.18) {
       this.stepDial(1);
-    } else if (deltaY > 40 || velocity > 0.35) {
+    } else if (deltaY > 25 || velocity > 0.18) {
       this.stepDial(-1);
     }
 
@@ -627,11 +716,11 @@ export class MarketCatalogComponent implements OnInit {
     if (this.isSingleItemConstraint()) return;
 
     if (this.wheelDebounceTimer) return;
-    this.wheelDebounceTimer = setTimeout(() => (this.wheelDebounceTimer = null), 220);
+    this.wheelDebounceTimer = setTimeout(() => (this.wheelDebounceTimer = null), 140);
 
-    if (event.deltaY > 20) {
+    if (event.deltaY > 12) {
       this.stepDial(1);
-    } else if (event.deltaY < -20) {
+    } else if (event.deltaY < -12) {
       this.stepDial(-1);
     }
   }

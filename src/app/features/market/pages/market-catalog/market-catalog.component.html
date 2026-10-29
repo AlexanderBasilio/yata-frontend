@@ -60,9 +60,18 @@
           <div class="store-banner-info">
             <div class="store-banner-title-row">
               <h2 class="store-banner-name">{{ store.name }}</h2>
-              <button type="button" (click)="returnToStores()" class="store-change-btn">
-                ← Comercios
-              </button>
+              <a
+                [routerLink]="['/market/catalog']"
+                [queryParams]="{ storeId: null }"
+                (click)="returnToStores(); $event.preventDefault()"
+                class="store-change-btn"
+                title="Volver a lista de comercios"
+              >
+                <svg class="change-icon" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M9.707 14.707a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 1.414L7.414 9H15a1 1 0 110 2H7.414l2.293 2.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                <span class="change-text">Comercios</span>
+              </a>
             </div>
             <div class="store-banner-meta">
               <span class="meta-status">
@@ -200,17 +209,18 @@
                           </div>
 
                           <!-- CTA Button (Active card only has interactive action) -->
-                          <button
-                            type="button"
-                            (click)="enterStore(store); $event.stopPropagation()"
+                          <a
+                            [routerLink]="['/market/catalog']"
+                            [queryParams]="{ storeId: store.id }"
+                            (click)="enterStore(store); $event.preventDefault(); $event.stopPropagation()"
                             class="store-cta-btn"
-                            [disabled]="idx !== currentActiveIndex()"
+                            [class.is-disabled]="idx !== currentActiveIndex()"
                           >
                             <svg class="cta-cart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                             </svg>
                             <span>Ver Tienda</span>
-                          </button>
+                          </a>
                         </div>
                       </article>
                     }
@@ -358,10 +368,10 @@
           </div>
         </nav>
 
-        <!-- Columna 2: Categorías (Se desliza e inserta en Estado 2) -->
+        <!-- Columna 2: Categorías (Se desliza e inserta cuando hay categorías en la sección) -->
         <nav
           class="lateral-panel categories-panel"
-          [class.is-visible]="viewMode() === 'products'"
+          [class.is-visible]="viewMode() === 'products' && categories().length > 0"
           aria-label="Categorías del comercio"
         >
           <h4 class="lateral-title">Categorías</h4>
