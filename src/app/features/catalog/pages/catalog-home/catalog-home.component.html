@@ -1,111 +1,254 @@
-<div class="min-h-screen bg-[#EAECEF]">
-  <app-banner />
-  <app-info-table />
-  <app-category-list />
+<div class="liquor-page">
 
-  <!-- Indicador de carga -->
-  @if (isLoading()) {
-    <div class="flex justify-center items-center py-20">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F456E]"></div>
-    </div>
-  }
-
-  <!-- Mensaje de error -->
-  @if (error()) {
-    <div class="mx-4 my-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-      <p class="font-semibold">Error</p>
-      <p>{{ error() }}</p>
+  <!-- ======================================================== -->
+  <!-- TOP HEADER & SEARCH BAR                                  -->
+  <!-- ======================================================== -->
+  <header class="liquor-header">
+    <div class="header-container">
+      <!-- Back button -->
       <button
-        (click)="reloadProducts()"
-        class="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors">
-        Reintentar
+        type="button"
+        (click)="goBack()"
+        class="header-back-btn"
+        aria-label="Volver al inicio"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+        </svg>
       </button>
+
+      <!-- Search Input -->
+      <div class="search-box">
+        <div class="search-icon">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event); onSearchChange()"
+          placeholder="Buscar whiskys, cervezas, vinos..."
+          class="search-input"
+        />
+        @if (searchQuery()) {
+          <button
+            type="button"
+            (click)="searchQuery.set(''); onSearchChange()"
+            class="search-clear-btn"
+            aria-label="Limpiar búsqueda"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        }
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- MAIN LAYOUT: DIAL VIEWPORT & LATERAL CATEGORIES COLUMN   -->
+  <!-- ======================================================== -->
+  <main class="liquor-main">
+    <div class="liquor-layout">
+
+      <!-- ======================================================== -->
+      <!-- DIAL COLUMN (RULETA VERTICAL TIPO RELOJ 3D)              -->
+      <!-- ======================================================== -->
+      <div class="dial-column">
+        <!-- Visual Curved Guide Line -->
+        <div class="dial-arc-guide" aria-hidden="true">
+          <svg class="h-full w-full overflow-visible" viewBox="0 0 100 500" fill="none" preserveAspectRatio="none">
+            <path
+              d="M 60,10 C 10,160 10,340 60,490"
+              stroke="#C30364"
+              stroke-width="3"
+              stroke-linecap="round"
+              stroke-dasharray="6 4"
+              opacity="0.35"
+            />
+          </svg>
+        </div>
+
+        <!-- Semantic Dial Viewport -->
+        <section
+          class="dial-viewport"
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Ruleta de licores Zisify"
+          [style.--active-index]="activeProductIndex()"
+          [style.--drag-offset]="dragOffsetProgress()"
+          [class.is-dragging]="isDragging()"
+          (pointerdown)="onPointerDown($event)"
+          (pointermove)="onPointerMove($event)"
+          (pointerup)="onPointerUp($event)"
+          (pointercancel)="onPointerCancel($event)"
+          (wheel)="onWheel($event)"
+        >
+          @if (isLoading()) {
+            <div class="dial-loader">
+              <div class="spinner"></div>
+              <p class="loader-text">Cargando licores...</p>
+            </div>
+          } @else {
+            <ul class="dial-track" role="list">
+              @for (item of dialProductItems(); track item.key; let idx = $index) {
+                <li
+                  class="dial-card"
+                  [class.is-active]="idx === activeProductIndex()"
+                  [class.is-fallback]="item.isFallback"
+                  [style.--index]="idx"
+                  [attr.aria-hidden]="idx !== activeProductIndex()"
+                  (click)="onCardClick(idx)"
+                >
+                  @if (item.isFallback) {
+                    <!-- TARJETA POR DEFECTO PASIVA -->
+                    <article class="card-inner fallback-card-inner">
+                      <img
+                        [src]="item.fallbackImage || FALLBACK_LIQUOR_IMG"
+                        alt="No hay más licores"
+                        class="fallback-img"
+                        draggable="false"
+                      />
+                    </article>
+                  } @else if (asProduct(item.data); as product) {
+                    <!-- TARJETA REAL DE LICOR -->
+                    <article class="card-inner product-card-inner">
+                      <!-- Top Bar: Brand & Fav -->
+                      <div class="product-top-bar">
+                        <span class="product-brand-tag">{{ product.brand || product.category || 'Licor' }}</span>
+                        <button
+                          type="button"
+                          class="fav-btn"
+                          [class.is-fav]="isFavorite(product.id)"
+                          (click)="toggleFavorite(product.id); $event.stopPropagation()"
+                          [disabled]="idx !== activeProductIndex()"
+                          aria-label="Agregar a favoritos"
+                        >
+                          <svg class="w-4 h-4" [attr.fill]="isFavorite(product.id) ? '#C30364' : 'none'" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                        </button>
+                      </div>
+
+                      <!-- Product Image Area -->
+                      <div class="product-img-box">
+                        @if (product.imageUrl) {
+                          <img [src]="product.imageUrl" [alt]="product.name" class="product-img" draggable="false" />
+                        } @else {
+                          <div class="product-placeholder">
+                            <span class="placeholder-icon">🍾</span>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Product Body -->
+                      <div class="product-body">
+                        <h3 class="product-name" [title]="product.name">{{ product.name }}</h3>
+
+                        <!-- Pack & Presentation info -->
+                        @if (product.pack) {
+                          <p class="product-pack-text">{{ product.pack }}</p>
+                        }
+
+                        <!-- Price & Status -->
+                        <div class="price-stock-row">
+                          <div class="price-group">
+                            <span class="product-price">S/ {{ product.price.toFixed(2) }}</span>
+                            @if (product.oldPrice && product.oldPrice > product.price) {
+                              <span class="product-old-price">S/ {{ product.oldPrice.toFixed(2) }}</span>
+                            }
+                          </div>
+                          <span class="product-stock-tag">
+                            <span class="stock-dot"></span> Disponible
+                          </span>
+                        </div>
+
+                        <!-- Stepper & Add Button for Active Card -->
+                        @if (idx === activeProductIndex()) {
+                          <div class="product-controls-row">
+                            <div class="stepper" (click)="$event.stopPropagation()">
+                              <button type="button" class="stepper-btn minus" (click)="decrementQuantity()">−</button>
+                              <span class="stepper-val">{{ quickQuantity() }}</span>
+                              <button type="button" class="stepper-btn plus" (click)="incrementQuantity()">+</button>
+                            </div>
+
+                            <button
+                              type="button"
+                              (click)="onAddProduct(product); $event.stopPropagation()"
+                              class="product-add-btn"
+                            >
+                              <svg class="cta-cart-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              <span>Agregar</span>
+                            </button>
+                          </div>
+                        }
+                      </div>
+                    </article>
+                  }
+                </li>
+              }
+            </ul>
+          }
+        </section>
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- LATERAL COLUMN: SOLO CATEGORÍAS (SIN SECCIONES)          -->
+      <!-- ======================================================== -->
+      <aside class="lateral-columns">
+        <nav class="lateral-panel categories-panel" aria-label="Categorías de licores">
+          <h4 class="lateral-title">Categorías</h4>
+          <div class="lateral-list">
+            <!-- Botón Todos -->
+            <button
+              type="button"
+              class="category-pill-btn"
+              [class.is-active]="selectedCategory() === null"
+              (click)="onSelectCategory(null)"
+            >
+              Todos
+            </button>
+
+            <!-- Categorías dinámicas / listas para endpoint -->
+            @for (cat of categories(); track cat) {
+              <button
+                type="button"
+                class="category-pill-btn"
+                [class.is-active]="selectedCategory() === cat"
+                (click)="onSelectCategory(cat)"
+              >
+                {{ cat }}
+              </button>
+            }
+          </div>
+        </nav>
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- BOTTOM INFO BANNER                                       -->
+  <!-- ======================================================== -->
+  <footer class="liquor-bottom-banner">
+    <div class="banner-pill">
+      <span class="banner-info-icon">ℹ️</span>
+      <span class="banner-text">{{ infoBannerText() }}</span>
+    </div>
+  </footer>
+
+  <!-- FLOATING CART BUTTON -->
+  <app-floating-cart-button />
+
+  <!-- TOAST NOTIFICATION -->
+  @if (toastMessage(); as msg) {
+    <div class="liquor-toast">
+      <span>{{ msg }}</span>
     </div>
   }
 
-  <!-- Contenido del catálogo -->
-  @if (!isLoading() && !error()) {
-    <!-- Ofertas -->
-    @if (ofertasProducts().length > 0) {
-      <app-product-section
-        id="ofertas"
-        title="Ofertas"
-        [products]="ofertasProducts()"
-      />
-    }
-
-    <!-- Cervezas -->
-    @if (cervezasProducts().length > 0) {
-      <app-product-section
-        id="cervezas"
-        title="Cervezas"
-        [products]="cervezasProducts()"
-      />
-    }
-
-    <!-- Listos para Tomar -->
-    @if (listosParaTomarProducts().length > 0) {
-      <app-product-section
-        id="listos-para-tomar"
-        title="Listos para Tomar"
-        [products]="listosParaTomarProducts()"
-      />
-    }
-
-    <!-- Whisky -->
-    @if (whiskyProducts().length > 0) {
-      <app-product-section
-        id="whisky"
-        title="Whisky"
-        [products]="whiskyProducts()"
-      />
-    }
-
-    <!-- Bebidas sin Alcohol -->
-    @if (bebidasSinAlcoholProducts().length > 0) {
-      <app-product-section
-        id="bebidas-sin-alcohol"
-        title="Bebidas sin Alcohol"
-        [products]="bebidasSinAlcoholProducts()"
-      />
-    }
-
-    <!-- Vinos -->
-    @if (vinosProducts().length > 0) {
-      <app-product-section
-        id="vinos"
-        title="Vinos"
-        [products]="vinosProducts()"
-      />
-    }
-
-    <!-- Cigarrillos y Vapes -->
-    @if (cigarrillosVapesProducts().length > 0) {
-      <app-product-section
-        id="cigarrillos-vapes"
-        title="Cigarrillos y Vaporizadores"
-        [products]="cigarrillosVapesProducts()"
-      />
-    }
-
-    <!-- Aperitivos -->
-    @if (aperitivosProducts().length > 0) {
-      <app-product-section
-        id="aperitivos"
-        title="Licores y Aperitivos"
-        [products]="aperitivosProducts()"
-      />
-    }
-
-    <!-- Otros Licores -->
-    @if (otrosLicoresProducts().length > 0) {
-      <app-product-section
-        id="otros-licores"
-        title="Otros Licores"
-        [products]="otrosLicoresProducts()"
-      />
-    }
-  }
-
-  <app-floating-cart-button />
 </div>

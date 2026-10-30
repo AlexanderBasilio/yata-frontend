@@ -1,42 +1,44 @@
+.market-store-detail {
+  padding-bottom: 2rem;
+}
+
+.navbar {
+  height: 56px;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-chip {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  border: 1px solid #e5e7eb;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background-color: #C30364;
+    color: #ffffff;
+    border-color: #C30364;
+  }
+}
+
+.category-section {
+  scroll-margin-top: 120px;
+}
+
 .product-card {
-  transition: all 450ms cubic-bezier(0.2, 0.8, 0.25, 1);
-  transform-origin: center left;
-  user-select: none;
-}
-
-.prev-card {
-  transform: translateY(12px) translateX(16px) rotate(-6deg) scale(0.84);
-  opacity: 0.72;
-  z-index: 5;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
-    transform: translateY(10px) translateX(10px) rotate(-4deg) scale(0.88);
-    opacity: 0.92;
-  }
-}
-
-.active-card {
-  transform: translateY(0) translateX(0) rotate(0deg) scale(1);
-  opacity: 1;
-  z-index: 15;
-}
-
-.next-card {
-  transform: translateY(-12px) translateX(16px) rotate(6deg) scale(0.84);
-  opacity: 0.72;
-  z-index: 5;
-
-  &:hover {
-    transform: translateY(-10px) translateX(10px) rotate(4deg) scale(0.88);
-    opacity: 0.92;
-  }
-}
-
-@media (max-width: 640px) {
-  .prev-card {
-    transform: translateY(8px) translateX(10px) rotate(-5deg) scale(0.82);
-  }
-  .next-card {
-    transform: translateY(-8px) translateX(10px) rotate(5deg) scale(0.82);
+    transform: translateY(-2px);
   }
 }

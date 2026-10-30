@@ -1,26 +1,36 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
 import { MarketCartService } from '../../../../core/services/market/market-cart.service';
 import { CustomerService } from '../../../../core/services/customer/customer.service';
 import {
   AddMarketCartItemRequest,
   MarketCategoryCustomerDto,
-  MarketProductVariantDto,
   MarketSectionCustomerDto,
   MarketStoreProductCustomerDto,
-  MarketStoreProductPriceOfferDto,
   MarketStoreSummaryDto
 } from '../../../../core/models/market.model';
 import { ProductConfigModalComponent } from '../../components/product-config-modal/product-config-modal.component';
 import { ProximityConflictModalComponent } from '../../components/proximity-conflict-modal/proximity-conflict-modal.component';
 
+export interface StoreCategoryItem {
+  id: string;
+  name: string;
+  count: number;
+}
+
 @Component({
   selector: 'app-market-store-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, ProductConfigModalComponent, ProximityConflictModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    ProductConfigModalComponent,
+    ProximityConflictModalComponent
+  ],
   templateUrl: './market-store-detail.component.html',
   styleUrl: './market-store-detail.component.scss'
 })
@@ -31,373 +41,314 @@ export class MarketStoreDetailComponent implements OnInit {
   public cartService = inject(MarketCartService);
   private customerService = inject(CustomerService);
 
-  // Store ID
+  // Store ID & Details
   storeId = signal<string>('');
-
-  // Store details
   store = signal<MarketStoreSummaryDto | null>(null);
   sections = signal<MarketSectionCustomerDto[]>([]);
-  categories = signal<MarketCategoryCustomerDto[]>([]);
   products = signal<MarketStoreProductCustomerDto[]>([]);
 
-  // Selection states
+  // Filtering states
   selectedSectionId = signal<string | null>(null);
   selectedCategoryId = signal<string | null>(null);
-  selectedProductIndex = signal<number>(0);
   searchQuery = signal<string>('');
-  quickQuantity = signal<number>(1);
-  selectedVariantId = signal<string | null>(null);
-  favoriteProductIds = signal<Set<string>>(new Set());
+  isLoading = signal<boolean>(true);
 
-  // Modal states
+  // Modal & Toast states
+  showCategoriesModal = signal<boolean>(false);
   showConfigModal = signal<boolean>(false);
   productToConfigure = signal<MarketStoreProductCustomerDto | null>(null);
   toastMessage = signal<string | null>(null);
-  isLoading = signal<boolean>(true);
+  private toastTimer?: ReturnType<typeof setTimeout>;
 
-  // Active product in center of semicircular carousel
-  currentProduct = computed(() => {
-    const list = this.products();
-    if (list.length === 0) return null;
-    const index = Math.min(Math.max(0, this.selectedProductIndex()), list.length - 1);
-    return list[index];
+  // Dirección formateada
+  fullAddress = computed(() => {
+    const s = this.store();
+    if (!s) return 'Puesto de mercado';
+    const parts = [s.address, s.district, s.city].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : 'Ubicación local';
   });
 
-  // Previous product (top tilted card)
-  prevProduct = computed(() => {
-    const list = this.products();
-    if (list.length < 2) return null;
-    const prevIdx = this.selectedProductIndex() - 1;
-    return prevIdx >= 0 ? list[prevIdx] : list[list.length - 1];
+  // Categorías calculadas dinámicamente desde los productos
+  categories = computed<StoreCategoryItem[]>(() => {
+    const prods = this.products();
+    const map = new Map<string, StoreCategoryItem>();
+
+    for (const p of prods) {
+      // Si hay filtro por sección activo, filtrar productos por sección
+      const secId = this.selectedSectionId();
+      if (secId && p.sectionId && p.sectionId !== secId) {
+        continue;
+      }
+
+      const id = p.categoryId || (p.categoryName ? p.categoryName.toLowerCase().replace(/\s+/g, '-') : 'general');
+      const name = p.categoryName || 'General';
+
+      if (!map.has(id)) {
+        map.set(id, { id, name, count: 1 });
+      } else {
+        map.get(id)!.count++;
+      }
+    }
+
+    return Array.from(map.values());
   });
 
-  // Next product (bottom tilted card)
-  nextProduct = computed(() => {
-    const list = this.products();
-    if (list.length < 2) return null;
-    const nextIdx = this.selectedProductIndex() + 1;
-    return nextIdx < list.length ? list[nextIdx] : list[0];
+  // Categorías visibles según filtros activos y búsqueda
+  visibleCategories = computed<StoreCategoryItem[]>(() => {
+    const allCats = this.categories();
+    const selectedCat = this.selectedCategoryId();
+
+    return allCats.filter(cat => {
+      if (selectedCat && cat.id !== selectedCat) {
+        return false;
+      }
+      const items = this.getProductsForCategory(cat.id);
+      return items.length > 0;
+    });
   });
 
-  // Active section
-  selectedSection = computed(() => {
-    const id = this.selectedSectionId();
-    return this.sections().find(s => s.id === id) || this.sections()[0] || null;
-  });
-
-  // Active category
-  selectedCategory = computed(() => {
-    const id = this.selectedCategoryId();
-    return this.categories().find(c => c.id === id) || null;
-  });
-
-  // Info banner
-  infoBannerText = computed(() => {
-    const cat = this.selectedCategory()?.name;
-    const sec = this.selectedSection()?.name || 'Productos';
-    const stName = this.store()?.name || 'la bodega';
-    return `Productos de ${cat || sec} en ${stName}`;
+  // Totales de carrito
+  cartItemCount = computed(() => this.cartService.totalItems());
+  cartTotal = computed(() => {
+    const c = this.cartService.cart();
+    return c?.productsSubtotal ?? c?.estimatedTotal ?? 0;
   });
 
   ngOnInit() {
     this.route.paramMap.subscribe(params => {
       const id = params.get('storeId') || params.get('id');
-      if (id) {
+      if (id && id !== this.storeId()) {
         this.storeId.set(id);
-        this.loadStoreHeader(id);
-        this.loadStoreSections(id);
+        this.loadStoreData(id);
       }
     });
 
-    // Check optional queryParams (e.g., initial sectionId)
-    this.route.queryParamMap.subscribe(qParams => {
-      const secId = qParams.get('sectionId');
-      if (secId) {
-        this.selectedSectionId.set(secId);
-      }
-    });
+    // Cargar carrito activo
+    this.cartService.getCart().subscribe();
   }
 
-  loadStoreHeader(id: string) {
-    const addr = this.customerService.getActiveAddress();
-    this.catalogService.getStoreDetail(id, addr?.latitude, addr?.longitude).subscribe({
-      next: (st) => this.store.set(st),
-      error: (err) => console.error('Error cargando cabecera de tienda:', err)
-    });
-  }
+  loadStoreData(id: string) {
+    this.isLoading.set(true);
 
-  loadStoreSections(id: string) {
+    const activeAddr = this.customerService.getActiveAddress();
+    const lat = activeAddr?.latitude;
+    const lng = activeAddr?.longitude;
+
+    // 1. Cargar detalle de la tienda
+    this.catalogService.getStoreDetail(id, lat, lng).subscribe({
+      next: (storeDetail) => {
+        this.store.set(storeDetail);
+      },
+      error: (err) => console.warn('⚠️ Error al cargar detalle del puesto:', err)
+    });
+
+    // 2. Cargar secciones del comercio
     this.catalogService.listStoreSections(id).subscribe({
       next: (secs) => {
-        this.sections.set(secs);
-        if (secs.length > 0 && !this.selectedSectionId()) {
-          this.selectedSectionId.set(secs[0].id);
-        }
-        if (this.selectedSectionId()) {
-          this.loadCategories(id, this.selectedSectionId()!);
-        }
+        this.sections.set(secs || []);
       },
-      error: (err) => console.error('Error cargando secciones de la tienda:', err)
+      error: (err) => console.warn('⚠️ Error al cargar secciones del comercio:', err)
     });
-  }
 
-  loadCategories(storeId: string, sectionId: string) {
-    this.catalogService.listStoreCategories(storeId, sectionId).subscribe({
-      next: (cats) => {
-        this.categories.set(cats);
-        // Default to first category if available
-        if (cats.length > 0 && !this.selectedCategoryId()) {
-          this.selectedCategoryId.set(cats[0].id);
-        }
-        this.loadProducts();
-      },
-      error: (err) => {
-        console.error('Error cargando categorías:', err);
-        this.loadProducts();
-      }
-    });
-  }
-
-  loadProducts() {
-    this.isLoading.set(true);
-    const storeId = this.storeId();
-    const sectionId = this.selectedSectionId() || undefined;
-    const categoryId = this.selectedCategoryId() || undefined;
-    const search = this.searchQuery().trim() || undefined;
-
-    this.catalogService.listProductsByStore(storeId, sectionId, categoryId, search).subscribe({
+    // 3. Cargar todos los productos del puesto
+    this.catalogService.listProductsByStore(id).subscribe({
       next: (prods) => {
-        this.products.set(prods);
-        this.selectedProductIndex.set(0);
-        this.quickQuantity.set(1);
-        if (prods.length > 0 && prods[0].variants?.length) {
-          this.selectedVariantId.set(prods[0].variants[0].id);
-        }
+        this.products.set(prods || []);
         this.isLoading.set(false);
       },
       error: (err) => {
-        console.error('Error cargando productos:', err);
+        console.error('❌ Error al cargar productos del puesto:', err);
+        this.products.set([]);
         this.isLoading.set(false);
       }
     });
   }
 
-  // Dual-column navigation actions
-  onSelectSection(sec: MarketSectionCustomerDto) {
-    this.selectedSectionId.set(sec.id);
-    this.selectedCategoryId.set(null);
-    this.loadCategories(this.storeId(), sec.id);
+  goBack() {
+    this.router.navigate(['/market/catalog']);
   }
 
-  onSelectCategory(cat: MarketCategoryCustomerDto) {
-    this.selectedCategoryId.set(cat.id);
-    this.loadProducts();
+  goToCart() {
+    this.router.navigate(['/market/cart']);
   }
 
-  onSearchChange() {
-    this.loadProducts();
+  onSearch(event: Event) {
+    const query = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(query);
   }
 
-  currentProductStep = computed<number>(() => {
-    const prod = this.currentProduct();
-    if (!prod) return 1;
-    return prod.primaryPriceUnit === 'KG' ? (prod.weightStep || 0.5) : (prod.unitStep || 1);
-  });
-
-  // Product carousel navigation
-  nextProductSlide() {
-    const list = this.products();
-    if (list.length <= 1) return;
-    this.selectedProductIndex.update(idx => (idx + 1) % list.length);
-    const nextProd = this.currentProduct();
-    const step = nextProd?.primaryPriceUnit === 'KG' ? (nextProd.weightStep || 0.5) : (nextProd?.unitStep || 1);
-    this.quickQuantity.set(step);
-  }
-
-  prevProductSlide() {
-    const list = this.products();
-    if (list.length <= 1) return;
-    this.selectedProductIndex.update(idx => (idx - 1 + list.length) % list.length);
-    const prevProd = this.currentProduct();
-    const step = prevProd?.primaryPriceUnit === 'KG' ? (prevProd.weightStep || 0.5) : (prevProd?.unitStep || 1);
-    this.quickQuantity.set(step);
-  }
-
-  // Stepper on active card (dynamic weightStep / unitStep)
-  incrementQuantity() {
-    const step = this.currentProductStep();
-    this.quickQuantity.update(q => parseFloat((q + step).toFixed(2)));
-  }
-
-  decrementQuantity() {
-    const step = this.currentProductStep();
-    this.quickQuantity.update(q => {
-      const next = parseFloat((q - step).toFixed(2));
-      return next >= step ? next : step;
-    });
-  }
-
-  // Toggle favorite
-  toggleFavorite(productId: string) {
-    this.favoriteProductIds.update(set => {
-      const copy = new Set(set);
-      if (copy.has(productId)) copy.delete(productId);
-      else copy.add(productId);
-      return copy;
-    });
-  }
-
-  isFavorite(productId: string): boolean {
-    return this.favoriteProductIds().has(productId);
-  }
-
-  // ========================================================
-  // REGLA DE ORO: CONTADOR RÁPIDO VS MODAL DETALLE
-  // ========================================================
-  onAddProductClick(product: MarketStoreProductCustomerDto) {
-    if (!product) return;
-
-    if (product.allowsDirectQuickAdd) {
-      // CASO 1: Agregación Rápida Directa
-      this.executeQuickAdd(product);
+  // Filtrado por categoría
+  filterByCategory(catId: string | null) {
+    if (this.selectedCategoryId() === catId) {
+      this.selectedCategoryId.set(null);
     } else {
-      // CASO 2: Abre Modal de Configuración
-      this.openProductConfig(product);
+      this.selectedCategoryId.set(catId);
+      if (catId) {
+        setTimeout(() => {
+          const el = document.getElementById(`category-${catId}`);
+          el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 50);
+      }
     }
   }
 
-  private executeQuickAdd(product: MarketStoreProductCustomerDto) {
-    const store = this.store();
-    const req: AddMarketCartItemRequest = {
+  // Filtrado por sección
+  filterBySection(sectionId: string | null) {
+    const nextSec = this.selectedSectionId() === sectionId ? null : sectionId;
+    this.selectedSectionId.set(nextSec);
+    this.selectedCategoryId.set(null);
+  }
+
+  // Modal de categorías
+  openCategoriesModal() {
+    this.showCategoriesModal.set(true);
+  }
+
+  closeCategoriesModal() {
+    this.showCategoriesModal.set(false);
+  }
+
+  selectCategoryFromModal(catId: string | null) {
+    this.selectedCategoryId.set(catId);
+    this.closeCategoriesModal();
+
+    if (catId) {
+      setTimeout(() => {
+        const el = document.getElementById(`category-${catId}`);
+        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }
+
+  // Productos de una categoría con filtrado de búsqueda
+  getProductsForCategory(catId: string): MarketStoreProductCustomerDto[] {
+    const query = this.searchQuery().toLowerCase().trim();
+    const secId = this.selectedSectionId();
+
+    return this.products().filter(p => {
+      // Filtro por sección
+      if (secId && p.sectionId && p.sectionId !== secId) {
+        return false;
+      }
+
+      // Filtro por categoría
+      const matchesCat =
+        p.categoryId === catId ||
+        (!p.categoryId && catId === 'general') ||
+        (p.categoryName && p.categoryName.toLowerCase().replace(/\s+/g, '-') === catId);
+
+      if (!matchesCat) return false;
+
+      // Filtro por búsqueda
+      if (!query) return true;
+
+      return (
+        p.productName.toLowerCase().includes(query) ||
+        (p.brandName && p.brandName.toLowerCase().includes(query)) ||
+        (p.description && p.description.toLowerCase().includes(query))
+      );
+    });
+  }
+
+  // Clic en card de producto
+  onProductClick(product: MarketStoreProductCustomerDto) {
+    this.openConfigModal(product);
+  }
+
+  // Botón directo "Agregar" o "Personalizar"
+  onQuickAdd(product: MarketStoreProductCustomerDto, event: MouseEvent) {
+    event.stopPropagation();
+
+    // Si requiere configuración o tiene variantes, abrir modal
+    if (!product.allowsDirectQuickAdd || (product.variants && product.variants.length > 1) || (product.optionGroups && product.optionGroups.length > 0)) {
+      this.openConfigModal(product);
+      return;
+    }
+
+    const saleUnit = (product.primaryPriceUnit as any) || product.measurementType || 'UNIT';
+    const quantity = product.unitStep || 1;
+    const price = product.primaryPrice || 0;
+
+    const request: AddMarketCartItemRequest = {
       storeId: this.storeId(),
       productId: product.productId,
-      variantId: this.selectedVariantId() || undefined,
-      selectedMeasurement: product.primaryPriceUnit || 'UNIT',
-      quantity: this.quickQuantity(),
-      weightStep: product.weightStep || 0.5,
-      unitStep: product.unitStep || 1
+      variantId: product.variants?.[0]?.id,
+      selectedMeasurement: (product.primaryPriceUnit as any) || product.measurementType || 'UNIT',
+      quantity: product.unitStep || 1
     };
 
-    this.cartService
-      .addItem(
-        req,
-        store?.name || 'Bodega Milagros',
-        product.productName,
-        product.primaryPrice || product.price,
-        product.primaryImageUrl
-      )
-      .subscribe({
-        next: () => {
-          this.showToast(`¡${product.productName} agregado al carrito!`);
-          this.quickQuantity.set(this.currentProductStep());
-        },
-        error: (err) => console.warn('Error en quick add:', err)
-      });
+    this.cartService.addItem(
+      request,
+      this.store()?.name || 'Comercio de Mercado',
+      product.productName,
+      price,
+      product.primaryImageUrl
+    ).subscribe({
+      next: () => {
+        this.showToast(`¡${product.productName} agregado al carrito!`);
+      },
+      error: (err) => {
+        console.error('Error al agregar producto al carrito:', err);
+      }
+    });
   }
 
-  openProductConfig(product: MarketStoreProductCustomerDto) {
-    const active = this.getActiveVariants(product);
-    if (active.length > 0 && (!this.selectedVariantId() || !active.some(v => v.id === this.selectedVariantId()))) {
-      this.selectedVariantId.set(active[0].id);
-    }
+  openConfigModal(product: MarketStoreProductCustomerDto) {
     this.productToConfigure.set(product);
     this.showConfigModal.set(true);
   }
 
-  onVariantDropdownChange(variantId: string, product: MarketStoreProductCustomerDto) {
-    this.selectedVariantId.set(variantId);
-    this.productToConfigure.set(product);
-    this.showConfigModal.set(true);
-  }
-
-  getActiveVariants(product: MarketStoreProductCustomerDto): MarketProductVariantDto[] {
-    return (product.variants || []).filter(v => v.isActive !== false && v.isAvailable !== false);
-  }
-
-  getVariantDisplay(variant: MarketProductVariantDto, product: MarketStoreProductCustomerDto): string {
-    if (variant.priceDisplaySummary) {
-      return `${variant.name} — ${variant.priceDisplaySummary}`;
-    }
-
-    if (variant.prices && variant.prices.length > 0) {
-      const parts = variant.prices.map((p: MarketStoreProductPriceOfferDto) => {
-        const u = (p.saleUnit || p.measurementType) === 'KG' ? '/ kg' : '/ unid';
-        const priceVal = p.zisifyPrice ?? p.price ?? 0;
-        return `S/ ${priceVal.toFixed(2)} ${u}`;
-      });
-      return `${variant.name} — ${parts.join(' · ')}`;
-    }
-
-    const price = variant.price || product.primaryPrice || product.price || 0;
-    const unit = product.primaryPriceUnit === 'KG' ? '/ kg' : '/ unid';
-    return `${variant.name} — S/ ${price.toFixed(2)} ${unit}`;
-  }
-
-  onConfigModalConfirm(data: { request: AddMarketCartItemRequest; effectivePrice: number }) {
-    const store = this.store();
-    const prod = this.productToConfigure();
-
-    this.cartService
-      .addItem(
-        data.request,
-        store?.name || 'Bodega Milagros',
-        prod?.productName,
-        data.effectivePrice,
-        prod?.primaryImageUrl
-      )
-      .subscribe({
-        next: () => {
-          this.showConfigModal.set(false);
-          this.productToConfigure.set(null);
-          this.showToast(`¡${prod?.productName || 'Producto'} agregado al carrito!`);
-        },
-        error: (err) => console.warn('Error en modal add:', err)
-      });
-  }
-
-  onCloseConfigModal() {
+  closeConfigModal() {
     this.showConfigModal.set(false);
     this.productToConfigure.set(null);
   }
 
+  onConfigModalConfirm(payload: { request: AddMarketCartItemRequest; effectivePrice: number }) {
+    const prod = this.productToConfigure();
+    this.cartService.addItem(
+      payload.request,
+      this.store()?.name || 'Comercio de Mercado',
+      prod?.productName,
+      payload.effectivePrice,
+      prod?.primaryImageUrl
+    ).subscribe({
+      next: () => {
+        this.closeConfigModal();
+        this.showToast(`¡${prod?.productName || 'Producto'} agregado al carrito!`);
+      },
+      error: (err) => {
+        console.error('Error al agregar producto configurado:', err);
+      }
+    });
+  }
+
+  formatUnit(unit?: string): string {
+    if (!unit) return 'unid';
+    switch (unit.toUpperCase()) {
+      case 'KG':
+        return 'kg';
+      case 'UNIT':
+        return 'unid';
+      case 'GRAM':
+        return 'g';
+      case 'LITER':
+        return 'L';
+      case 'MILLILITER':
+        return 'ml';
+      case 'PACKAGE':
+        return 'pqte';
+      case 'BUNCH':
+        return 'atado';
+      default:
+        return unit.toLowerCase();
+    }
+  }
+
   private showToast(msg: string) {
     this.toastMessage.set(msg);
-    setTimeout(() => this.toastMessage.set(null), 3000);
-  }
-
-  goBack() {
-    this.router.navigate(['/market']);
-  }
-
-  // Wheel and Touch navigation on product roulette
-  private wheelDebounce = false;
-  onWheel(event: WheelEvent) {
-    event.preventDefault();
-    if (this.wheelDebounce) return;
-    this.wheelDebounce = true;
-    setTimeout(() => (this.wheelDebounce = false), 250);
-
-    if (event.deltaY > 0) {
-      this.nextProductSlide();
-    } else {
-      this.prevProductSlide();
-    }
-  }
-
-  private touchStartY = 0;
-  onTouchStart(event: TouchEvent) {
-    this.touchStartY = event.touches[0].clientY;
-  }
-
-  onTouchEnd(event: TouchEvent) {
-    const touchEndY = event.changedTouches[0].clientY;
-    const diff = this.touchStartY - touchEndY;
-    if (Math.abs(diff) > 40) {
-      if (diff > 0) {
-        this.nextProductSlide();
-      } else {
-        this.prevProductSlide();
-      }
-    }
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage.set(null);
+    }, 2800);
   }
 }
