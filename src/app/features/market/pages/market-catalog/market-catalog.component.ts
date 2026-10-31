@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -34,6 +34,49 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
   closeSidebar() {
     this.isSidebarOpen.set(false);
   }
+
+  // Detección de Vertical activa (MARKET | LIQUOR | PETS)
+  activeVertical = computed(() => this.catalogService.getActiveVertical());
+
+  verticalTitle = computed(() => {
+    switch (this.activeVertical()) {
+      case 'LIQUOR': return 'Licorería';
+      case 'PETS': return 'Mascotas';
+      default: return 'Mercado';
+    }
+  });
+
+  searchPlaceholder = computed(() => {
+    switch (this.activeVertical()) {
+      case 'LIQUOR': return 'Buscar licorerías, bodegas y bebidas...';
+      case 'PETS': return 'Buscar tiendas de mascotas, veterinarias y alimentos...';
+      default: return 'Buscar puestos, bodegas y tiendas de mercado...';
+    }
+  });
+
+  verticalIcon = computed(() => {
+    switch (this.activeVertical()) {
+      case 'LIQUOR': return '🍾';
+      case 'PETS': return '🐾';
+      default: return '🧺';
+    }
+  });
+
+  emptyLocationMessage = computed(() => {
+    switch (this.activeVertical()) {
+      case 'LIQUOR': return 'Para ver licorerías en tu zona primero selecciona tu ubicación.';
+      case 'PETS': return 'Para ver tiendas de mascotas en tu zona primero selecciona tu ubicación.';
+      default: return 'Para ver puestos y bodegas de mercado en tu zona primero selecciona tu ubicación.';
+    }
+  });
+
+  emptyStoresMessage = computed(() => {
+    switch (this.activeVertical()) {
+      case 'LIQUOR': return 'Por ahora no tenemos licorerías disponibles para entrega en esta ubicación. Prueba seleccionando o agregando otra dirección.';
+      case 'PETS': return 'Por ahora no tenemos tiendas de mascotas disponibles para entrega en esta ubicación. Prueba seleccionando o agregando otra dirección.';
+      default: return 'Por ahora no tenemos puestos de mercado disponibles para entrega en esta ubicación. Prueba seleccionando o agregando otra dirección.';
+    }
+  });
 
   stores = signal<MarketStoreSummaryDto[]>([]);
   filteredStores = signal<MarketStoreSummaryDto[]>([]);
@@ -238,7 +281,8 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
     if (!store.isOpen || store.isTemporarilyClosed) {
       return;
     }
-    this.router.navigate(['/market/store', store.id]);
+    const prefix = this.activeVertical() === 'LIQUOR' ? '/liquor/store' : (this.activeVertical() === 'PETS' ? '/pets/store' : '/market/store');
+    this.router.navigate([prefix, store.id]);
   }
 
   getStoreSectionsDisplay(store: MarketStoreSummaryDto): string {

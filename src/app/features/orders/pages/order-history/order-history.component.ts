@@ -22,8 +22,8 @@ export class OrderHistoryComponent implements OnInit {
   private orderService = inject(OrderService);
   private router = inject(Router);
 
-  // Nivel 1: Selector de Vertical ('ALL' | 'RESTAURANTS' | 'MARKET')
-  selectedVertical = signal<'ALL' | 'RESTAURANTS' | 'MARKET'>('ALL');
+  // Nivel 1: Selector de Vertical ('ALL' | 'RESTAURANTS' | 'MARKET' | 'LIQUOR')
+  selectedVertical = signal<'ALL' | 'RESTAURANTS' | 'MARKET' | 'LIQUOR'>('ALL');
 
   // Nivel 2: Filtro por Ciclo de Vida (Key de pestaña activa)
   selectedTab = signal<string>('ALL');
@@ -34,6 +34,7 @@ export class OrderHistoryComponent implements OnInit {
     total: 0,
     restaurants: 0,
     market: 0,
+    liquor: 0,
     pendingPayment: 0,
     active: 0,
     completed: 0,
@@ -98,7 +99,7 @@ export class OrderHistoryComponent implements OnInit {
     });
   }
 
-  selectVertical(vertical: 'ALL' | 'RESTAURANTS' | 'MARKET'): void {
+  selectVertical(vertical: 'ALL' | 'RESTAURANTS' | 'MARKET' | 'LIQUOR'): void {
     if (this.selectedVertical() === vertical) return;
     this.selectedVertical.set(vertical);
     this.selectedTab.set('ALL');
@@ -134,12 +135,12 @@ export class OrderHistoryComponent implements OnInit {
   // --- ACCIONES CONTEXTUALES DE LAS ÓRDENES ---
 
   handlePayNow(order: CustomerUnifiedOrderDto): void {
-    if (order.vertical === 'MARKET') {
+    if (order.vertical === 'MARKET' || order.vertical === 'LIQUOR') {
       if (order.status === 'PAYMENT_VERIFICATION') {
-        const url = order.paymentActionUrl || `/market/order/${order.orderCode}`;
+        const url = order.paymentActionUrl || `/${order.vertical.toLowerCase()}/order/${order.orderCode}`;
         this.router.navigateByUrl(url);
       } else {
-        const url = order.paymentActionUrl || `/checkout/market/orders/${order.orderCode}/payment`;
+        const url = order.paymentActionUrl || `/checkout/${order.vertical.toLowerCase()}/orders/${order.orderCode}/payment`;
         this.router.navigateByUrl(url);
       }
     } else {
@@ -159,8 +160,8 @@ export class OrderHistoryComponent implements OnInit {
       return;
     }
 
-    if (order.vertical === 'MARKET') {
-      this.router.navigate(['/market/order', order.orderCode]);
+    if (order.vertical === 'MARKET' || order.vertical === 'LIQUOR') {
+      this.router.navigate([`/${order.vertical.toLowerCase()}/order`, order.orderCode]);
     } else {
       alert(`Tu pedido ${order.orderCode} en ${order.businessName || 'el restaurante'} está en camino/preparación.`);
     }
@@ -169,14 +170,16 @@ export class OrderHistoryComponent implements OnInit {
   handleReorder(order: CustomerUnifiedOrderDto): void {
     if (order.vertical === 'MARKET') {
       this.router.navigate(['/market']);
+    } else if (order.vertical === 'LIQUOR') {
+      this.router.navigate(['/liquor']);
     } else {
       this.router.navigate(['/food']);
     }
   }
 
   handleViewReceipt(order: CustomerUnifiedOrderDto): void {
-    if (order.vertical === 'MARKET') {
-      this.router.navigate(['/market/order', order.orderCode]);
+    if (order.vertical === 'MARKET' || order.vertical === 'LIQUOR') {
+      this.router.navigate([`/${order.vertical.toLowerCase()}/order`, order.orderCode]);
     } else {
       this.selectedReceiptOrder.set(order);
       this.showReceiptModal.set(true);
@@ -405,6 +408,8 @@ export class OrderHistoryComponent implements OnInit {
   goToCatalog(): void {
     if (this.selectedVertical() === 'MARKET') {
       this.router.navigate(['/market']);
+    } else if (this.selectedVertical() === 'LIQUOR') {
+      this.router.navigate(['/liquor']);
     } else if (this.selectedVertical() === 'RESTAURANTS') {
       this.router.navigate(['/food']);
     } else {

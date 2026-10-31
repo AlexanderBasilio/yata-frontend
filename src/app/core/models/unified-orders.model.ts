@@ -2,6 +2,7 @@ export interface CustomerUnifiedOrdersCountsDto {
   total: number;
   restaurants: number;
   market: number;
+  liquor?: number;
   pendingPayment: number;
   active: number;
   completed: number;
@@ -16,9 +17,10 @@ export interface CustomerUnifiedOrderTabDto {
 
 export interface CustomerUnifiedOrderDto {
   orderCode: string;
-  vertical: 'MARKET' | 'RESTAURANTS' | string;
+  vertical: 'MARKET' | 'RESTAURANTS' | 'LIQUOR' | string;
   verticalLabel?: string;
   verticalIcon?: string;
+  requiresAdultVerification?: boolean;
   businessName?: string;
   itemsCount?: number;
   itemsSummary?: string;

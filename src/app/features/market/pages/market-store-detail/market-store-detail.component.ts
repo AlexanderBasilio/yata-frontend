@@ -60,6 +60,12 @@ export class MarketStoreDetailComponent implements OnInit {
   toastMessage = signal<string | null>(null);
   private toastTimer?: ReturnType<typeof setTimeout>;
 
+  // Detección de Vertical activa
+  activeVertical = computed(() => this.catalogService.getActiveVertical());
+  verticalRoute = computed(() => this.activeVertical() === 'LIQUOR' ? 'liquor' : (this.activeVertical() === 'PETS' ? 'pets' : 'market'));
+  cartButtonLabel = computed(() => this.activeVertical() === 'LIQUOR' ? 'Ver carrito de licores' : (this.activeVertical() === 'PETS' ? 'Ver carrito de mascotas' : 'Ver canasta de mercado'));
+  categoriesModalTitle = computed(() => this.activeVertical() === 'LIQUOR' ? 'Categorías de Licorería' : (this.activeVertical() === 'PETS' ? 'Categorías de Mascotas' : 'Categorías de Mercado'));
+
   // Dirección formateada
   fullAddress = computed(() => {
     const s = this.store();
@@ -165,11 +171,11 @@ export class MarketStoreDetailComponent implements OnInit {
   }
 
   goBack() {
-    this.router.navigate(['/market/catalog']);
+    this.router.navigate(['/' + this.verticalRoute() + '/catalog']);
   }
 
   goToCart() {
-    this.router.navigate(['/market/cart']);
+    this.router.navigate(['/' + this.verticalRoute() + '/cart']);
   }
 
   onSearch(event: Event) {

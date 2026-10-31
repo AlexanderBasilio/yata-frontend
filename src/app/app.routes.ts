@@ -116,30 +116,12 @@ const applicationRoutes: Routes = [
   },
 
   // ============================================
-  // 4. SERVICIO DE LICORES (PROTEGIDO)
+  // 4. SERVICIO DE LICORES (PROTEGIDO) - Reutiliza MARKET_ROUTES con vertical LIQUOR
   // ============================================
   {
     path: 'liquor',
     canActivate: [authGuard, storeHoursGuard],
-    children: [
-      {
-        path: '',
-        redirectTo: 'catalog',
-        pathMatch: 'full'
-      },
-      {
-        path: 'catalog',
-        loadChildren: () => import('./features/catalog/catalog.routes').then(m => m.CATALOG_ROUTES)
-      },
-      {
-        path: 'cart',
-        loadChildren: () => import('./features/cart/cart.routes').then(m => m.CART_ROUTES)
-      },
-      {
-        path: 'location',
-        loadChildren: () => import('./features/location/location.routes').then(m => m.LOCATION_ROUTES)
-      }
-    ]
+    loadChildren: () => import('./features/market/market.routes').then(m => m.MARKET_ROUTES)
   },
 
   // ============================================

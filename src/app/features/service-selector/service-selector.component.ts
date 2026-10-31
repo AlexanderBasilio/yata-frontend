@@ -68,6 +68,7 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   // Menú lateral "Mi cuenta"
   isSidebarOpen = signal(false);
+  showAdultDisclaimerModal = signal(false);
 
   toggleSidebar() {
     this.isSidebarOpen.update(prev => !prev);
@@ -669,8 +670,25 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   selectCategory(category: Category) {
     if (category.available) {
+      if (category.id === 'liquor') {
+        const isAdultVerified = sessionStorage.getItem('zisify_adult_verified') === 'true';
+        if (!isAdultVerified) {
+          this.showAdultDisclaimerModal.set(true);
+          return;
+        }
+      }
       this.router.navigate([category.route]);
     }
+  }
+
+  confirmAdultVerification() {
+    sessionStorage.setItem('zisify_adult_verified', 'true');
+    this.showAdultDisclaimerModal.set(false);
+    this.router.navigate(['/liquor/catalog']);
+  }
+
+  closeAdultDisclaimerModal() {
+    this.showAdultDisclaimerModal.set(false);
   }
 
   // ✅ VERIFICAR SI RESTAURANTE ESTÁ ABIERTO

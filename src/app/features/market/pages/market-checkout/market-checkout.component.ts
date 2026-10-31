@@ -20,6 +20,7 @@ import {
 } from '../../../../core/models/market.model';
 import { PortalRewardService } from '../../../../core/services/portal/portal-reward.service';
 import { AvailableBenefitResponse } from '../../../../core/models/portal-reward.model';
+import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
 
 @Component({
   selector: 'app-market-checkout',
@@ -36,6 +37,7 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
   public mapboxService = inject(MapboxService);
   public cartService = inject(MarketCartService);
   public orderService = inject(MarketOrderService);
+  public catalogService = inject(MarketCatalogService);
 
   // Stepper: 1 = Mapa y Ubicación, 2 = Resumen y Modalidad de Envío
   currentStep = signal<1 | 2>(1);
@@ -584,7 +586,8 @@ export class MarketCheckoutComponent implements OnInit, AfterViewInit, OnDestroy
       deliveryLocation: location,
       location: location,
       deliveryServiceType: selectedOpt?.serviceType || 'STANDARD',
-      rewardId: this.selectedRewardId() || undefined
+      rewardId: this.selectedRewardId() || undefined,
+      vertical: this.catalogService.getActiveVertical()
     };
 
     this.isSubmitting.set(true);

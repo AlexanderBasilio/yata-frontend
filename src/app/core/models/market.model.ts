@@ -18,6 +18,7 @@ export interface MarketSectionCustomerDto {
   imageUrl?: string;
   iconUrl?: string;
   displayOrder?: number;
+  allowedVerticals?: string[];
 }
 
 export interface MarketStoreScheduleDto {
@@ -366,6 +367,7 @@ export interface MarketCheckoutRequest {
   deliveryLocation?: MarketDeliveryLocationDto;
   location?: MarketDeliveryLocationDto;
   rewardId?: string | null;
+  vertical?: 'MARKET' | 'LIQUOR' | 'PETS' | string;
 }
 
 export interface MarketOrderItemDto {
@@ -410,6 +412,8 @@ export interface MarketPaymentOperationRequest {
 
 export interface MarketOrderResponse {
   orderCode: string;
+  vertical?: 'MARKET' | 'LIQUOR' | 'PETS' | string;
+  requiresAdultVerification?: boolean;
   status: string;
   paymentStatus?: string;
   paymentMethod?: MarketPaymentMethod | string;

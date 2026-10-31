@@ -31,7 +31,7 @@
     <!-- ============================================ -->
     <!-- NIVEL 1: SELECTOR DE VERTICAL (Superiores) -->
     <!-- ============================================ -->
-    <div class="grid grid-cols-3 gap-1.5 p-1 bg-[#1A0A2E] border border-[#31204F] rounded-2xl mb-4 shadow-inner">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 p-1 bg-[#1A0A2E] border border-[#31204F] rounded-2xl mb-4 shadow-inner">
       <!-- Opción TODOS -->
       <button (click)="selectVertical('ALL')"
         class="py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
@@ -95,6 +95,28 @@
           [class.bg-[#31204F]]="selectedVertical() !== 'MARKET'"
           [class.text-[#9D96A8]]="selectedVertical() !== 'MARKET'">
           {{ counts().market }}
+        </span>
+      </button>
+
+      <!-- Opción LICORERÍA -->
+      <button (click)="selectVertical('LIQUOR')"
+        class="py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
+        [class.bg-gradient-to-r]="selectedVertical() === 'LIQUOR'"
+        [class.from-[#C30364]]="selectedVertical() === 'LIQUOR'"
+        [class.to-[#E8368A]]="selectedVertical() === 'LIQUOR'"
+        [class.text-white]="selectedVertical() === 'LIQUOR'"
+        [class.shadow-md]="selectedVertical() === 'LIQUOR'"
+        [class.text-[#9D96A8]]="selectedVertical() !== 'LIQUOR'"
+        [class.hover:text-[#FAF8FB]]="selectedVertical() !== 'LIQUOR'"
+        [class.hover:bg-[#221638]/70]="selectedVertical() !== 'LIQUOR'">
+        <span class="text-sm">🍾</span>
+        <span>Licores</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded-full font-mono transition-colors"
+          [class.bg-white/25]="selectedVertical() === 'LIQUOR'"
+          [class.text-white]="selectedVertical() === 'LIQUOR'"
+          [class.bg-[#31204F]]="selectedVertical() !== 'LIQUOR'"
+          [class.text-[#9D96A8]]="selectedVertical() !== 'LIQUOR'">
+          {{ counts().liquor || 0 }}
         </span>
       </button>
     </div>
@@ -173,6 +195,8 @@
         <div class="w-20 h-20 mx-auto mb-4 rounded-3xl bg-[#1A0A2E] border border-[#31204F] flex items-center justify-center text-4xl shadow-inner">
           @if (selectedVertical() === 'MARKET') {
             🛒
+          } @else if (selectedVertical() === 'LIQUOR') {
+            🍾
           } @else if (selectedVertical() === 'RESTAURANTS') {
             🍕
           } @else {
@@ -183,6 +207,8 @@
         <p class="text-xs text-[#9D96A8] max-w-xs mx-auto mb-6 leading-relaxed">
           @if (selectedVertical() === 'MARKET') {
             No encontramos pedidos de mercado en este estado. ¡Descubre frutas, carnes y verduras frescas en nuestros puestos!
+          } @else if (selectedVertical() === 'LIQUOR') {
+            No encontramos pedidos de licorería en este estado. ¡Descubre licores, cervezas y tragos de tus marcas favoritas!
           } @else if (selectedVertical() === 'RESTAURANTS') {
             No encontramos pedidos de comida en este estado. ¡Explora la carta y disfruta de tus platos favoritos!
           } @else {
@@ -193,6 +219,8 @@
           class="bg-gradient-to-r from-[#C30364] to-[#E8368A] hover:from-[#E8368A] hover:to-[#FF6DB5] text-white py-3 px-6 rounded-xl font-bold text-xs shadow-[0_4px_18px_rgba(195,3,100,0.4)] transition-all cursor-pointer active:scale-95">
           @if (selectedVertical() === 'MARKET') {
             Explorar Mercado Zisify
+          } @else if (selectedVertical() === 'LIQUOR') {
+            Explorar Licorerías
           } @else if (selectedVertical() === 'RESTAURANTS') {
             Explorar Restaurantes
           } @else {
@@ -217,10 +245,21 @@
                     <span>🛒</span>
                     <span>{{ order.verticalLabel || 'MERCADO ZISIFY' }}</span>
                   </span>
+                } @else if (order.vertical === 'LIQUOR') {
+                  <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                    <span>🍾</span>
+                    <span>{{ order.verticalLabel || 'LICORERÍA' }}</span>
+                  </span>
                 } @else {
                   <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#C30364]/15 text-[#FF6DB5] border border-[#C30364]/30">
                     <span>🍽️</span>
                     <span>{{ order.verticalLabel || 'RESTAURANTE' }}</span>
+                  </span>
+                }
+
+                @if (order.requiresAdultVerification) {
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-red-500/20 text-red-400 border border-red-500/40" title="Requiere verificación de mayoría de edad (+18)">
+                    +18
                   </span>
                 }
 

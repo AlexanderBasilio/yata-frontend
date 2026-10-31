@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, catchError, map, of } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
@@ -14,15 +15,29 @@ import {
 })
 export class MarketCatalogService {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private readonly baseUrl = `${environment.apiUrl}/api/market/customer/catalog`;
 
-  // 1. Ver ruleta/columna de secciones disponibles (filtradas dinámicamente por las zonas del cliente)
+  /**
+   * Detecta la vertical activa a partir de la URL actual ('LIQUOR', 'PETS' o 'MARKET').
+   */
+  getActiveVertical(): 'MARKET' | 'LIQUOR' | 'PETS' {
+    const url = this.router.url.toLowerCase();
+    if (url.includes('/liquor')) return 'LIQUOR';
+    if (url.includes('/pets')) return 'PETS';
+    return 'MARKET';
+  }
+
+  // 1. Ver secciones disponibles (filtradas dinámicamente por vertical y zonas del cliente)
   listActiveSections(
     zoneIds?: string[],
     lat?: number,
-    lng?: number
+    lng?: number,
+    vertical?: string
   ): Observable<MarketSectionCustomerDto[]> {
-    let params = new HttpParams();
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
+
     if (zoneIds && zoneIds.length > 0) {
       zoneIds.forEach(z => (params = params.append('zones', z)));
     }
@@ -32,21 +47,24 @@ export class MarketCatalogService {
     return this.http.get<MarketSectionCustomerDto[]>(`${this.baseUrl}/sections`, { params }).pipe(
       map(sections => sections || []),
       catchError(err => {
-        console.warn('⚠️ Error al listar secciones de mercado:', err);
+        console.warn(`⚠️ Error al listar secciones para vertical ${v}:`, err);
         return of([]);
       })
     );
   }
 
-  // 2. Ver ruleta de comercios de mercado (con filtros por zonas, sección seleccionada y búsqueda por nombre)
+  // 2. Ver comercios de la vertical activa (con filtros por zonas, sección y búsqueda)
   listStores(
     zoneIds?: string[],
     sectionId?: string,
     lat?: number,
     lng?: number,
-    search?: string
+    search?: string,
+    vertical?: string
   ): Observable<MarketStoreSummaryDto[]> {
-    let params = new HttpParams();
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
+
     if (zoneIds && zoneIds.length > 0) {
       zoneIds.forEach(z => (params = params.append('zones', z)));
     }
@@ -58,60 +76,70 @@ export class MarketCatalogService {
     return this.http.get<MarketStoreSummaryDto[]>(`${this.baseUrl}/stores`, { params }).pipe(
       map(stores => stores || []),
       catchError(err => {
-        console.warn('⚠️ Error al listar comercios de mercado:', err);
+        console.warn(`⚠️ Error al listar comercios para vertical ${v}:`, err);
         return of([]);
       })
     );
   }
 
-  // 3. Obtener cabecera completa del comercio (logo, portada, rating, distrito, ciudad, isOpen, secciones)
-  getStoreDetail(storeId: string, lat?: number, lng?: number): Observable<MarketStoreSummaryDto | null> {
-    let params = new HttpParams();
+  // 3. Obtener cabecera completa del comercio filtrada por vertical
+  getStoreDetail(storeId: string, lat?: number, lng?: number, vertical?: string): Observable<MarketStoreSummaryDto | null> {
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
     if (lat !== undefined && lat !== null) params = params.set('lat', lat.toString());
     if (lng !== undefined && lng !== null) params = params.set('lng', lng.toString());
 
     return this.http.get<MarketStoreSummaryDto>(`${this.baseUrl}/stores/${storeId}`, { params }).pipe(
       catchError(err => {
-        console.warn(`⚠️ Error al obtener detalle de tienda ${storeId}:`, err);
+        console.warn(`⚠️ Error al obtener detalle de tienda ${storeId} (vertical ${v}):`, err);
         return of(null);
       })
     );
   }
 
-  // 4. Ver secciones que vende este comercio (para selector lateral de secciones en la tienda)
-  listStoreSections(storeId: string): Observable<MarketSectionCustomerDto[]> {
-    return this.http.get<MarketSectionCustomerDto[]>(`${this.baseUrl}/stores/${storeId}/sections`).pipe(
+  // 4. Ver secciones que vende este comercio filtradas por vertical
+  listStoreSections(storeId: string, vertical?: string): Observable<MarketSectionCustomerDto[]> {
+    const v = vertical || this.getActiveVertical();
+    const params = new HttpParams().set('vertical', v);
+
+    return this.http.get<MarketSectionCustomerDto[]>(`${this.baseUrl}/stores/${storeId}/sections`, { params }).pipe(
       map(sections => sections || []),
       catchError(err => {
-        console.warn(`⚠️ Error al listar secciones de tienda ${storeId}:`, err);
+        console.warn(`⚠️ Error al listar secciones de tienda ${storeId} (vertical ${v}):`, err);
         return of([]);
       })
     );
   }
 
-  // 5. Ver categorías de una sección en este comercio (para selector de categorías en la tienda)
-  listStoreCategories(storeId: string, sectionId: string): Observable<MarketCategoryCustomerDto[]> {
+  // 5. Ver categorías de una sección en este comercio filtradas por vertical
+  listStoreCategories(storeId: string, sectionId: string, vertical?: string): Observable<MarketCategoryCustomerDto[]> {
+    const v = vertical || this.getActiveVertical();
+    const params = new HttpParams().set('vertical', v);
+
     return this.http
       .get<MarketCategoryCustomerDto[]>(
-        `${this.baseUrl}/stores/${storeId}/sections/${sectionId}/categories`
+        `${this.baseUrl}/stores/${storeId}/sections/${sectionId}/categories`,
+        { params }
       )
       .pipe(
         map(categories => categories || []),
         catchError(err => {
-          console.warn(`⚠️ Error al listar categorías de tienda ${storeId}, sección ${sectionId}:`, err);
+          console.warn(`⚠️ Error al listar categorías de tienda ${storeId}, sección ${sectionId} (vertical ${v}):`, err);
           return of([]);
         })
       );
   }
 
-  // 6. Ver catálogo de productos de una tienda (filtrado opcional por sección, categoría o búsqueda)
+  // 6. Ver catálogo de productos de una tienda filtrado por vertical
   listProductsByStore(
     storeId: string,
     sectionId?: string,
     categoryId?: string,
-    search?: string
+    search?: string,
+    vertical?: string
   ): Observable<MarketStoreProductCustomerDto[]> {
-    let params = new HttpParams();
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
     if (sectionId) params = params.set('sectionId', sectionId);
     if (categoryId) params = params.set('categoryId', categoryId);
     if (search && search.trim().length > 0) params = params.set('search', search.trim());
@@ -121,13 +149,13 @@ export class MarketCatalogService {
       .pipe(
         map(products => products || []),
         catchError(err => {
-          console.warn(`⚠️ Error al listar productos de tienda ${storeId}:`, err);
+          console.warn(`⚠️ Error al listar productos de tienda ${storeId} (vertical ${v}):`, err);
           return of([]);
         })
       );
   }
 
-  // 6.1. Ver detalle individual de un producto en un comercio (para modal de personalización o enlace directo)
+  // 6.1. Ver detalle individual de un producto
   getProductDetail(storeId: string, productId: string): Observable<MarketStoreProductCustomerDto | null> {
     return this.http
       .get<MarketStoreProductCustomerDto>(`${this.baseUrl}/stores/${storeId}/products/${productId}`)
@@ -139,9 +167,10 @@ export class MarketCatalogService {
       );
   }
 
-  // 7. Productos más demandados de mercado en la zona del cliente
-  getTrendingProducts(zoneIds?: string[]): Observable<MarketStoreProductCustomerDto[]> {
-    let params = new HttpParams();
+  // 7. Productos más demandados en la zona del cliente filtrados por vertical
+  getTrendingProducts(zoneIds?: string[], vertical?: string): Observable<MarketStoreProductCustomerDto[]> {
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
     if (zoneIds && zoneIds.length > 0) {
       zoneIds.forEach(z => (params = params.append('zones', z)));
     }
@@ -153,9 +182,10 @@ export class MarketCatalogService {
       );
   }
 
-  // 8. Comercios de mercado en la zona exacta del cliente
-  getNearbyStores(zoneId?: string): Observable<MarketStoreSummaryDto[]> {
-    let params = new HttpParams();
+  // 8. Comercios en la zona exacta del cliente filtrados por vertical
+  getNearbyStores(zoneId?: string, vertical?: string): Observable<MarketStoreSummaryDto[]> {
+    const v = vertical || this.getActiveVertical();
+    let params = new HttpParams().set('vertical', v);
     if (zoneId) params = params.set('zoneId', zoneId);
     return this.http.get<MarketStoreSummaryDto[]>(`${this.baseUrl}/home/nearby-stores`, { params }).pipe(
       map(res => res || []),
