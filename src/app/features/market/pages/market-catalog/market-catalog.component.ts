@@ -1,8 +1,10 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MarketCatalogService } from '../../../../core/services/market/market-catalog.service';
+import { MarketCartService } from '../../../../core/services/market/market-cart.service';
 import { MarketSectionCustomerDto, MarketStoreSummaryDto } from '../../../../core/models/market.model';
 import { CustomerService, Address } from '../../../../core/services/customer/customer.service';
 import { AuthService } from '../../../../core/services/auth/auth.service';
@@ -19,13 +21,23 @@ import mapboxgl from 'mapbox-gl';
 })
 export class MarketCatalogComponent implements OnInit, OnDestroy {
   private catalogService = inject(MarketCatalogService);
+  private cartService = inject(MarketCartService);
   private customerService = inject(CustomerService);
   public authService = inject(AuthService);
   private mapboxService = inject(MapboxService);
   private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   // Menú lateral "Mi cuenta"
   isSidebarOpen = signal(false);
+
+  // Modal de Proximidad (+100m Tienda Ancla)
+  showProximityModal = signal(false);
+  blockedStoreSelected = signal<MarketStoreSummaryDto | null>(null);
+  isClearingCartForStore = signal(false);
+
+  // Clave de control para evitar recargas duplicadas en bucle reactivo
+  private lastLoadedKey = '';
 
   toggleSidebar() {
     this.isSidebarOpen.update(prev => !prev);
@@ -109,27 +121,29 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadCustomerProfileAndAddresses();
 
-    // Escuchar reactivamente cambios en la dirección activa del cliente
-    this.customerService.activeAddress$.subscribe({
-      next: (address) => {
-        if (address && address.streetAddress) {
-          this.currentAddress.set(address);
-          if (address.zoneId) {
-            this.customerZoneId.set(address.zoneId);
-            this.loadCatalog(address.zoneId, address.latitude, address.longitude);
+    // Escuchar reactivamente cambios en la dirección activa del cliente con takeUntilDestroyed
+    this.customerService.activeAddress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (address) => {
+          if (address && address.streetAddress) {
+            this.currentAddress.set(address);
+            if (address.zoneId) {
+              this.customerZoneId.set(address.zoneId);
+              this.loadCatalog(address.zoneId, address.latitude, address.longitude);
+            } else {
+              this.stores.set([]);
+              this.filteredStores.set([]);
+              this.isLoading.set(false);
+            }
           } else {
+            this.currentAddress.set(null);
             this.stores.set([]);
             this.filteredStores.set([]);
             this.isLoading.set(false);
           }
-        } else {
-          this.currentAddress.set(null);
-          this.stores.set([]);
-          this.filteredStores.set([]);
-          this.isLoading.set(false);
         }
-      }
-    });
+      });
   }
 
   ngOnDestroy() {
@@ -161,34 +175,12 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
           return;
         }
 
-        let active: Address | null = null;
         if (forceNewest) {
-          active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
-        } else {
-          const saved = this.customerService.getActiveAddress();
-          const stillExists = saved
-            ? addresses.find(a => (saved.id && a.id === saved.id) || (a.streetAddress === saved.streetAddress))
-            : null;
-          active = stillExists || addresses.find(a => a.isDefault) || addresses[0];
-        }
-
-        if (active && active.streetAddress) {
-          this.currentAddress.set(active);
-          this.customerService.setActiveAddress(active);
-          if (active.zoneId) {
-            this.customerZoneId.set(active.zoneId);
-            this.loadCatalog(active.zoneId, active.latitude, active.longitude);
-          } else {
-            this.stores.set([]);
-            this.filteredStores.set([]);
-            this.isLoading.set(false);
+          const active = addresses.find(a => a.isDefault) || addresses[addresses.length - 1];
+          if (active) {
+            this.currentAddress.set(active);
+            this.customerService.setActiveAddress(active);
           }
-        } else {
-          this.currentAddress.set(null);
-          this.customerService.clearActiveAddress();
-          this.stores.set([]);
-          this.filteredStores.set([]);
-          this.isLoading.set(false);
         }
       },
       error: (err) => {
@@ -202,7 +194,14 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
     });
   }
 
-  loadCatalog(zoneId: string, lat?: number, lng?: number) {
+  loadCatalog(zoneId: string, lat?: number, lng?: number, force: boolean = false) {
+    // 🛡️ Detección y bloqueo de bucle reactivo: Si los parámetros no cambiaron, no duplicar llamadas HTTP
+    const loadKey = `${zoneId}_${lat || 0}_${lng || 0}_${this.activeVertical()}`;
+    if (!force && this.lastLoadedKey === loadKey && this.stores().length > 0) {
+      return;
+    }
+    this.lastLoadedKey = loadKey;
+
     this.isLoading.set(true);
     const zoneIds = zoneId ? [zoneId] : undefined;
 
@@ -269,20 +268,73 @@ export class MarketCatalogComponent implements OnInit, OnDestroy {
   private sortStoresByOpenStatus(stores: MarketStoreSummaryDto[]): MarketStoreSummaryDto[] {
     if (!stores || !Array.isArray(stores)) return [];
     return [...stores].sort((a, b) => {
+      // 1. Proximidad respecto a la tienda ancla del carrito: compatibles primero
+      const aCompat = a.canAddToCurrentCart !== false;
+      const bCompat = b.canAddToCurrentCart !== false;
+      if (aCompat && !bCompat) return -1;
+      if (!aCompat && bCompat) return 1;
+
+      // 2. Horario de atención: abiertos primero
       const aOpen = Boolean(a.isOpen && !a.isTemporarilyClosed);
       const bOpen = Boolean(b.isOpen && !b.isTemporarilyClosed);
       if (aOpen && !bOpen) return -1;
       if (!aOpen && bOpen) return 1;
+
       return 0;
     });
   }
 
   onStoreClick(store: MarketStoreSummaryDto) {
+    // 🔒 1. Si la tienda está a más de 100m de la tienda ancla del carrito: abrir modal de proximidad
+    if (store.canAddToCurrentCart === false) {
+      this.blockedStoreSelected.set(store);
+      this.showProximityModal.set(true);
+      return;
+    }
+
+    // 2. Si la tienda está cerrada: no ingresar
     if (!store.isOpen || store.isTemporarilyClosed) {
       return;
     }
+
+    // 3. Navegación directa al detalle según la vertical activa
     const prefix = this.activeVertical() === 'LIQUOR' ? '/liquor/store' : (this.activeVertical() === 'PETS' ? '/pets/store' : '/market/store');
     this.router.navigate([prefix, store.id]);
+  }
+
+  closeProximityModal() {
+    this.showProximityModal.set(false);
+    this.blockedStoreSelected.set(null);
+  }
+
+  confirmClearCartAndNavigate() {
+    const targetStore = this.blockedStoreSelected();
+    if (!targetStore || this.isClearingCartForStore()) return;
+
+    this.isClearingCartForStore.set(true);
+    this.cartService.clearCart().subscribe({
+      next: () => {
+        this.isClearingCartForStore.set(false);
+        this.showProximityModal.set(false);
+        this.blockedStoreSelected.set(null);
+
+        // Forzar recarga de catálogo para que todas las tiendas vuelvan a estar habilitadas
+        this.lastLoadedKey = '';
+        const addr = this.currentAddress();
+        const zoneId = addr?.zoneId || this.customerZoneId();
+        if (zoneId) {
+          this.loadCatalog(zoneId, addr?.latitude, addr?.longitude, true);
+        }
+
+        const prefix = this.activeVertical() === 'LIQUOR' ? '/liquor/store' : (this.activeVertical() === 'PETS' ? '/pets/store' : '/market/store');
+        this.router.navigate([prefix, targetStore.id]);
+      },
+      error: (err) => {
+        console.error('❌ Error al vaciar carrito para comercio lejano:', err);
+        this.isClearingCartForStore.set(false);
+        alert('Hubo un error al vaciar el carrito en el servidor. Por favor inténtalo nuevamente.');
+      }
+    });
   }
 
   getStoreSectionsDisplay(store: MarketStoreSummaryDto): string {

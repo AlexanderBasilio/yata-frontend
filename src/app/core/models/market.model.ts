@@ -19,6 +19,7 @@ export interface MarketSectionCustomerDto {
   iconUrl?: string;
   displayOrder?: number;
   allowedVerticals?: string[];
+  hasCompatibleStores?: boolean; // 🎯 Indica si la sección tiene tiendas dentro del rango de 100m del carrito actual
 }
 
 export interface MarketStoreScheduleDto {
@@ -56,6 +57,11 @@ export interface MarketStoreSummaryDto {
   reviewsCount?: number;
   estimatedDeliveryMinutes?: string;
   sections?: MarketSectionCustomerDto[];
+  canAddToCurrentCart?: boolean; // 🎯 false si excede 100m respecto a la tienda ancla del carrito
+  distanceFromAnchorMeters?: number | null; // 🎯 Distancia en metros respecto al comercio ancla
+  anchorStoreName?: string | null; // 🎯 Nombre de la primera tienda agregada al carrito
+  proximityBlockBadge?: string | null; // 🎯 Etiqueta "🔒 A +100 m de tu carrito"
+  proximityBlockReason?: string | null; // 🎯 Explicación detallada de incompatibilidad
 }
 
 export interface MarketCategoryCustomerDto {

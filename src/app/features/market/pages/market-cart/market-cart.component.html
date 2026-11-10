@@ -27,9 +27,15 @@
         <button
           type="button"
           (click)="onClearCart()"
-          class="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-full transition-all cursor-pointer"
+          [disabled]="isClearing()"
+          class="text-xs font-bold text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 py-1.5 px-3 rounded-full transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
         >
-          Vaciar
+          @if (isClearing()) {
+            <div class="w-3 h-3 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+            <span>Vaciando...</span>
+          } @else {
+            <span>Vaciar</span>
+          }
         </button>
       }
     </div>

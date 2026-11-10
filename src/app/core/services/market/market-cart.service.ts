@@ -199,24 +199,37 @@ export class MarketCartService {
       );
   }
 
-  // 5. Vaciar carrito completo
+  // 5. Vaciar carrito completo (espera confirmación 204 del backend antes de limpiar estado local)
   clearCart(): Observable<void> {
-    this.cart.set(null);
-    this.totalItems.set(0);
-    localStorage.removeItem(this.LOCAL_CART_KEY);
-
     if (!this.authService.isLoggedIn()) {
+      this.cart.set(null);
+      this.totalItems.set(0);
+      localStorage.removeItem(this.LOCAL_CART_KEY);
       return of(void 0);
     }
+
+    console.group('🗑️ [DELETE HTTP] Vaciando Carrito de Mercado en BD');
+    console.log('🌐 Endpoint:', this.baseUrl);
+    console.groupEnd();
 
     return this.http
       .delete<void>(this.baseUrl, {
         context: new HttpContext().set(HANDLE_ERRORS_LOCALLY, true)
       })
       .pipe(
+        tap(() => {
+          console.group('📥 [DELETE RESPONSE] Carrito vaciado exitosamente en servidor (204 No Content)');
+          console.log('🧹 Limpiando señales y caché local');
+          console.groupEnd();
+
+          // Limpiar estado en memoria y almacenamiento local SOLO tras confirmación del servidor
+          this.cart.set(null);
+          this.totalItems.set(0);
+          localStorage.removeItem(this.LOCAL_CART_KEY);
+        }),
         catchError(err => {
-          console.warn('⚠️ Error limpiando carrito en servidor, limpiado localmente:', err);
-          return of(void 0);
+          console.error('❌ Error limpiando carrito en servidor:', err);
+          return throwError(() => err);
         })
       );
   }

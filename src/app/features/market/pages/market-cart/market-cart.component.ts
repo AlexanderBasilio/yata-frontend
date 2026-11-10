@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, computed } from '@angular/core';
+import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { MarketCartService } from '../../../../core/services/market/market-cart.service';
@@ -17,6 +17,7 @@ export class MarketCartComponent implements OnInit {
 
   cart = computed(() => this.cartService.cart());
   isEmpty = computed(() => !this.cart() || (this.cart()?.totalItemsCount ?? 0) === 0);
+  isClearing = signal(false);
 
   ngOnInit() {
     this.cartService.getCart().subscribe();
@@ -41,8 +42,18 @@ export class MarketCartComponent implements OnInit {
   }
 
   onClearCart() {
+    if (this.isClearing()) return;
     if (confirm('¿Estás seguro de que deseas vaciar todo el carrito de mercado?')) {
-      this.cartService.clearCart().subscribe();
+      this.isClearing.set(true);
+      this.cartService.clearCart().subscribe({
+        next: () => {
+          this.isClearing.set(false);
+        },
+        error: (err) => {
+          this.isClearing.set(false);
+          alert('Hubo un error al vaciar el carrito en el servidor. Por favor inténtalo nuevamente.');
+        }
+      });
     }
   }
 

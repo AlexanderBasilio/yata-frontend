@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap } from 'rxjs';
+import { Observable, BehaviorSubject, tap, shareReplay, finalize } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export interface Address {
@@ -28,6 +28,7 @@ export interface CustomerResponse {
 export class CustomerService {
     private http = inject(HttpClient);
     private platformUrl = environment.platformUrl;
+    private profileInFlight$: Observable<CustomerResponse> | null = null;
 
     public currentCustomer$ = new BehaviorSubject<CustomerResponse | null>(null);
     public activeAddress$ = new BehaviorSubject<Address | null>(this.getActiveAddress());
@@ -42,8 +43,18 @@ export class CustomerService {
     }
 
     setActiveAddress(address: Address) {
+        const current = this.activeAddress$.value;
+        const isSame = current &&
+            current.id === address.id &&
+            current.streetAddress === address.streetAddress &&
+            current.zoneId === address.zoneId &&
+            current.latitude === address.latitude &&
+            current.longitude === address.longitude;
+
         localStorage.setItem('zisify_active_address', JSON.stringify(address));
-        this.activeAddress$.next(address);
+        if (!isSame) {
+            this.activeAddress$.next(address);
+        }
     }
 
     clearActiveAddress() {
@@ -51,12 +62,17 @@ export class CustomerService {
         this.activeAddress$.next(null);
     }
 
-    getCustomerProfile(userId: string): Observable<CustomerResponse> {
+    getCustomerProfile(userId: string, forceRefresh: boolean = false): Observable<CustomerResponse> {
+        if (!forceRefresh && this.profileInFlight$) {
+            return this.profileInFlight$;
+        }
+
         const url = `${this.platformUrl}/api/v1/customers/${userId}`;
         console.group('📡 [GET HTTP] Consultando Perfil del Cliente');
         console.log('🌐 Endpoint URL:', url);
         console.groupEnd();
-        return this.http.get<CustomerResponse>(url).pipe(
+
+        const req$ = this.http.get<CustomerResponse>(url).pipe(
             tap(customer => {
                 console.group('📥 [GET RESPONSE] Perfil recibido del Backend');
                 console.log('📦 JSON completo del perfil:', customer);
@@ -78,8 +94,20 @@ export class CustomerService {
                         this.setActiveAddress(defaultOrFirst);
                     }
                 }
-            })
+            }),
+            finalize(() => {
+                // Liberar el cache en vuelo después de 800ms para evitar peticiones duplicadas simultáneas
+                setTimeout(() => {
+                    if (this.profileInFlight$ === req$) {
+                        this.profileInFlight$ = null;
+                    }
+                }, 800);
+            }),
+            shareReplay(1)
         );
+
+        this.profileInFlight$ = req$;
+        return req$;
     }
 
     addAddress(userId: string, address: Address): Observable<any> {

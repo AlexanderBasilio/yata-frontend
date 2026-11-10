@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, catchError, map, of } from 'rxjs';
+import { Observable, catchError, map, of, tap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   MarketCategoryCustomerDto,
@@ -44,7 +44,17 @@ export class MarketCatalogService {
     if (lat !== undefined && lat !== null) params = params.set('lat', lat.toString());
     if (lng !== undefined && lng !== null) params = params.set('lng', lng.toString());
 
+    console.group(`🏪 [GET HTTP] Consultando Secciones (${v})`);
+    console.log('🌐 Endpoint:', `${this.baseUrl}/sections`);
+    console.log('📍 Zonas:', zoneIds, '| Coords:', { lat, lng });
+    console.groupEnd();
+
     return this.http.get<MarketSectionCustomerDto[]>(`${this.baseUrl}/sections`, { params }).pipe(
+      tap(sections => {
+        console.group(`📥 [GET RESPONSE] Secciones recibidas (${v})`);
+        console.log(`📦 Total secciones: ${sections?.length ?? 0}`, sections);
+        console.groupEnd();
+      }),
       map(sections => sections || []),
       catchError(err => {
         console.warn(`⚠️ Error al listar secciones para vertical ${v}:`, err);
@@ -73,7 +83,17 @@ export class MarketCatalogService {
     if (lng !== undefined && lng !== null) params = params.set('lng', lng.toString());
     if (search && search.trim().length > 0) params = params.set('search', search.trim());
 
+    console.group(`🏪 [GET HTTP] Consultando Comercios (${v})`);
+    console.log('🌐 Endpoint:', `${this.baseUrl}/stores`);
+    console.log('📍 Zonas:', zoneIds, '| Sección:', sectionId, '| Búsqueda:', search);
+    console.groupEnd();
+
     return this.http.get<MarketStoreSummaryDto[]>(`${this.baseUrl}/stores`, { params }).pipe(
+      tap(stores => {
+        console.group(`📥 [GET RESPONSE] Comercios recibidos (${v})`);
+        console.log(`📦 Total comercios: ${stores?.length ?? 0}`, stores);
+        console.groupEnd();
+      }),
       map(stores => stores || []),
       catchError(err => {
         console.warn(`⚠️ Error al listar comercios para vertical ${v}:`, err);
@@ -89,7 +109,16 @@ export class MarketCatalogService {
     if (lat !== undefined && lat !== null) params = params.set('lat', lat.toString());
     if (lng !== undefined && lng !== null) params = params.set('lng', lng.toString());
 
+    console.group(`🏪 [GET HTTP] Consultando Detalle de Tienda (${v})`);
+    console.log('🌐 Endpoint:', `${this.baseUrl}/stores/${storeId}`);
+    console.groupEnd();
+
     return this.http.get<MarketStoreSummaryDto>(`${this.baseUrl}/stores/${storeId}`, { params }).pipe(
+      tap(detail => {
+        console.group(`📥 [GET RESPONSE] Detalle de Tienda (${v}): ${detail?.name}`);
+        console.log('📦 Detalle:', detail);
+        console.groupEnd();
+      }),
       catchError(err => {
         console.warn(`⚠️ Error al obtener detalle de tienda ${storeId} (vertical ${v}):`, err);
         return of(null);
