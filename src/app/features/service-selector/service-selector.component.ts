@@ -601,6 +601,22 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
           if (data.newOptionsSection?.items) {
             data.newOptionsSection.items = this.sortShortcutRestaurants(data.newOptionsSection.items);
           }
+          // 🎯 Filtrar platos cuyo restaurante esté operativo (isRestaurantOpen !== false)
+          if (data.exclusiveOffersSection?.items) {
+            data.exclusiveOffersSection.items = data.exclusiveOffersSection.items.filter(
+              dish => dish.isRestaurantOpen !== false
+            );
+          }
+          if (data.reorderSection?.items) {
+            data.reorderSection.items = data.reorderSection.items.filter(
+              dish => dish.isRestaurantOpen !== false
+            );
+          }
+          if (data.trendingSection?.items) {
+            data.trendingSection.items = data.trendingSection.items.filter(
+              dish => dish.isRestaurantOpen !== false
+            );
+          }
           this.homeShortcuts.set(data);
         }
         this.isLoadingShortcuts.set(false);
@@ -719,6 +735,9 @@ export class ServiceSelectorComponent implements OnInit, OnDestroy {
 
   // ✅ NAVEGACIÓN DIRECTA AL PLATILLO EN EL RESTAURANTE Y APERTURA DE MODAL (Secciones: Vuelve a pedir, Tendencias)
   onDishCardClick(dish: DishHomeSummaryResponse | CarouselDishItem) {
+    if ('isRestaurantOpen' in dish && dish.isRestaurantOpen === false) {
+      return;
+    }
     const restId = dish.restaurantId || 'rest-001';
     // Enrutamiento directo: restaurante -> abre modal del platillo
     this.router.navigate(['/food/restaurant', restId], {

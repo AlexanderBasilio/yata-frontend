@@ -34,6 +34,7 @@ export interface DishHomeSummaryResponse {
   imageUrl?: string;
   isAvailable?: boolean;
   isZisifyExclusive?: boolean; // 🎯 Exclusivo de Zisify
+  isRestaurantOpen?: boolean; // 🎯 Control de apertura y horario del restaurante
 }
 
 export interface RestaurantSectionDto {

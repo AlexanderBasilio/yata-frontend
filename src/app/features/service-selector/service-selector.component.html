@@ -268,7 +268,13 @@
                   </span>
                 </span>
 
-                @if (dish.isAvailable === false) {
+                @if (dish.isRestaurantOpen === false) {
+                  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
+                      Cerrado
+                    </span>
+                  </div>
+                } @else if (dish.isAvailable === false) {
                   <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
                     <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
                       Agotado
@@ -335,9 +341,9 @@
 
                   <button
                     type="button"
-                    [disabled]="dish.isAvailable === false"
-                    [class.opacity-50]="dish.isAvailable === false"
-                    [class.cursor-not-allowed]="dish.isAvailable === false"
+                    [disabled]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.opacity-50]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.cursor-not-allowed]="dish.isAvailable === false || dish.isRestaurantOpen === false"
                     class="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full border-2 border-black bg-white hover:bg-black text-black hover:text-white transition-all cursor-pointer shadow-sm group/btn shrink-0 active:scale-95">
                     <span class="text-xs font-bold font-['Inter'] leading-none">
                       Agregar
@@ -574,7 +580,13 @@
                   </span>
                 }
 
-                @if (dish.isAvailable === false) {
+                @if (dish.isRestaurantOpen === false) {
+                  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
+                      Cerrado
+                    </span>
+                  </div>
+                } @else if (dish.isAvailable === false) {
                   <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
                     <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
                       Agotado
@@ -638,9 +650,9 @@
 
                   <button
                     type="button"
-                    [disabled]="dish.isAvailable === false"
-                    [class.opacity-50]="dish.isAvailable === false"
-                    [class.cursor-not-allowed]="dish.isAvailable === false"
+                    [disabled]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.opacity-50]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.cursor-not-allowed]="dish.isAvailable === false || dish.isRestaurantOpen === false"
                     class="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full border-2 border-black bg-white hover:bg-black text-black hover:text-white transition-all cursor-pointer shadow-sm group/btn shrink-0 active:scale-95">
                     <span class="text-xs font-bold font-['Inter'] leading-none">
                       Agregar
@@ -703,7 +715,13 @@
                   </span>
                 }
 
-                @if (dish.isAvailable === false) {
+                @if (dish.isRestaurantOpen === false) {
+                  <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
+                    <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
+                      Cerrado
+                    </span>
+                  </div>
+                } @else if (dish.isAvailable === false) {
                   <div class="absolute inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-10">
                     <span class="text-[10px] font-extrabold text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-md font-['Inter']">
                       Agotado
@@ -767,9 +785,9 @@
 
                   <button
                     type="button"
-                    [disabled]="dish.isAvailable === false"
-                    [class.opacity-50]="dish.isAvailable === false"
-                    [class.cursor-not-allowed]="dish.isAvailable === false"
+                    [disabled]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.opacity-50]="dish.isAvailable === false || dish.isRestaurantOpen === false"
+                    [class.cursor-not-allowed]="dish.isAvailable === false || dish.isRestaurantOpen === false"
                     class="inline-flex items-center gap-1.5 pl-3 pr-1 py-1 rounded-full border-2 border-black bg-white hover:bg-black text-black hover:text-white transition-all cursor-pointer shadow-sm group/btn shrink-0 active:scale-95">
                     <span class="text-xs font-bold font-['Inter'] leading-none">
                       Agregar
