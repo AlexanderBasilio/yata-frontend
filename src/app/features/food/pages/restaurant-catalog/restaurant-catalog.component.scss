@@ -18,17 +18,37 @@
 
 // Chip de especialidad
 .specialty-chip {
-  background-color: #f3f4f6;
-  color: #4b5563;
-  border: 1px solid transparent;
-
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   &.active {
-    background-color: #0F456E;
-    color: white;
-    border-color: #0F456E;
+    background-color: #FFF0F7;
+    color: #C30364;
+    border-color: #C30364;
+    font-weight: 700;
+  }
+}
+
+// Scrollbar minimalista y limpio para el modal
+.minimal-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #E2E8F0;
+    border-radius: 9999px;
+
+    &:hover {
+      background-color: #CBD5E1;
+    }
   }
 }

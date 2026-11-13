@@ -40,6 +40,7 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
   filteredRestaurants = signal<Restaurant[]>([]);
   specialties = signal<Specialty[]>([]);
   selectedSpecialty = signal<string | null>(null);
+  showSpecialtiesModal = signal(false);
   isLoading = signal(true);
   searchQuery = signal('');
 
@@ -166,13 +167,21 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
     });
   }
 
+  openSpecialtiesModal() {
+    this.showSpecialtiesModal.set(true);
+  }
+
+  closeSpecialtiesModal() {
+    this.showSpecialtiesModal.set(false);
+  }
+
   loadRestaurants(zoneId: string) {
     this.isLoading.set(true);
     this.restaurantService.getAllRestaurants(zoneId).subscribe({
       next: (restaurants) => {
         console.log('✅ Catálogo recibido para zona ' + zoneId + ':', restaurants);
         this.restaurants.set(restaurants);
-        this.filteredRestaurants.set(restaurants);
+        this.applyFilters();
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -184,43 +193,91 @@ export class RestaurantCatalogComponent implements OnInit, OnDestroy {
     });
   }
 
-  filterBySpecialty(specialty: string) {
-    if (this.selectedSpecialty() === specialty) {
-      // Deseleccionar
+  filterBySpecialty(specialty: string | null) {
+    if (!specialty || this.selectedSpecialty() === specialty) {
+      // Deseleccionar y ver todos los restaurantes
       this.selectedSpecialty.set(null);
-      this.filteredRestaurants.set(this.restaurants());
     } else {
-      // Seleccionar y filtrar
+      // Seleccionar especialidad para filtrar
       this.selectedSpecialty.set(specialty);
-      this.restaurantService.searchBySpecialty(this.customerZoneId(), specialty).subscribe({
-        next: (restaurants) => {
-          console.log(`🔍 Catálogo con especialidad "${specialty}":`, restaurants);
-          this.filteredRestaurants.set(restaurants);
-        },
-        error: (err) => {
-          console.error('Error filtrando catálogo:', err);
-          this.filteredRestaurants.set([]);
-        }
-      });
     }
+    this.closeSpecialtiesModal();
+    this.applyFilters();
   }
 
   onSearch(event: Event) {
     const query = (event.target as HTMLInputElement).value.toLowerCase();
     this.searchQuery.set(query);
+    this.applyFilters();
+  }
 
-    if (!query) {
-      this.filteredRestaurants.set(this.restaurants());
-      return;
+  private normalizeStr(str: string): string {
+    return (str || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim();
+  }
+
+  private compareTerms(a: string, b: string): boolean {
+    const normA = this.normalizeStr(a);
+    const normB = this.normalizeStr(b);
+    if (!normA || !normB) return false;
+    if (normA.includes(normB) || normB.includes(normA)) return true;
+    // Prefix stem match (e.g. "marisqueria" vs "mariscos" -> "marisc")
+    const stemA = normA.length > 5 ? normA.substring(0, 5) : normA;
+    const stemB = normB.length > 5 ? normB.substring(0, 5) : normB;
+    return stemA === stemB;
+  }
+
+  applyFilters() {
+    const selected = this.selectedSpecialty();
+    const query = this.normalizeStr(this.searchQuery());
+    let list = this.restaurants();
+
+    // 1. Filtrar por especialidad activa
+    if (selected) {
+      list = list.filter(r => this.matchesSpecialty(r, selected));
     }
 
-    // ✅ Buscar en el array de specialties
-    const filtered = this.restaurants().filter(r =>
-      r.name.toLowerCase().includes(query) ||
-      r.description?.toLowerCase().includes(query) ||
-      r.specialties.some(s => s.name.toLowerCase().includes(query))
-    );
-    this.filteredRestaurants.set(this.sortRestaurantsByOpenStatus(filtered));
+    // 2. Filtrar por búsqueda de texto
+    if (query) {
+      list = list.filter(r =>
+        this.normalizeStr(r.name).includes(query) ||
+        this.normalizeStr(r.slogan || '').includes(query) ||
+        this.normalizeStr(r.description || '').includes(query) ||
+        (r.specialties && r.specialties.some(s => this.normalizeStr(typeof s === 'string' ? s : s.name).includes(query))) ||
+        (r.categories && r.categories.some(c => this.normalizeStr(c).includes(query)))
+      );
+    }
+
+    this.filteredRestaurants.set(this.sortRestaurantsByOpenStatus(list));
+  }
+
+  private matchesSpecialty(r: Restaurant, targetSpecialty: string): boolean {
+    if (!targetSpecialty) return true;
+
+    // Comparar con cada especialidad asignada al restaurante
+    const inSpecialties = r.specialties && r.specialties.some(s => {
+      const name = typeof s === 'string' ? s : s.name || '';
+      return this.compareTerms(name, targetSpecialty);
+    });
+    if (inSpecialties) return true;
+
+    // Comparar con categorías
+    const inCategories = r.categories && r.categories.some(c => {
+      return this.compareTerms(c, targetSpecialty);
+    });
+    if (inCategories) return true;
+
+    // Fallback: nombre o slogan o descripción
+    if (this.compareTerms(r.name, targetSpecialty) ||
+        this.compareTerms(r.slogan || '', targetSpecialty) ||
+        this.compareTerms(r.description || '', targetSpecialty)) {
+      return true;
+    }
+
+    return false;
   }
 
   private sortRestaurantsByOpenStatus(restaurants: Restaurant[]): Restaurant[] {
